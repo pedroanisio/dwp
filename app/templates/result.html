@@ -1,0 +1,309 @@
+{% extends "base.html" %}
+
+{% block title %}Results - {{ plugin.name }}{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="/">Home</a></li>
+                <li class="breadcrumb-item"><a href="/plugin/{{ plugin.id }}">{{ plugin.name }}</a></li>
+                <li class="breadcrumb-item active">Results</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1 class="display-6">
+                <i class="bi bi-file-earmark-text me-2"></i>
+                Execution Results
+            </h1>
+            <div>
+                <a href="/plugin/{{ plugin.id }}" class="btn btn-outline-primary me-2">
+                    <i class="bi bi-arrow-left me-1"></i>
+                    Try Again
+                </a>
+                <a href="/" class="btn btn-outline-secondary">
+                    <i class="bi bi-house me-1"></i>
+                    Home
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Execution Status -->
+<div class="row mb-4">
+    <div class="col-12">
+        {% if result.success %}
+            <div class="alert alert-success d-flex align-items-center">
+                <i class="bi bi-check-circle-fill fs-4 me-3"></i>
+                <div>
+                    <strong>Execution Successful!</strong>
+                    {% if result.execution_time %}
+                        <div class="small">Completed in {{ "%.3f"|format(result.execution_time) }}s</div>
+                    {% endif %}
+                </div>
+            </div>
+        {% else %}
+            <div class="alert alert-danger d-flex align-items-center">
+                <i class="bi bi-exclamation-triangle-fill fs-4 me-3"></i>
+                <div>
+                    <strong>Execution Failed</strong>
+                    {% if result.error %}
+                        <div class="small">{{ result.error }}</div>
+                    {% endif %}
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+{% if result.success and result.data %}
+<div class="row">
+    <div class="col-lg-8">
+        <!-- Results Display -->
+        <div class="card shadow-sm">
+            <div class="card-header bg-success text-white">
+                <h3 class="card-title mb-0">
+                    <i class="bi bi-graph-up me-2"></i>
+                    {{ plugin.output.name }}
+                </h3>
+            </div>
+            <div class="card-body">
+                {% if plugin.id == "text_stat" %}
+                    <!-- Specialized display for text statistics -->
+                    <div class="row mb-4">
+                        <div class="col-md-3">
+                            <div class="stat-card text-center p-3 border rounded">
+                                <h4 class="text-primary mb-0">{{ result.data.character_count }}</h4>
+                                <small class="text-muted">Total Characters</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="stat-card text-center p-3 border rounded">
+                                <h4 class="text-info mb-0">{{ result.data.word_count }}</h4>
+                                <small class="text-muted">Total Words</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="stat-card text-center p-3 border rounded">
+                                <h4 class="text-warning mb-0">{{ result.data.line_count }}</h4>
+                                <small class="text-muted">Lines</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="stat-card text-center p-3 border rounded">
+                                <h4 class="text-success mb-0">{{ result.data.sentence_count }}</h4>
+                                <small class="text-muted">Sentences</small>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-4">
+                        <div class="col-md-4">
+                            <h6><i class="bi bi-text-left me-2"></i>Character Analysis</h6>
+                            <ul class="list-unstyled">
+                                <li><strong>With Spaces:</strong> {{ result.data.character_count }}</li>
+                                <li><strong>Without Spaces:</strong> {{ result.data.character_count_no_spaces }}</li>
+                                <li><strong>Unique Characters:</strong> {{ result.data.unique_characters }}</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-4">
+                            <h6><i class="bi bi-alphabet me-2"></i>Word Analysis</h6>
+                            <ul class="list-unstyled">
+                                <li><strong>Total Words:</strong> {{ result.data.word_count }}</li>
+                                <li><strong>Unique Words:</strong> {{ result.data.unique_words }}</li>
+                                <li><strong>Avg Word Length:</strong> {{ result.data.average_word_length }}</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-4">
+                            <h6><i class="bi bi-file-text me-2"></i>Document Structure</h6>
+                            <ul class="list-unstyled">
+                                <li><strong>Lines:</strong> {{ result.data.line_count }}</li>
+                                <li><strong>Sentences:</strong> {{ result.data.sentence_count }}</li>
+                                <li><strong>Vocabulary:</strong> {{ ((result.data.unique_words / result.data.word_count) * 100) | round(1) }}%</li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <!-- Word Frequency -->
+                    {% if result.data.word_frequency %}
+                    <div class="mb-4">
+                        <h6><i class="bi bi-bar-chart me-2"></i>Top Words</h6>
+                        <div class="table-responsive">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Word</th>
+                                        <th>Frequency</th>
+                                        <th>Percentage</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for word, count in (result.data.word_frequency.items() | sort(attribute=1, reverse=true))[:10] %}
+                                    <tr>
+                                        <td><code>{{ word }}</code></td>
+                                        <td>{{ count }}</td>
+                                        <td>{{ ((count / result.data.word_count) * 100) | round(1) }}%</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    <!-- Character Frequency (Top 20) -->
+                    {% if result.data.character_frequency %}
+                    <div class="mb-4">
+                        <h6><i class="bi bi-123 me-2"></i>Character Distribution (Top 20)</h6>
+                        <div class="table-responsive">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Character</th>
+                                        <th>Frequency</th>
+                                        <th>Percentage</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for char, count in (result.data.character_frequency.items() | sort(attribute=1, reverse=true))[:20] %}
+                                    <tr>
+                                        <td>
+                                            {% if char == ' ' %}
+                                                <code>&lt;space&gt;</code>
+                                            {% elif char == '\n' %}
+                                                <code>&lt;newline&gt;</code>
+                                            {% elif char == '\t' %}
+                                                <code>&lt;tab&gt;</code>
+                                            {% else %}
+                                                <code>{{ char }}</code>
+                                            {% endif %}
+                                        </td>
+                                        <td>{{ count }}</td>
+                                        <td>{{ ((count / result.data.character_count) * 100) | round(1) }}%</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                {% else %}
+                    <!-- Generic display for other plugins -->
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            {% for key, value in result.data.items() %}
+                            <tr>
+                                <th style="width: 30%;">{{ key.replace('_', ' ').title() }}</th>
+                                <td>
+                                    {% if value is mapping %}
+                                        <pre class="small mb-0">{{ value | tojsonpretty }}</pre>
+                                    {% elif value is sequence and value is not string %}
+                                        <ul class="mb-0">
+                                            {% for item in value %}
+                                                <li>{{ item }}</li>
+                                            {% endfor %}
+                                        </ul>
+                                    {% else %}
+                                        {{ value }}
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </table>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-4">
+        <!-- Input Summary -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="bi bi-input-cursor me-2"></i>
+                    Input Summary
+                </h5>
+            </div>
+            <div class="card-body">
+                {% for key, value in input_data.items() %}
+                <div class="mb-3">
+                    <strong>{{ key.replace('_', ' ').title() }}:</strong>
+                    {% if value|length > 100 %}
+                        <div class="small text-muted mt-1">
+                            {{ value[:100] }}...
+                            <br><em>({{ value|length }} characters total)</em>
+                        </div>
+                    {% else %}
+                        <div class="small text-muted mt-1">{{ value }}</div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        
+        <!-- Raw JSON Output -->
+        <div class="card shadow-sm">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="bi bi-code-square me-2"></i>
+                    Raw JSON Output
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="accordion accordion-flush" id="rawOutput">
+                    <div class="accordion-item">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#rawCollapse">
+                                View Raw Data
+                            </button>
+                        </h2>
+                        <div id="rawCollapse" class="accordion-collapse collapse" data-bs-parent="#rawOutput">
+                            <div class="accordion-body">
+                                <pre class="small"><code>{{ result.data | tojsonpretty }}</code></pre>
+                                <button class="btn btn-sm btn-outline-secondary mt-2" onclick="copyToClipboard()">
+                                    <i class="bi bi-clipboard me-1"></i>
+                                    Copy JSON
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+function copyToClipboard() {
+    const jsonData = {{ result.data | tojson }};
+    const jsonString = JSON.stringify(jsonData, null, 2);
+    
+    if (navigator.clipboard) {
+        navigator.clipboard.writeText(jsonString).then(() => {
+            alert('JSON copied to clipboard!');
+        });
+    } else {
+        // Fallback for older browsers
+        const textArea = document.createElement('textarea');
+        textArea.value = jsonString;
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textArea);
+        alert('JSON copied to clipboard!');
+    }
+}
+</script>
+{% endblock %} 

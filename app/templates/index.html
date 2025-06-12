@@ -1,0 +1,143 @@
+{% extends "base.html" %}
+
+{% block title %}Home - Plugin System{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1 class="display-4">
+                <i class="bi bi-puzzle text-primary me-3"></i>
+                Plugin System
+            </h1>
+            <button class="btn btn-outline-primary" onclick="refreshPlugins()">
+                <i class="bi bi-arrow-clockwise me-1"></i>
+                Refresh
+            </button>
+        </div>
+        
+        <p class="lead text-muted mb-5">
+            A FastAPI + Pydantic web application featuring a dynamic plugin system. 
+            Each plugin defines its own UI components and output specifications.
+        </p>
+    </div>
+</div>
+
+{% if plugins %}
+<div class="row">
+    <div class="col-12">
+        <h2 class="mb-4">
+            <i class="bi bi-grid-3x3-gap me-2"></i>
+            Available Plugins ({{ plugins|length }})
+        </h2>
+    </div>
+</div>
+
+<div class="row">
+    {% for plugin in plugins %}
+    <div class="col-md-6 col-lg-4 mb-4">
+        <div class="card h-100 shadow-sm">
+            <div class="card-header bg-light">
+                <h5 class="card-title mb-0">
+                    <i class="bi bi-plugin text-primary me-2"></i>
+                    {{ plugin.name }}
+                </h5>
+                <small class="text-muted">v{{ plugin.version }}</small>
+            </div>
+            <div class="card-body">
+                <p class="card-text">{{ plugin.description }}</p>
+                
+                {% if plugin.tags %}
+                <div class="mb-3">
+                    {% for tag in plugin.tags %}
+                    <span class="badge bg-secondary me-1">{{ tag }}</span>
+                    {% endfor %}
+                </div>
+                {% endif %}
+                
+                <div class="small text-muted mb-3">
+                    <div><strong>Inputs:</strong> {{ plugin.inputs|length }} field(s)</div>
+                    <div><strong>Output:</strong> {{ plugin.output.name }}</div>
+                    {% if plugin.author %}
+                    <div><strong>Author:</strong> {{ plugin.author }}</div>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="card-footer bg-transparent">
+                <a href="/plugin/{{ plugin.id }}" class="btn btn-primary btn-sm">
+                    <i class="bi bi-play-circle me-1"></i>
+                    Use Plugin
+                </a>
+                <a href="/api/plugin/{{ plugin.id }}" target="_blank" class="btn btn-outline-secondary btn-sm ms-2">
+                    <i class="bi bi-code me-1"></i>
+                    API
+                </a>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="row">
+    <div class="col-12">
+        <div class="alert alert-warning text-center">
+            <i class="bi bi-exclamation-triangle fs-1 text-warning mb-3"></i>
+            <h4>No Plugins Found</h4>
+            <p class="mb-0">No plugins are currently available. Please check the plugins directory.</p>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Features Section -->
+<div class="row mt-5">
+    <div class="col-12">
+        <h2 class="mb-4">
+            <i class="bi bi-star me-2"></i>
+            Features
+        </h2>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-4 mb-3">
+        <div class="feature-box text-center p-4">
+            <i class="bi bi-lightning-charge fs-1 text-primary mb-3"></i>
+            <h5>Dynamic Loading</h5>
+            <p class="text-muted">Plugins are loaded dynamically at runtime with automatic discovery.</p>
+        </div>
+    </div>
+    <div class="col-md-4 mb-3">
+        <div class="feature-box text-center p-4">
+            <i class="bi bi-shield-check fs-1 text-success mb-3"></i>
+            <h5>Type Safety</h5>
+            <p class="text-muted">Full Pydantic validation ensures type safety and data integrity.</p>
+        </div>
+    </div>
+    <div class="col-md-4 mb-3">
+        <div class="feature-box text-center p-4">
+            <i class="bi bi-palette fs-1 text-info mb-3"></i>
+            <h5>Custom UI</h5>
+            <p class="text-muted">Each plugin defines its own UI components and output format.</p>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+async function refreshPlugins() {
+    try {
+        const response = await fetch('/api/refresh-plugins', {
+            method: 'POST'
+        });
+        const result = await response.json();
+        if (result.success) {
+            location.reload();
+        }
+    } catch (error) {
+        console.error('Error refreshing plugins:', error);
+    }
+}
+</script>
+{% endblock %} 

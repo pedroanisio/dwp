@@ -1,0 +1,76 @@
+{
+  "id": "text_stat",
+  "name": "Text Statistics Analyzer",
+  "version": "1.0.0",
+  "description": "Analyzes text input and provides comprehensive statistics including character counts, word counts, frequencies, and more.",
+  "author": "Plugin System Demo",
+  "inputs": [
+    {
+      "name": "text",
+      "label": "Text to Analyze",
+      "field_type": "textarea",
+      "required": true,
+      "placeholder": "Enter your text here for analysis...",
+      "validation": {
+        "min_length": 1,
+        "max_length": 100000
+      }
+    }
+  ],
+  "output": {
+    "name": "textStat",
+    "description": "Comprehensive text statistics report",
+    "schema": {
+      "type": "object",
+      "properties": {
+        "character_count": {
+          "type": "integer",
+          "description": "Total number of characters including spaces and punctuation"
+        },
+        "character_count_no_spaces": {
+          "type": "integer",
+          "description": "Total number of characters excluding spaces"
+        },
+        "word_count": {
+          "type": "integer",
+          "description": "Total number of words"
+        },
+        "line_count": {
+          "type": "integer",
+          "description": "Total number of lines"
+        },
+        "unique_words": {
+          "type": "integer",
+          "description": "Number of unique words (case-insensitive)"
+        },
+        "unique_characters": {
+          "type": "integer",
+          "description": "Number of unique characters"
+        },
+        "word_frequency": {
+          "type": "object",
+          "description": "Frequency count of each word",
+          "additionalProperties": {
+            "type": "integer"
+          }
+        },
+        "character_frequency": {
+          "type": "object",
+          "description": "Frequency count of each character including non-printable characters",
+          "additionalProperties": {
+            "type": "integer"
+          }
+        },
+        "average_word_length": {
+          "type": "number",
+          "description": "Average length of words"
+        },
+        "sentence_count": {
+          "type": "integer",
+          "description": "Estimated number of sentences"
+        }
+      }
+    }
+  },
+  "tags": ["text", "analysis", "statistics", "nlp"]
+} 
