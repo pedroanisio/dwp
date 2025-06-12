@@ -1,4 +1,4 @@
-# FastAPI + Pydantic Plugin System
+# Dynamic Web Plugins
 
 A modern web application featuring a dynamic plugin system built with FastAPI and Pydantic. Each plugin defines its own UI components and output specifications through a manifest-driven architecture.
 
