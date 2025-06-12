@@ -114,6 +114,16 @@ The included `text_stat` plugin demonstrates the system capabilities:
       }
     },
     {
+      "name": "input_file",
+      "label": "Source File",
+      "field_type": "file",
+      "required": true,
+      "validation": {
+        "allowed_extensions": ["pdf", "docx"]
+      },
+      "help": "Upload the source document for processing."
+    },
+    {
       "name": "enable_feature",
       "label": "Enable Feature",
       "field_type": "checkbox",

@@ -4,6 +4,7 @@ import importlib.util
 from typing import Dict, Any, Optional
 from pathlib import Path
 from ..models.plugin import PluginManifest
+import sys
 
 
 class PluginLoader:
@@ -48,11 +49,23 @@ class PluginLoader:
             return None
             
         try:
+            package_name = f"app.plugins.{plugin_id}"
+            module_name = f"{package_name}.plugin"
+
+            # Ensure the parent package is in sys.modules
+            if package_name not in sys.modules:
+                spec = importlib.util.spec_from_file_location(package_name, plugin_dir / "__init__.py")
+                if spec:
+                    package_module = importlib.util.module_from_spec(spec)
+                    sys.modules[package_name] = package_module
+                    spec.loader.exec_module(package_module)
+
             spec = importlib.util.spec_from_file_location(
-                f"plugins.{plugin_id}.plugin", 
+                module_name,
                 plugin_file
             )
             module = importlib.util.module_from_spec(spec)
+            sys.modules[module_name] = module
             spec.loader.exec_module(module)
             
             self.loaded_plugins[plugin_id] = {

@@ -1,0 +1,33 @@
+{
+  "id": "json_to_xml",
+  "name": "Pandoc JSON to Mini XML",
+  "version": "1.0.0",
+  "description": "Converts a Pandoc JSON document into a custom minimal XML format.",
+  "author": "AI Assistant",
+  "inputs": [
+    {
+      "name": "input_file",
+      "label": "Pandoc JSON File",
+      "field_type": "file",
+      "required": true,
+      "validation": {
+        "allowed_extensions": ["json"]
+      },
+      "help": "Upload a Pandoc JSON file (e.g., one generated with 'pandoc -t json -o output.json')."
+    }
+  ],
+  "output": {
+    "name": "xml_output",
+    "description": "The converted XML content.",
+    "schema": {
+      "type": "object",
+      "properties": {
+        "xml_output": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  "tags": ["json", "xml", "pandoc"],
+  "dependencies": {}
+} 

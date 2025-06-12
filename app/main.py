@@ -32,6 +32,11 @@ templates.env.filters['tojsonpretty'] = tojsonpretty
 app.mount("/static", StaticFiles(directory="app/static"), name="static")
 
 
+@app.get('/favicon.ico', include_in_schema=False)
+async def favicon():
+    return FileResponse("app/static/favicon.ico")
+
+
 @app.get("/", response_class=HTMLResponse)
 async def home(request: Request):
     """Homepage showing available plugins"""
