@@ -29,5 +29,12 @@
     }
   },
   "tags": ["json", "xml", "pandoc"],
-  "dependencies": {}
+  "dependencies": {
+    "external": [
+      {
+        "name": "pandoc",
+        "version": ">=2.0"
+      }
+    ]
+  }
 } 

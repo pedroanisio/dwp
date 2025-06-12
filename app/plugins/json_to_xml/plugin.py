@@ -1,54 +1,70 @@
 import json
 import xml.etree.ElementTree as ET
 from typing import Dict, Any, List
-from pydantic import ValidationError
-from .models import Pandoc, Block, Inline
+
+# Use the pandoc library for parsing
+import pandoc
+from pandoc.types import (
+    Pandoc, Meta, Block, Inline, Str, Space, Code, Emph, Strong, SoftBreak,
+    LineBreak, Para, Plain, Header, CodeBlock, BulletList, BlockQuote, Div,
+    RawBlock, RawInline
+)
 
 def _emit_inlines(parent: ET.Element, lst: List[Inline]):
     for inl in lst:
-        if inl.t == "Str":
-            parent.text = (parent.text or "") + inl.c
-        elif inl.t == "Space":
+        if isinstance(inl, Str):
+            parent.text = (parent.text or "") + inl[0]
+        elif isinstance(inl, Space):
             parent.text = (parent.text or "") + " "
-        elif inl.t == "Code":
-            ET.SubElement(parent, "C").text = inl.c[1]
-        elif inl.t == "Emph":
+        elif isinstance(inl, Code):
+            attr, text = inl
+            ET.SubElement(parent, "C").text = text
+        elif isinstance(inl, Emph):
             e = ET.SubElement(parent, "E")
-            _emit_inlines(e, inl.c)
-        elif inl.t == "Strong":
+            _emit_inlines(e, inl[0])
+        elif isinstance(inl, Strong):
             s = ET.SubElement(parent, "S")
-            _emit_inlines(s, inl.c)
-        elif inl.t in ("SoftBreak", "LineBreak"):
+            _emit_inlines(s, inl[0])
+        elif isinstance(inl, (SoftBreak, LineBreak)):
             ET.SubElement(parent, "BR")
+        elif isinstance(inl, RawInline):
+            format_obj, text = inl
+            ET.SubElement(parent, "Raw", format=format_obj[0]).text = text
         else:
-            ET.SubElement(parent, "U", t=inl.t)
+            ET.SubElement(parent, "U", t=type(inl).__name__)
 
 def _emit(root: ET.Element, node: Block):
-    if node.t in ("Para", "Plain"):
+    if isinstance(node, (Para, Plain)):
         elem = ET.SubElement(root, "P")
-        _emit_inlines(elem, node.c)
-    elif node.t == "Header":
-        lvl, inl, _ = node.c
-        elem = ET.SubElement(root, "H", l=str(lvl))
-        _emit_inlines(elem, inl)
-    elif node.t == "CodeBlock":
-        (_, code) = node.c
-        lang = node.c[0][1][0] if node.c[0][1] else ""
-        ET.SubElement(root, "C", l=lang).text = code
-    elif node.t == "BulletList":
+        _emit_inlines(elem, node[0])
+    elif isinstance(node, Header):
+        level, attr, inlines = node
+        elem = ET.SubElement(root, "H", l=str(level))
+        _emit_inlines(elem, inlines)
+    elif isinstance(node, CodeBlock):
+        attr, text = node
+        lang = attr[1][0] if attr[1] else ""
+        ET.SubElement(root, "C", l=lang).text = text
+    elif isinstance(node, BulletList):
         l = ET.SubElement(root, "L")
-        for item in node.c:
+        for item in node[0]:
             i = ET.SubElement(l, "I")
             for blk in item:
                 _emit(i, blk)
-    elif node.t == "BlockQuote":
+    elif isinstance(node, BlockQuote):
         q = ET.SubElement(root, "Q")
-        for blk in node.c:
+        for blk in node[0]:
             _emit(q, blk)
-    elif node.t in ("SoftBreak", "LineBreak"):
-        ET.SubElement(root, "BR")
+    elif isinstance(node, Div):
+        attr, blocks = node
+        div_elem = ET.SubElement(root, "DIV")
+        for blk in blocks:
+            _emit(div_elem, blk)
+    elif isinstance(node, RawBlock):
+        format_obj, text = node
+        ET.SubElement(root, "RawBlock", format=format_obj[0]).text = text
     else:
-        ET.SubElement(root, "U", t=node.t).text = json.dumps(node.c)
+        ET.SubElement(root, "U", t=type(node).__name__)
 
 class Plugin:
     def execute(self, data: Dict[str, Any]) -> Dict[str, Any]:
@@ -58,24 +74,29 @@ class Plugin:
 
         try:
             json_string = file_info["content"].decode("utf-8")
+            api_version = []
             
             try:
-                doc = Pandoc.model_validate_json(json_string)
-            except (ValidationError, json.JSONDecodeError):
-                 # Fallback for plain text or invalid format
+                raw_doc = json.loads(json_string)
+                if isinstance(raw_doc, dict):
+                    api_version = raw_doc.get("pandoc-api-version", [])
+                doc = pandoc.read(json_string, format='json')
+            except Exception:
+                # Fallback for plain text or invalid format
                 root = ET.Element("D")
                 ET.SubElement(root, "B").text = json_string
                 ET.indent(root)
                 xml_output = ET.tostring(root, encoding="unicode")
                 return {"xml_output": xml_output}
 
-            root = ET.Element("D", v=".".join(map(str, doc.pandoc_api_version)))
+            meta, blocks = doc
+            root = ET.Element("D", v=".".join(map(str, api_version)))
             
             ET.SubElement(root, "M")  # meta placeholder
-            blocks = ET.SubElement(root, "B")
+            xml_blocks = ET.SubElement(root, "B")
             
-            for blk in doc.blocks:
-                _emit(blocks, blk)
+            for blk in blocks:
+                _emit(xml_blocks, blk)
             
             ET.indent(root)
             xml_output = ET.tostring(root, encoding="unicode")

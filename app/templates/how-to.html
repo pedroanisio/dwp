@@ -1,169 +1,124 @@
 {% extends "base.html" %}
 
-{% block title %}How to Build and Test Plugins{% endblock %}
+{% block title %}How to Build Plugins{% endblock %}
 
 {% block content %}
 <div class="container mt-5">
     <div class="card bg-light border-dark">
         <div class="card-header">
-            <h1 class="card-title">How to Build and Test Plugins</h1>
+            <h1 class="card-title">How to Build a New Plugin</h1>
         </div>
         <div class="card-body">
-            <p class="lead">Follow these steps to create, test, and troubleshoot your own custom plugins for our dynamic web application.</p>
+            <p class="lead">This guide provides a complete walkthrough of how to create, test, and troubleshoot your own custom plugins.</p>
 
             <hr class="my-4">
 
-            <h2 class="mb-3">1. Plugin Development</h2>
-            <p>Each plugin lives in its own directory inside <code>app/plugins/</code> and consists of a manifest file and a Python script.</p>
+            <h2 class="mb-3">1. The Anatomy of a Plugin</h2>
+            <p>Every plugin is self-contained within its own directory inside <code>app/plugins/</code>. At a minimum, a plugin must include two files:</p>
+            <ul>
+                <li><code>manifest.json</code>: A JSON file that defines the plugin's metadata, UI, and dependencies.</li>
+                <li><code>plugin.py</code>: A Python script that contains the core logic of the plugin.</li>
+            </ul>
+            <p>For Python-based plugins that have their own internal modules, you should also include an empty <code>__init__.py</code> file in the same directory.</p>
 
             <div class="accordion" id="development-steps">
-                <!-- Step 1 -->
+                
+                <!-- Step 1: Manifest -->
                 <div class="accordion-item">
                     <h2 class="accordion-header" id="headingOne">
                         <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
-                            <strong>Step 1: Create Your Plugin Directory</strong>
+                            <strong>Step 1: Define the Manifest (`manifest.json`)</strong>
                         </button>
                     </h2>
                     <div id="collapseOne" class="accordion-collapse collapse show" aria-labelledby="headingOne" data-bs-parent="#development-steps">
                         <div class="accordion-body">
-                            <p>Create a new directory for your plugin inside <code>app/plugins/</code>. The directory name should be a unique identifier for your plugin.</p>
-                            <pre class="bg-dark text-white p-2 rounded"><code>app/plugins/your_plugin_id/</code></pre>
-                            <p>Inside this directory, you will need to create three files:</p>
-                            <ul>
-                                <li><code>__init__.py</code> (can be empty)</li>
-                                <li><code>manifest.json</code></li>
-                                <li><code>plugin.py</code></li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Step 2 -->
-                <div class="accordion-item">
-                    <h2 class="accordion-header" id="headingTwo">
-                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
-                            <strong>Step 2: Define the Plugin Manifest (`manifest.json`)</strong>
-                        </button>
-                    </h2>
-                    <div id="collapseTwo" class="accordion-collapse collapse" aria-labelledby="headingTwo" data-bs-parent="#development-steps">
-                        <div class="accordion-body">
-                            <p>The <code>manifest.json</code> file defines your plugin's metadata, inputs, and outputs. The system uses this file to generate the UI and validate data.</p>
+                            <p>The <code>manifest.json</code> file is the heart of your plugin. It tells the system everything it needs to know to render the UI, validate inputs, and execute your code. Below is an example from the Pandoc Converter plugin:</p>
                             <pre class="bg-dark text-white p-2 rounded"><code>{
-  "id": "your_plugin_id",
-  "name": "Your Plugin Name",
+  "id": "pandoc_converter",
+  "name": "Pandoc Document Converter",
   "version": "1.0.0",
-  "description": "A brief description of what your plugin does.",
-  "author": "Your Name",
+  "description": "Converts documents from one format to another using Pandoc.",
+  "author": "AI Assistant",
   "inputs": [
     {
-      "name": "field_name",
-      "label": "Field Label",
-      "field_type": "textarea",
-      "required": true,
-      "placeholder": "Enter text...",
-      "validation": {
-        "min_length": 1,
-        "max_length": 1000
-      }
-    },
-    {
       "name": "input_file",
-      "label": "Source File",
+      "label": "Source Document",
       "field_type": "file",
       "required": true,
-      "validation": {
-        "allowed_extensions": ["pdf", "docx"]
-      },
-      "help": "Upload the source document for processing."
+      "help": "Upload the document you want to convert."
     },
     {
-      "name": "enable_feature",
-      "label": "Enable Feature",
-      "field_type": "checkbox",
-      "required": false,
-      "default_value": false,
-      "help": "Check this to enable a special feature for this plugin."
+      "name": "output_format",
+      "label": "Output Format",
+      "field_type": "select",
+      "required": true,
+      "options": [
+        {"value": "docx", "label": "Word Document"},
+        {"value": "pdf", "label": "PDF"},
+        {"value": "html", "label": "HTML"},
+        {"value": "md", "label": "Markdown"}
+      ],
+      "default_value": "docx"
     }
   ],
   "output": {
-    "name": "outputFormat",
-    "description": "Description of the output format.",
-    "schema": {
-      "type": "object",
-      "properties": {
-        "result": {"type": "string"}
-      }
-    }
+    "name": "converted_file",
+    "description": "The converted output file."
   },
-  "tags": ["category1", "category2"],
   "dependencies": {
-    "external": [
-      {
-        "name": "pandoc",
-        "help": "Pandoc is required for this plugin. On Debian/Ubuntu, run 'sudo apt-get install pandoc'."
-      }
-    ]
+    "external": [{"name": "pandoc"}]
   }
 }</code></pre>
                         </div>
                     </div>
                 </div>
 
-                <!-- Step 3 -->
+                <!-- Step 2: Plugin Logic -->
                 <div class="accordion-item">
-                    <h2 class="accordion-header" id="headingThree">
-                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
-                            <strong>Step 3: Implement the Plugin Logic (`plugin.py`)</strong>
+                    <h2 class="accordion-header" id="headingTwo">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+                            <strong>Step 2: Implement the Logic (`plugin.py`)</strong>
                         </button>
                     </h2>
-                    <div id="collapseThree" class="accordion-collapse collapse" aria-labelledby="headingThree" data-bs-parent="#development-steps">
+                    <div id="collapseTwo" class="accordion-collapse collapse" aria-labelledby="headingTwo" data-bs-parent="#development-steps">
                         <div class="accordion-body">
-                            <p>The <code>plugin.py</code> file must contain a <code>Plugin</code> class with an <code>execute</code> method. This method receives the user's input and returns a dictionary with the results.</p>
-                            <pre class="bg-dark text-white p-2 rounded"><code>from typing import Dict, Any
+                            <p>The <code>plugin.py</code> file must contain a <code>Plugin</code> class with an <code>execute</code> method. This method takes a dictionary of the user's input and should return a dictionary containing the output.</p>
+                            <p>For plugins that generate a file, the `execute` method should return a dictionary with `file_path` and `file_name` keys.</p>
+                            <pre class="bg-dark text-white p-2 rounded"><code>from pathlib import Path
+import subprocess
+import tempfile
+from typing import Dict, Any
 
 class Plugin:
     def execute(self, data: Dict[str, Any]) -> Dict[str, Any]:
-        """
-        Execute the plugin logic.
-        
-        Args:
-            data: A dictionary containing input field values.
-            
-        Returns:
-            A dictionary with results matching the output schema.
-        """
-        # Your plugin logic here
-        input_text = data.get('field_name', '')
-        
-        # Process the input
-        result = f"Processed: {input_text}"
-        
-        return {
-            "result": result
-        }
-</code></pre>
-                        </div>
-                    </div>
-                </div>
+        input_file = data.get("input_file")
+        output_format = data.get("output_format")
 
-                <!-- Step 4 -->
-                <div class="accordion-item">
-                    <h2 class="accordion-header" id="headingFour">
-                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFour" aria-expanded="false" aria-controls="collapseFour">
-                            <strong>Step 4: Supported Input Field Types</strong>
-                        </button>
-                    </h2>
-                    <div id="collapseFour" class="accordion-collapse collapse" aria-labelledby="headingFour" data-bs-parent="#development-steps">
-                        <div class="accordion-body">
-                            <p>You can use the following field types in your manifest's <code>inputs</code> section:</p>
-                            <ul>
-                                <li><code>text</code>: Single-line text input</li>
-                                <li><code>textarea</code>: Multi-line text input</li>
-                                <li><code>number</code>: Numeric input</li>
-                                <li><code>select</code>: Dropdown selection</li>
-                                <li><code>checkbox</code>: Boolean checkbox</li>
-                                <li><code>file</code>: File upload</li>
-                            </ul>
+        if not input_file or not output_format:
+            raise ValueError("Missing required inputs.")
+
+        # Create a temporary directory to store files
+        with tempfile.TemporaryDirectory() as temp_dir:
+            input_path = Path(temp_dir) / input_file["filename"]
+            with open(input_path, "wb") as f:
+                f.write(input_file["content"])
+
+            # Prepare the output path
+            output_filename = f"{input_path.stem}.{output_format}"
+            output_path = Path(temp_dir) / output_filename
+            
+            # Execute the pandoc command
+            subprocess.run(
+                ["pandoc", str(input_path), "-o", str(output_path)],
+                check=True
+            )
+
+            # Return the path to the generated file
+            return {
+                "file_path": str(output_path),
+                "file_name": output_filename
+            }
+</code></pre>
                         </div>
                     </div>
                 </div>
@@ -172,32 +127,31 @@ class Plugin:
             <hr class="my-4">
 
             <h2 class="mb-3">2. Testing Your Plugin</h2>
-            <p>Once your plugin is created, restart the application. It will be automatically discovered. You can test it using the web interface or the API.</p>
+            <p>To test your plugin, simply restart the web application. It will be automatically discovered and loaded. You can then test it using either the web interface or the API.</p>
 
-            <h4 class="mt-3">Using the Web Interface</h4>
+            <h4 class="mt-3">Via the Web Interface</h4>
             <ol>
                 <li>Navigate to the <a href="/">homepage</a>.</li>
-                <li>Find your plugin in the list and click "Use Plugin".</li>
-                <li>Fill out the form and click "Execute Plugin".</li>
-                <li>Review the results on the result page.</li>
+                <li>Find your plugin and click "Use Plugin".</li>
+                <li>Fill out the form and click "Execute Plugin" to see the results.</li>
             </ol>
 
-            <h4 class="mt-3">Using the API with `curl`</h4>
-            <p>You can also test your plugin programmatically. First, get a list of all plugins to find your plugin's ID:</p>
+            <h4 class="mt-3">Via the API with `curl`</h4>
+            <p>You can also test your plugin programmatically. First, get the list of plugins to find your plugin's ID:</p>
             <pre class="bg-dark text-white p-2 rounded"><code>curl http://localhost:8000/api/plugins</code></pre>
-            <p>Then, send a POST request to your plugin's execute endpoint:</p>
-            <pre class="bg-dark text-white p-2 rounded"><code>curl -X POST http://localhost:8000/api/plugin/your_plugin_id/execute \
--H "Content-Type: application/json" \
--d '{"field_name": "Hello from the API!"}'</code></pre>
+            <p>Then, send a POST request to your plugin's `execute` endpoint. For file uploads, use the `-F` flag:</p>
+            <pre class="bg-dark text-white p-2 rounded"><code>curl -X POST -F "input_file=@/path/to/your/document.md" \
+-F "output_format=docx" http://localhost:8000/api/plugin/pandoc_converter/execute \
+--output converted_document.docx</code></pre>
 
             <hr class="my-4">
 
-            <h2 class="mb-3">3. Troubleshooting</h2>
+            <h2 class="mb-3">3. Troubleshooting Tips</h2>
             <div class="alert alert-warning">
                 <ul class="mb-0">
-                    <li><strong>Plugin Not Loading</strong>: Check your <code>manifest.json</code> syntax. Ensure your <code>plugin.py</code> has a <code>Plugin</code> class with an <code>execute</code> method. Verify the directory structure.</li>
-                    <li><strong>Validation Errors</strong>: Make sure the data you provide matches the input field types defined in the manifest. Ensure all required fields are provided.</li>
-                    <li><strong>Performance Issues</strong>: Monitor plugin execution time. Consider adding caching for frequently used operations and optimize your logic for large inputs.</li>
+                    <li><strong>Plugin Not Loading</strong>: Double-check your <code>manifest.json</code> for syntax errors. Make sure your <code>plugin.py</code> has a <code>Plugin</code> class with a valid <code>execute</code> method.</li>
+                    <li><strong>Dependency Errors</strong>: If your plugin relies on external tools (like `pandoc`), make sure they are installed on the server and accessible in the system's `PATH`.
+                    <li><strong>Validation Errors</strong>: Ensure the data you provide matches the input types defined in your manifest. All required fields must be provided.</li>
                 </ul>
             </div>
 

@@ -1,15 +1,64 @@
-# Dynamic Web Plugins
+# Dynamic Web-Based Plugin System
 
-A modern web application featuring a dynamic plugin system built with FastAPI and Pydantic. Each plugin defines its own UI components and output specifications through a manifest-driven architecture.
+This project is a modern, web-based application that features a dynamic plugin system built with FastAPI and Pydantic. Each plugin can define its own user interface and I/O specifications through a simple, yet powerful, manifest-driven architecture. The system automatically discovers and loads plugins at runtime, making it highly extensible and easy to maintain.
 
-## 🚀 Features
+## 🚀 Key Features
 
-- **Dynamic Plugin Loading**: Plugins are discovered and loaded automatically at runtime
-- **Manifest-Driven**: Plugin configuration through JSON manifests with Pydantic validation
-- **Type Safety**: Full Pydantic validation for plugin inputs and outputs
-- **Modern UI**: Bootstrap-based responsive interface with custom styling
-- **RESTful API**: Complete API endpoints for programmatic access
-- **Extensible**: Easy to add new plugins with custom logic and UI components
+- **Dynamic Plugin Loading**: Plugins are discovered and loaded on-the-fly without needing to restart the application.
+- **Manifest-Driven UI**: Each plugin's UI and inputs are defined in a `manifest.json` file, allowing for flexible and self-describing components.
+- **Type-Safe Inputs**: Pydantic ensures all user inputs are validated against the types defined in the plugin's manifest.
+- **Dependency Checking**: The system automatically checks for required external dependencies (e.g., command-line tools) and reports their status in the UI.
+- **File-Based I/O**: Plugins can easily handle file uploads and generate downloadable file outputs.
+- **Modern Tech Stack**: Built with FastAPI, Pydantic, and a Bootstrap-based responsive UI.
+
+## 📦 Included Plugins
+
+The application comes with three pre-built plugins to demonstrate its capabilities:
+
+1.  **Text Statistics**: A powerful tool for analyzing text. It takes a string as input and returns a detailed report including word count, character count, frequency analysis, and more.
+2.  **Pandoc Converter**: A versatile document converter that leverages the `pandoc` command-line tool. It can convert files between a wide variety of formats (e.g., Markdown to DOCX, EPUB to HTML).
+3.  **Pandoc JSON to XML**: A specialized plugin that converts Pandoc's JSON AST (Abstract Syntax Tree) into a minimal XML format.
+
+## 🛠️ Getting Started
+
+Follow these steps to get the application up and running:
+
+### 1. Installation
+
+First, clone the repository and install the required Python dependencies:
+
+```bash
+pip install -r requirements.txt
+```
+
+### 2. Install External Dependencies
+
+Some plugins, like the Pandoc Converter, rely on external command-line tools. You'll need to install `pandoc` on your system. On Debian/Ubuntu, you can do so with:
+
+```bash
+sudo apt-get update && sudo apt-get install pandoc
+```
+
+### 3. Running the Application
+
+Once everything is installed, you can run the web server:
+
+```bash
+uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+```
+
+The application will be available at http://localhost:8000.
+
+## 🔌 Developing a New Plugin
+
+Creating a new plugin is straightforward. For detailed instructions and examples, please see the **"How to Build Plugins"** page within the web application, available at http://localhost:8000/how-to.
+
+The basic steps are:
+1.  Create a new directory in `app/plugins/`.
+2.  Add a `manifest.json` file to define your plugin's UI and dependencies.
+3.  Write your plugin's logic in a `plugin.py` file.
+
+The application will automatically detect and load your new plugin.
 
 ## 📁 Project Structure
 
@@ -42,165 +91,6 @@ A modern web application featuring a dynamic plugin system built with FastAPI an
         ├── plugin.html
         └── result.html
 ```
-
-## 🛠️ Installation & Setup
-
-1. **Clone or create the project structure** (if not already done)
-
-2. **Install dependencies**:
-   ```bash
-   pip install -r requirements.txt
-   ```
-
-3. **Run the application**:
-   ```bash
-   # From the project root directory
-   python -m app.main
-   ```
-   
-   Or using uvicorn directly:
-   ```bash
-   uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
-   ```
-
-4. **Access the application**:
-   - Web Interface: http://localhost:8000
-   - API Documentation: http://localhost:8000/docs
-   - Plugin API: http://localhost:8000/api/plugins
-
-## 📋 Sample Plugin: Text Statistics
-
-The included `text_stat` plugin demonstrates the system capabilities:
-
-### Input
-- **Textarea** for free text input
-- Validation for text length (1-100,000 characters)
-
-### Output (textStat report)
-- **Character counts** (with/without spaces)
-- **Word analysis** (total, unique, average length)
-- **Document structure** (lines, sentences)
-- **Frequency analysis** (words and characters)
-- **Advanced metrics** (vocabulary diversity)
-
-### Example Usage
-1. Navigate to http://localhost:8000
-2. Click "Use Plugin" on the Text Statistics Analyzer
-3. Enter text in the textarea
-4. Click "Execute Plugin"
-5. View comprehensive analysis results
-
-## 🔌 Plugin Development
-
-### 1. Plugin Manifest (`manifest.json`)
-
-```json
-{
-  "id": "your_plugin_id",
-  "name": "Your Plugin Name",
-  "version": "1.0.0",
-  "description": "Plugin description",
-  "author": "Your Name",
-  "inputs": [
-    {
-      "name": "field_name",
-      "label": "Field Label",
-      "field_type": "textarea",
-      "required": true,
-      "placeholder": "Enter text...",
-      "validation": {
-        "min_length": 1,
-        "max_length": 1000
-      }
-    },
-    {
-      "name": "input_file",
-      "label": "Source File",
-      "field_type": "file",
-      "required": true,
-      "validation": {
-        "allowed_extensions": ["pdf", "docx"]
-      },
-      "help": "Upload the source document for processing."
-    },
-    {
-      "name": "enable_feature",
-      "label": "Enable Feature",
-      "field_type": "checkbox",
-      "required": false,
-      "default_value": false,
-      "help": "Check this to enable a special feature."
-    }
-  ],
-  "output": {
-    "name": "outputFormat",
-    "description": "Output description",
-    "schema": {
-      "type": "object",
-      "properties": {
-        "result": {"type": "string"}
-      }
-    }
-  },
-  "tags": ["category1", "category2"],
-  "dependencies": {
-    "external": [
-      {
-        "name": "pandoc",
-        "help": "Pandoc is required. On Debian/Ubuntu, install with 'sudo apt-get install pandoc'."
-      }
-    ],
-    "python": [
-      {
-        "name": "numpy",
-        "help": "numpy==1.21.0"
-      }
-    ]
-  }
-}
-```
-
-### 2. Plugin Implementation (`plugin.py`)
-
-```python
-class Plugin:
-    def execute(self, data: Dict[str, Any]) -> Dict[str, Any]:
-        """
-        Execute the plugin logic
-        
-        Args:
-            data: Dictionary containing input field values
-            
-        Returns:
-            Dictionary with results matching the output schema
-        """
-        # Your plugin logic here
-        input_text = data.get('field_name', '')
-        
-        # Process the input
-        result = process_data(input_text)
-        
-        return {
-            "result": result,
-            "metadata": {"processed_at": "2024-01-01T00:00:00Z"}
-        }
-```
-
-### 3. Supported Input Field Types
-
-- `text`: Single-line text input
-- `textarea`: Multi-line text input
-- `number`: Numeric input
-- `select`: Dropdown selection
-- `checkbox`: Boolean checkbox
-- `file`: File upload
-
-### 4. Adding Your Plugin
-
-1. Create a new directory in `app/plugins/`
-2. Add `__init__.py`, `manifest.json`, and `plugin.py`
-3. Restart the application
-4. Your plugin will be automatically discovered
 
 ## 🌐 API Endpoints
 
