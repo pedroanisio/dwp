@@ -1,7 +1,7 @@
-from fastapi import FastAPI, Request, Form, HTTPException
+from fastapi import FastAPI, Request, Form, HTTPException, File, UploadFile
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi.responses import HTMLResponse, JSONResponse, FileResponse
 from typing import Dict, Any
 import os
 import json
@@ -68,23 +68,33 @@ async def plugin_page(request: Request, plugin_id: str):
     })
 
 
-@app.post("/api/plugin/{plugin_id}/execute", response_model=PluginExecutionResponse)
-async def execute_plugin_api(plugin_id: str, request: Request):
+@app.post("/api/plugin/{plugin_id}/execute")
+async def execute_plugin_api(plugin_id: str, request: Request, input_file: UploadFile = File(None)):
     """API endpoint to execute a plugin"""
     try:
-        # Handle both JSON and form data
-        content_type = request.headers.get("content-type", "")
+        form_data = await request.form()
+        data = dict(form_data)
         
-        if "application/json" in content_type:
-            data = await request.json()
-        else:
-            form_data = await request.form()
-            data = dict(form_data)
-        
+        if input_file:
+            data["input_file"] = {
+                "filename": input_file.filename,
+                "content": await input_file.read()
+            }
+
         plugin_input = PluginInput(plugin_id=plugin_id, data=data)
         result = plugin_manager.execute_plugin(plugin_input)
-        
+
+        if result.success and result.file_data:
+            return FileResponse(
+                path=result.file_data["file_path"],
+                filename=result.file_data["file_name"],
+                media_type="application/octet-stream"
+            )
+        elif not result.success:
+             return JSONResponse(status_code=400, content=result.dict())
+
         return result
+
     except Exception as e:
         return PluginExecutionResponse(
             success=False,
@@ -94,15 +104,28 @@ async def execute_plugin_api(plugin_id: str, request: Request):
 
 
 @app.post("/plugin/{plugin_id}/execute", response_class=HTMLResponse)
-async def execute_plugin_web(request: Request, plugin_id: str):
+async def execute_plugin_web(request: Request, plugin_id: str, input_file: UploadFile = File(None)):
     """Web interface for plugin execution"""
     try:
         form_data = await request.form()
         data = dict(form_data)
         
+        if input_file:
+            data["input_file"] = {
+                "filename": input_file.filename,
+                "content": await input_file.read()
+            }
+
         plugin_input = PluginInput(plugin_id=plugin_id, data=data)
         result = plugin_manager.execute_plugin(plugin_input)
-        
+
+        if result.success and result.file_data:
+            return FileResponse(
+                path=result.file_data["file_path"],
+                filename=result.file_data["file_name"],
+                media_type="application/octet-stream"
+            )
+
         plugin = plugin_manager.get_plugin(plugin_id)
         
         return templates.TemplateResponse("result.html", {

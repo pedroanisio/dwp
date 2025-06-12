@@ -1,0 +1,54 @@
+{
+  "id": "pandoc_converter",
+  "name": "Pandoc File Converter",
+  "version": "1.0.0",
+  "description": "Converts files from one markup format to another using Pandoc.",
+  "author": "AI Assistant",
+  "inputs": [
+    {
+      "name": "input_file",
+      "label": "Upload File",
+      "field_type": "file",
+      "required": true,
+      "validation": {
+        "allowed_extensions": [
+          "epub", "html", "md", "docx", "odt", "rtf", "latex"
+        ]
+      }
+    },
+    {
+      "name": "output_format",
+      "label": "Output Format",
+      "field_type": "select",
+      "required": true,
+      "options": [
+        "pdf", "html", "docx", "epub", "md", "odt", "rtf", "tex"
+      ],
+      "default_value": "pdf"
+    }
+  ],
+  "output": {
+    "name": "fileConversionResult",
+    "description": "The converted file, ready for download.",
+    "schema": {
+      "type": "object",
+      "properties": {
+        "file_path": {
+          "type": "string"
+        },
+        "file_name": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  "tags": ["file-conversion", "pandoc"],
+  "dependencies": {
+    "external": [
+      {
+        "name": "pandoc",
+        "help": "Pandoc is required for file conversions. On Debian/Ubuntu, install with 'sudo apt-get install pandoc'. See pandoc.org for more info."
+      }
+    ]
+  }
+} 

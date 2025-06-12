@@ -1,0 +1,51 @@
+from pathlib import Path
+import subprocess
+import tempfile
+from typing import Dict, Any
+import os
+
+class Plugin:
+    def execute(self, data: Dict[str, Any]) -> Dict[str, Any]:
+        input_file_info = data.get("input_file")
+        output_format = data.get("output_format")
+
+        if not input_file_info or not output_format:
+            raise ValueError("Missing input file or output format")
+
+        
+        temp_dir = tempfile.mkdtemp()
+        
+        try:
+            
+            input_filename = input_file_info["filename"]
+            input_file_content = input_file_info["content"]
+
+            
+            input_path = Path(temp_dir) / input_filename
+            with open(input_path, "wb") as f:
+                f.write(input_file_content)
+
+            
+            output_filename = f"{input_path.stem}.{output_format}"
+            output_path = Path(temp_dir) / output_filename
+            
+            
+            subprocess.run(
+                ["pandoc", str(input_path), "-o", str(output_path)],
+                check=True
+            )
+
+            
+            return {
+                "file_path": str(output_path),
+                "file_name": output_filename
+            }
+        except subprocess.CalledProcessError as e:
+            
+            error_message = f"Pandoc conversion failed: {e}"
+            if e.stderr:
+                error_message += f"\nPandoc error: {e.stderr.decode()}"
+            raise RuntimeError(error_message)
+        except Exception as e:
+            
+            raise RuntimeError(f"An unexpected error occurred: {e}") 

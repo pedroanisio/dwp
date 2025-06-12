@@ -1,4 +1,5 @@
 import time
+import shutil
 from typing import Dict, Any, Optional, List
 from ..models.plugin import PluginManifest, PluginInput, PluginOutput
 from ..models.response import PluginExecutionResponse
@@ -14,6 +15,22 @@ class PluginManager:
     def refresh_plugins(self):
         """Refresh the list of available plugins"""
         self.plugins = self.loader.discover_plugins()
+        for plugin in self.plugins.values():
+            self._check_dependencies(plugin)
+    
+    def _check_dependencies(self, plugin: PluginManifest):
+        """Check plugin dependencies and update its status"""
+        plugin.dependency_status = {"all_met": True, "details": []}
+
+        if not plugin.dependencies:
+            return
+
+        if plugin.dependencies.external:
+            for dep in plugin.dependencies.external:
+                is_met = shutil.which(dep.name) is not None
+                if not is_met:
+                    plugin.dependency_status["all_met"] = False
+                plugin.dependency_status["details"].append({"name": dep.name, "met": is_met})
     
     def get_all_plugins(self) -> List[PluginManifest]:
         """Get all available plugins"""
@@ -47,6 +64,15 @@ class PluginManager:
             
             # Validate input against plugin manifest
             manifest = self.plugins[plugin_input.plugin_id]
+
+            # Check if dependencies are met before execution
+            if hasattr(manifest, 'dependency_status') and not manifest.dependency_status["all_met"]:
+                return PluginExecutionResponse(
+                    success=False,
+                    plugin_id=plugin_input.plugin_id,
+                    error="Cannot execute plugin due to unmet dependencies."
+                )
+
             validation_error = self._validate_input(plugin_input.data, manifest)
             if validation_error:
                 return PluginExecutionResponse(
@@ -61,6 +87,15 @@ class PluginManager:
             
             execution_time = time.time() - start_time
             
+            # Check if the result contains file data
+            if "file_path" in result and "file_name" in result:
+                return PluginExecutionResponse(
+                    success=True,
+                    plugin_id=plugin_input.plugin_id,
+                    file_data=result,
+                    execution_time=execution_time
+                )
+
             return PluginExecutionResponse(
                 success=True,
                 plugin_id=plugin_input.plugin_id,

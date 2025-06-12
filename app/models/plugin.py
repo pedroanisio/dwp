@@ -29,6 +29,16 @@ class OutputFormat(BaseModel):
     schema_definition: Dict[str, Any] = Field(..., description="JSON schema for output validation", alias="schema")
 
 
+class Dependency(BaseModel):
+    name: str
+    help_text: Optional[str] = Field(default=None, alias="help")
+
+
+class PluginDependencies(BaseModel):
+    external: Optional[List[Dependency]] = None
+    python: Optional[List[Dependency]] = None
+
+
 class PluginManifest(BaseModel):
     id: str = Field(..., description="Unique plugin identifier")
     name: str = Field(..., description="Human-readable plugin name")
@@ -38,6 +48,10 @@ class PluginManifest(BaseModel):
     inputs: List[InputField] = Field(..., description="Input field definitions")
     output: OutputFormat = Field(..., description="Output format specification")
     tags: Optional[List[str]] = Field(default=None, description="Plugin tags for categorization")
+    dependencies: Optional[PluginDependencies] = Field(default=None, description="Plugin dependencies")
+
+    class Config:
+        extra = "allow"
 
 
 class PluginInput(BaseModel):

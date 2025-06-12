@@ -38,23 +38,49 @@
     <div class="col-md-6 col-lg-4 mb-4">
         <div class="card h-100 shadow-sm">
             <div class="card-header bg-light">
-                <h5 class="card-title mb-0">
-                    <i class="bi bi-plugin text-primary me-2"></i>
-                    {{ plugin.name }}
-                </h5>
-                <small class="text-muted">v{{ plugin.version }}</small>
-            </div>
-            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="card-title mb-0">{{ plugin.name }}</h5>
+                    <span class="badge bg-primary">{{ plugin.version }}</span>
+                </div>
                 <p class="card-text">{{ plugin.description }}</p>
-                
-                {% if plugin.tags %}
-                <div class="mb-3">
-                    {% for tag in plugin.tags %}
-                    <span class="badge bg-secondary me-1">{{ tag }}</span>
-                    {% endfor %}
+
+                {% if plugin.dependencies %}
+                <div class="dependencies mt-3">
+                    <h6 class="mb-2">Dependencies:</h6>
+                    <ul class="list-unstyled">
+                        {% if plugin.dependencies.external %}
+                        <li><strong>External:</strong>
+                            {% for dep in plugin.dependencies.external %}
+                            <span class="badge 
+                                {% set dep_status = plugin.dependency_status.details | selectattr('name', 'equalto', dep.name) | first %}
+                                {{ 'bg-success' if dep_status and dep_status.met else 'bg-danger' }}">
+                                {{ dep.name }}
+                                <i class="bi bi-info-circle-fill" 
+                                   data-bs-toggle="tooltip" 
+                                   data-bs-placement="top" 
+                                   title="{{ dep.help_text }}"></i>
+                            </span>
+                            {% endfor %}
+                        </li>
+                        {% endif %}
+                        {% if plugin.dependencies.python %}
+                        <li><strong>Python:</strong>
+                            {% for dep in plugin.dependencies.python %}
+                            <span class="badge bg-info">{{ dep }}</span>
+                            {% endfor %}
+                        </li>
+                        {% endif %}
+                    </ul>
                 </div>
                 {% endif %}
-                
+
+                <div class="tags mt-3">
+                    {% for tag in plugin.tags %}
+                    <span class="badge bg-light text-dark border">{{ tag }}</span>
+                    {% endfor %}
+                </div>
+            </div>
+            <div class="card-body">
                 <div class="small text-muted mb-3">
                     <div><strong>Inputs:</strong> {{ plugin.inputs|length }} field(s)</div>
                     <div><strong>Output:</strong> {{ plugin.output.name }}</div>
@@ -63,11 +89,13 @@
                     {% endif %}
                 </div>
             </div>
-            <div class="card-footer bg-transparent">
-                <a href="/plugin/{{ plugin.id }}" class="btn btn-primary btn-sm">
-                    <i class="bi bi-play-circle me-1"></i>
-                    Use Plugin
-                </a>
+            <div class="card-footer bg-transparent border-top-0 text-end">
+                <a href="/plugin/{{ plugin.id }}" class="btn btn-sm 
+                    {% if plugin.dependency_status and not plugin.dependency_status.all_met %}
+                    btn-secondary disabled
+                    {% else %}
+                    btn-outline-primary
+                    {% endif %}">Use Plugin</a>
                 <a href="/api/plugin/{{ plugin.id }}" target="_blank" class="btn btn-outline-secondary btn-sm ms-2">
                     <i class="bi bi-code me-1"></i>
                     API
@@ -139,5 +167,11 @@ async function refreshPlugins() {
         console.error('Error refreshing plugins:', error);
     }
 }
+
+// Initialize tooltips
+var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+    return new bootstrap.Tooltip(tooltipTriggerEl)
+})
 </script>
 {% endblock %} 

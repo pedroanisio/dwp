@@ -27,7 +27,7 @@
             <div class="card-body">
                 <p class="card-text mb-4">{{ plugin.description }}</p>
                 
-                <form action="/plugin/{{ plugin.id }}/execute" method="post" id="pluginForm">
+                <form action="/plugin/{{ plugin.id }}/execute" method="post" enctype="multipart/form-data" id="pluginForm">
                     {% for input_field in plugin.inputs %}
                     <div class="mb-3">
                         <label for="{{ input_field.name }}" class="form-label">
