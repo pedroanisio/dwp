@@ -124,7 +124,21 @@ The included `text_stat` plugin demonstrates the system capabilities:
       }
     }
   },
-  "tags": ["category1", "category2"]
+  "tags": ["category1", "category2"],
+  "dependencies": {
+    "external": [
+      {
+        "name": "pandoc",
+        "help": "Pandoc is required. On Debian/Ubuntu, install with 'sudo apt-get install pandoc'."
+      }
+    ],
+    "python": [
+      {
+        "name": "numpy",
+        "help": "numpy==1.21.0"
+      }
+    ]
+  }
 }
 ```
 

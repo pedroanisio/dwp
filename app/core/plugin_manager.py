@@ -141,5 +141,13 @@ class PluginManager:
             elif input_field.field_type == "select":
                 if input_field.options and field_value not in input_field.options:
                     return f"Field '{field_name}' must be one of: {', '.join(input_field.options)}"
-        
+            
+            elif input_field.field_type == "file" and input_field.validation:
+                allowed_extensions = input_field.validation.get("allowed_extensions")
+                if allowed_extensions and isinstance(field_value, dict):
+                    filename = field_value.get("filename", "")
+                    file_ext = filename.split(".")[-1].lower()
+                    if file_ext not in allowed_extensions:
+                        return f"Invalid file type for '{field_name}'. Allowed types are: {', '.join(allowed_extensions)}"
+
         return None 

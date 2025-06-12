@@ -99,6 +99,9 @@
                                    class="form-control" 
                                    id="{{ input_field.name }}" 
                                    name="{{ input_field.name }}"
+                                   {% if input_field.validation and input_field.validation.allowed_extensions %}
+                                   accept=".{{ input_field.validation.allowed_extensions | join(',.') }}"
+                                   {% endif %}
                                    {% if input_field.required %}required{% endif %}>
                         {% endif %}
                         
@@ -116,7 +119,7 @@
                     {% endfor %}
                     
                     <div class="d-grid gap-2 d-md-flex justify-content-md-end">
-                        <button type="submit" class="btn btn-primary btn-lg">
+                        <button type="submit" class="btn btn-primary btn-lg" id="executeBtn">
                             <i class="bi bi-play-circle me-2"></i>
                             Execute Plugin
                         </button>
@@ -200,14 +203,29 @@
 
 {% block extra_scripts %}
 <script>
-// Add form validation
-document.getElementById('pluginForm').addEventListener('submit', function(e) {
-    const form = e.target;
-    const submitBtn = form.querySelector('button[type="submit"]');
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('pluginForm');
+    const btn = document.getElementById('executeBtn');
     
-    // Show loading state
-    submitBtn.innerHTML = '<i class="bi bi-hourglass-split me-2"></i>Processing...';
-    submitBtn.disabled = true;
+    if (form) {
+        form.addEventListener('submit', function() {
+            if (btn) {
+                btn.disabled = true;
+                btn.innerHTML = `
+                    <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                    Processing...
+                `;
+            }
+        });
+    }
+
+    // Reset button state on page load (e.g., when using back button)
+    window.addEventListener('pageshow', function(event) {
+        if (btn) {
+            btn.disabled = false;
+            btn.innerHTML = 'Execute Plugin';
+        }
+    });
 });
 </script>
 {% endblock %} 
