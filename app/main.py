@@ -42,6 +42,12 @@ async def home(request: Request):
     })
 
 
+@app.get("/how-to", response_class=HTMLResponse)
+async def how_to_page(request: Request):
+    """How-to page for building and testing plugins"""
+    return templates.TemplateResponse("how-to.html", {"request": request})
+
+
 @app.get("/api/plugins", response_model=PluginListResponse)
 async def get_plugins():
     """API endpoint to get all available plugins"""

@@ -1,0 +1,181 @@
+{% extends "base.html" %}
+
+{% block title %}How to Build and Test Plugins{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="card bg-light border-dark">
+        <div class="card-header">
+            <h1 class="card-title">How to Build and Test Plugins</h1>
+        </div>
+        <div class="card-body">
+            <p class="lead">Follow these steps to create, test, and troubleshoot your own custom plugins for our dynamic web application.</p>
+
+            <hr class="my-4">
+
+            <h2 class="mb-3">1. Plugin Development</h2>
+            <p>Each plugin lives in its own directory inside <code>app/plugins/</code> and consists of a manifest file and a Python script.</p>
+
+            <div class="accordion" id="development-steps">
+                <!-- Step 1 -->
+                <div class="accordion-item">
+                    <h2 class="accordion-header" id="headingOne">
+                        <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+                            <strong>Step 1: Create Your Plugin Directory</strong>
+                        </button>
+                    </h2>
+                    <div id="collapseOne" class="accordion-collapse collapse show" aria-labelledby="headingOne" data-bs-parent="#development-steps">
+                        <div class="accordion-body">
+                            <p>Create a new directory for your plugin inside <code>app/plugins/</code>. The directory name should be a unique identifier for your plugin.</p>
+                            <pre class="bg-dark text-white p-2 rounded"><code>app/plugins/your_plugin_id/</code></pre>
+                            <p>Inside this directory, you will need to create three files:</p>
+                            <ul>
+                                <li><code>__init__.py</code> (can be empty)</li>
+                                <li><code>manifest.json</code></li>
+                                <li><code>plugin.py</code></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 2 -->
+                <div class="accordion-item">
+                    <h2 class="accordion-header" id="headingTwo">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+                            <strong>Step 2: Define the Plugin Manifest (`manifest.json`)</strong>
+                        </button>
+                    </h2>
+                    <div id="collapseTwo" class="accordion-collapse collapse" aria-labelledby="headingTwo" data-bs-parent="#development-steps">
+                        <div class="accordion-body">
+                            <p>The <code>manifest.json</code> file defines your plugin's metadata, inputs, and outputs. The system uses this file to generate the UI and validate data.</p>
+                            <pre class="bg-dark text-white p-2 rounded"><code>{
+  "id": "your_plugin_id",
+  "name": "Your Plugin Name",
+  "version": "1.0.0",
+  "description": "A brief description of what your plugin does.",
+  "author": "Your Name",
+  "inputs": [
+    {
+      "name": "field_name",
+      "label": "Field Label",
+      "field_type": "textarea",
+      "required": true,
+      "placeholder": "Enter text...",
+      "validation": {
+        "min_length": 1,
+        "max_length": 1000
+      }
+    }
+  ],
+  "output": {
+    "name": "outputFormat",
+    "description": "Description of the output format.",
+    "schema": {
+      "type": "object",
+      "properties": {
+        "result": {"type": "string"}
+      }
+    }
+  },
+  "tags": ["category1", "category2"]
+}</code></pre>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 3 -->
+                <div class="accordion-item">
+                    <h2 class="accordion-header" id="headingThree">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
+                            <strong>Step 3: Implement the Plugin Logic (`plugin.py`)</strong>
+                        </button>
+                    </h2>
+                    <div id="collapseThree" class="accordion-collapse collapse" aria-labelledby="headingThree" data-bs-parent="#development-steps">
+                        <div class="accordion-body">
+                            <p>The <code>plugin.py</code> file must contain a <code>Plugin</code> class with an <code>execute</code> method. This method receives the user's input and returns a dictionary with the results.</p>
+                            <pre class="bg-dark text-white p-2 rounded"><code>from typing import Dict, Any
+
+class Plugin:
+    def execute(self, data: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Execute the plugin logic.
+        
+        Args:
+            data: A dictionary containing input field values.
+            
+        Returns:
+            A dictionary with results matching the output schema.
+        """
+        # Your plugin logic here
+        input_text = data.get('field_name', '')
+        
+        # Process the input
+        result = f"Processed: {input_text}"
+        
+        return {
+            "result": result
+        }
+</code></pre>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 4 -->
+                <div class="accordion-item">
+                    <h2 class="accordion-header" id="headingFour">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFour" aria-expanded="false" aria-controls="collapseFour">
+                            <strong>Step 4: Supported Input Field Types</strong>
+                        </button>
+                    </h2>
+                    <div id="collapseFour" class="accordion-collapse collapse" aria-labelledby="headingFour" data-bs-parent="#development-steps">
+                        <div class="accordion-body">
+                            <p>You can use the following field types in your manifest's <code>inputs</code> section:</p>
+                            <ul>
+                                <li><code>text</code>: Single-line text input</li>
+                                <li><code>textarea</code>: Multi-line text input</li>
+                                <li><code>number</code>: Numeric input</li>
+                                <li><code>select</code>: Dropdown selection</li>
+                                <li><code>checkbox</code>: Boolean checkbox</li>
+                                <li><code>file</code>: File upload</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <hr class="my-4">
+
+            <h2 class="mb-3">2. Testing Your Plugin</h2>
+            <p>Once your plugin is created, restart the application. It will be automatically discovered. You can test it using the web interface or the API.</p>
+
+            <h4 class="mt-3">Using the Web Interface</h4>
+            <ol>
+                <li>Navigate to the <a href="/">homepage</a>.</li>
+                <li>Find your plugin in the list and click "Use Plugin".</li>
+                <li>Fill out the form and click "Execute Plugin".</li>
+                <li>Review the results on the result page.</li>
+            </ol>
+
+            <h4 class="mt-3">Using the API with `curl`</h4>
+            <p>You can also test your plugin programmatically. First, get a list of all plugins to find your plugin's ID:</p>
+            <pre class="bg-dark text-white p-2 rounded"><code>curl http://localhost:8000/api/plugins</code></pre>
+            <p>Then, send a POST request to your plugin's execute endpoint:</p>
+            <pre class="bg-dark text-white p-2 rounded"><code>curl -X POST http://localhost:8000/api/plugin/your_plugin_id/execute \
+-H "Content-Type: application/json" \
+-d '{"field_name": "Hello from the API!"}'</code></pre>
+
+            <hr class="my-4">
+
+            <h2 class="mb-3">3. Troubleshooting</h2>
+            <div class="alert alert-warning">
+                <ul class="mb-0">
+                    <li><strong>Plugin Not Loading</strong>: Check your <code>manifest.json</code> syntax. Ensure your <code>plugin.py</code> has a <code>Plugin</code> class with an <code>execute</code> method. Verify the directory structure.</li>
+                    <li><strong>Validation Errors</strong>: Make sure the data you provide matches the input field types defined in the manifest. Ensure all required fields are provided.</li>
+                    <li><strong>Performance Issues</strong>: Monitor plugin execution time. Consider adding caching for frequently used operations and optimize your logic for large inputs.</li>
+                </ul>
+            </div>
+
+        </div>
+    </div>
+</div>
+{% endblock %} 
