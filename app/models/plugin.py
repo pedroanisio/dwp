@@ -21,6 +21,7 @@ class InputField(BaseModel):
     options: Optional[List[str]] = Field(default=None, description="Options for select fields")
     default_value: Optional[Union[str, int, bool]] = Field(default=None, description="Default value")
     validation: Optional[Dict[str, Any]] = Field(default=None, description="Validation rules")
+    help_text: Optional[str] = Field(default=None, description="Help text for the field", alias="help")
 
 
 class OutputFormat(BaseModel):

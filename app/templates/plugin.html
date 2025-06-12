@@ -115,6 +115,9 @@
                                 {% endif %}
                             </div>
                         {% endif %}
+                        {% if input_field.help_text %}
+                            <div class="form-text text-muted small mt-1">{{ input_field.help_text }}</div>
+                        {% endif %}
                     </div>
                     {% endfor %}
                     

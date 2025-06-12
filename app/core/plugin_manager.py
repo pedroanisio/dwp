@@ -135,7 +135,9 @@ class PluginManager:
                     return f"Field '{field_name}' must be a number"
             
             elif input_field.field_type == "checkbox":
-                if not isinstance(field_value, bool):
+                if isinstance(field_value, str):
+                    data[field_name] = field_value.lower() in ('true', 'on', 'yes', '1')
+                elif not isinstance(field_value, bool):
                     return f"Field '{field_name}' must be a boolean"
             
             elif input_field.field_type == "select":

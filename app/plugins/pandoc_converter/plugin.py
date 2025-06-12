@@ -8,6 +8,7 @@ class Plugin:
     def execute(self, data: Dict[str, Any]) -> Dict[str, Any]:
         input_file_info = data.get("input_file")
         output_format = data.get("output_format")
+        self_contained = data.get("self_contained", False)
 
         if not input_file_info or not output_format:
             raise ValueError("Missing input file or output format")
@@ -30,8 +31,12 @@ class Plugin:
             output_path = Path(temp_dir) / output_filename
             
             
+            command = ["pandoc", str(input_path), "-o", str(output_path)]
+            if self_contained:
+                command.append("--self-contained")
+            
             subprocess.run(
-                ["pandoc", str(input_path), "-o", str(output_path)],
+                command,
                 check=True
             )
 

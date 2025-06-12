@@ -112,6 +112,14 @@ The included `text_stat` plugin demonstrates the system capabilities:
         "min_length": 1,
         "max_length": 1000
       }
+    },
+    {
+      "name": "enable_feature",
+      "label": "Enable Feature",
+      "field_type": "checkbox",
+      "required": false,
+      "default_value": false,
+      "help": "Check this to enable a special feature."
     }
   ],
   "output": {

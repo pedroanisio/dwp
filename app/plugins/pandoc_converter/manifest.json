@@ -25,6 +25,14 @@
         "pdf", "html5", "docbook5", "epub", "markdown", "markdown_mmd", "markdown_strict", "json"
       ],
       "default_value": "pdf"
+    },
+    {
+      "name": "self_contained",
+      "label": "Self-Contained",
+      "field_type": "checkbox",
+      "required": false,
+      "default_value": false,
+      "help": "For HTML output, this embeds all assets like images and CSS into a single portable file."
     }
   ],
   "output": {
