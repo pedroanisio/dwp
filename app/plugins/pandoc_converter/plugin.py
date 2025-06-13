@@ -1,10 +1,26 @@
 from pathlib import Path
 import subprocess
 import tempfile
-from typing import Dict, Any
+from typing import Dict, Any, Type
 import os
+from pydantic import BaseModel, Field
+from ...models.plugin import BasePlugin, BasePluginResponse
 
-class Plugin:
+
+class PandocConverterResponse(BasePluginResponse):
+    """Pydantic model for pandoc converter plugin response"""
+    file_path: str = Field(..., description="Path to the converted file")
+    file_name: str = Field(..., description="Name of the converted file")
+
+
+class Plugin(BasePlugin):
+    """Pandoc File Converter Plugin - Converts files between markup formats using Pandoc"""
+    
+    @classmethod
+    def get_response_model(cls) -> Type[BasePluginResponse]:
+        """Return the Pydantic model for this plugin's response"""
+        return PandocConverterResponse
+    
     def execute(self, data: Dict[str, Any]) -> Dict[str, Any]:
         input_file_info = data.get("input_file")
         output_format = data.get("output_format")

@@ -1,7 +1,9 @@
 import xml.etree.ElementTree as ET
-from typing import List, Union, Optional, Dict, Any
+from typing import List, Union, Optional, Dict, Any, Type
 import tempfile
 from pathlib import Path
+from pydantic import BaseModel, Field
+from ...models.plugin import BasePlugin, BasePluginResponse
 
 from .models import (
     PrincipiaDocument, DocumentMetadata, ContentBlock, InlineContent,
@@ -68,9 +70,22 @@ def create_structured_dataset(xml_content: str) -> PrincipiaDocument:
     parsed_body = parse_element(body_element)
     return PrincipiaDocument(metadata=metadata, body=parsed_body)
 
-class Plugin:
-    def execute(self, data: Dict[str, Any
-                                 ]) -> Dict[str, Any]:
+
+class XmlToJsonResponse(BasePluginResponse):
+    """Pydantic model for XML to JSON converter plugin response"""
+    file_path: str = Field(..., description="Path to the converted JSON file")
+    file_name: str = Field(..., description="Name of the converted JSON file")
+
+
+class Plugin(BasePlugin):
+    """XML to Structured JSON Plugin - Converts XML documents into structured JSON format"""
+    
+    @classmethod
+    def get_response_model(cls) -> Type[BasePluginResponse]:
+        """Return the Pydantic model for this plugin's response"""
+        return XmlToJsonResponse
+    
+    def execute(self, data: Dict[str, Any]) -> Dict[str, Any]:
         file_info = data.get("input_file")
         if not file_info:
             raise ValueError("Missing XML file input")

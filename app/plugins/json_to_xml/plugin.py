@@ -1,8 +1,10 @@
 import json
 import xml.etree.ElementTree as ET
-from typing import Dict, Any, List
+from typing import Dict, Any, List, Type
 import tempfile
 from pathlib import Path
+from pydantic import BaseModel, Field
+from ...models.plugin import BasePlugin, BasePluginResponse
 
 # Use the pandoc library for parsing
 import pandoc
@@ -88,7 +90,21 @@ def _emit(root: ET.Element, node: Block, ignore_line_breaks: bool = False):
     else:
         ET.SubElement(root, "U", t=type(node).__name__)
 
-class Plugin:
+
+class JsonToXmlResponse(BasePluginResponse):
+    """Pydantic model for JSON to XML converter plugin response"""
+    file_path: str = Field(..., description="Path to the converted XML file")
+    file_name: str = Field(..., description="Name of the converted XML file")
+
+
+class Plugin(BasePlugin):
+    """Pandoc JSON to Mini XML Plugin - Converts Pandoc JSON documents into minimal XML format"""
+    
+    @classmethod
+    def get_response_model(cls) -> Type[BasePluginResponse]:
+        """Return the Pydantic model for this plugin's response"""
+        return JsonToXmlResponse
+    
     def execute(self, data: Dict[str, Any]) -> Dict[str, Any]:
         file_info = data.get("input_file")
         if not file_info:

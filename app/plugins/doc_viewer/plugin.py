@@ -1,11 +1,26 @@
 import json
-from typing import Dict, Any
+from typing import Dict, Any, Type
+from pydantic import BaseModel, Field
+from ...models.plugin import BasePlugin, BasePluginResponse
 from .models import PrincipiaDocument
 
-class Plugin:
+
+class DocViewerResponse(BasePluginResponse):
+    """Pydantic model for document viewer plugin response"""
+    custom_template: str = Field(..., description="Name of the custom template to use for rendering")
+    document: Dict[str, Any] = Field(..., description="Document data for rendering")
+
+
+class Plugin(BasePlugin):
     """
     Document Viewer Plugin - Renders a structured JSON document.
     """
+    
+    @classmethod
+    def get_response_model(cls) -> Type[BasePluginResponse]:
+        """Return the Pydantic model for this plugin's response"""
+        return DocViewerResponse
+    
     def execute(self, data: Dict[str, Any]) -> Dict[str, Any]:
         """
         Loads the JSON file and returns the data along with a
