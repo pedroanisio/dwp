@@ -1,177 +1,174 @@
 {% extends "base.html" %}
 
-{% block title %}Home - Plugin System{% endblock %}
+{% block title %}NEURAL PLUGIN MATRIX - HOME{% endblock %}
+
+{% block hero %}
+<section class="hero">
+    <div class="container">
+        <h1>DYNAMIC NEURAL PLUGIN MATRIX</h1>
+        <p>FastAPI + Pydantic neural interface architecture. Real-time plugin discovery and execution in the digital frontier.</p>
+        <div class="mt-4">
+            <a href="#plugins" class="btn btn-primary">ACCESS PLUGINS</a>
+            <a href="/how-to" class="btn btn-secondary">INTERFACE GUIDE</a>
+        </div>
+    </div>
+</section>
+{% endblock %}
 
 {% block content %}
-<div class="row">
-    <div class="col-12">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h1 class="display-4">
-                <i class="bi bi-puzzle text-primary me-3"></i>
-                Plugin System
-            </h1>
-            <button class="btn btn-outline-primary" onclick="refreshPlugins()">
-                <i class="bi bi-arrow-clockwise me-1"></i>
-                Refresh
-            </button>
+<div class="container">
+    <section id="plugins" class="mt-5 mb-5">
+        <h2 class="text-center mb-4">AVAILABLE NEURAL MODULES</h2>
+        
+        <div class="row">
+            {% for plugin in plugins %}
+            <div class="col-12 col-md-6 col-lg-4 mb-4">
+                <div class="card fade-in">
+                    <div class="card-header">
+                        <h5 class="card-title">{{ plugin.name|upper }}</h5>
+                        <small class="text-secondary">Version {{ plugin.version }}</small>
+                    </div>
+                    <div class="card-body">
+                        <p>{{ plugin.description }}</p>
+                        
+                        {% if plugin.tags %}
+                        <div class="mb-3">
+                            {% for tag in plugin.tags %}
+                                <span class="badge">{{ tag|upper }}</span>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                        
+                        <!-- Plugin Status Indicator -->
+                        <div class="mb-3">
+                            <strong class="text-primary">System Status:</strong>
+                            {% if plugin.dependency_status and plugin.dependency_status.all_met %}
+                                <span class="text-success">OPERATIONAL</span>
+                            {% else %}
+                                <span class="text-accent">DEPENDENCY ERROR</span>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Plugin Info Grid -->
+                        <dl class="mb-3">
+                            <dt>Plugin ID:</dt>
+                            <dd><code>{{ plugin.id }}</code></dd>
+                            
+                            <dt>Input Fields:</dt>
+                            <dd>{{ plugin.inputs|length }} field(s)</dd>
+                            
+                            <dt>Output Format:</dt>
+                            <dd>{{ plugin.output.name }}</dd>
+                            
+                            {% if plugin.author %}
+                            <dt>Author:</dt>
+                            <dd>{{ plugin.author }}</dd>
+                            {% endif %}
+                        </dl>
+                        
+                        <!-- Dependencies Status -->
+                        {% if plugin.dependency_status and plugin.dependency_status.details %}
+                        <div class="mb-3">
+                            <strong class="text-primary">Dependencies:</strong>
+                            {% for dep in plugin.dependency_status.details %}
+                                <div class="text-secondary">
+                                    {{ dep.name }}: 
+                                    {% if dep.met %}
+                                        <span class="text-success">✓ INSTALLED</span>
+                                    {% else %}
+                                        <span class="text-accent">✗ MISSING</span>
+                                    {% endif %}
+                                </div>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                        
+                        <div class="text-center">
+                            {% if plugin.dependency_status and plugin.dependency_status.all_met %}
+                                <a href="/plugin/{{ plugin.id }}" class="btn btn-primary">EXECUTE MODULE</a>
+                            {% else %}
+                                <button class="btn btn-primary" disabled>DEPENDENCIES REQUIRED</button>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
         </div>
         
-        <p class="lead text-muted mb-5">
-            A FastAPI + Pydantic web application featuring a dynamic plugin system. 
-            Each plugin defines its own UI components and output specifications.
-        </p>
-    </div>
-</div>
-
-{% if plugins %}
-<div class="row">
-    <div class="col-12">
-        <h2 class="mb-4">
-            <i class="bi bi-grid-3x3-gap me-2"></i>
-            Available Plugins ({{ plugins|length }})
-        </h2>
-    </div>
-</div>
-
-<div class="row">
-    {% for plugin in plugins %}
-    <div class="col-md-6 col-lg-4 mb-4">
-        <div class="card h-100 shadow-sm">
-            <div class="card-header bg-light">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h5 class="card-title mb-0">{{ plugin.name }}</h5>
-                    <span class="badge bg-primary">{{ plugin.version }}</span>
-                </div>
-                <p class="card-text">{{ plugin.description }}</p>
-
-                {% if plugin.dependencies %}
-                <div class="dependencies mt-3">
-                    <h6 class="mb-2">Dependencies:</h6>
-                    <ul class="list-unstyled">
-                        {% if plugin.dependencies.external %}
-                        <li><strong>External:</strong>
-                            {% for dep in plugin.dependencies.external %}
-                            <span class="badge 
-                                {% set dep_status = plugin.dependency_status.details | selectattr('name', 'equalto', dep.name) | first %}
-                                {{ 'bg-success' if dep_status and dep_status.met else 'bg-danger' }}">
-                                {{ dep.name }}
-                                <i class="bi bi-info-circle-fill" 
-                                   data-bs-toggle="tooltip" 
-                                   data-bs-placement="top" 
-                                   title="{{ dep.help_text }}"></i>
-                            </span>
-                            {% endfor %}
-                        </li>
-                        {% endif %}
-                        {% if plugin.dependencies.python %}
-                        <li><strong>Python:</strong>
-                            {% for dep in plugin.dependencies.python %}
-                            <span class="badge bg-info">{{ dep }}</span>
-                            {% endfor %}
-                        </li>
-                        {% endif %}
-                    </ul>
-                </div>
-                {% endif %}
-
-                <div class="tags mt-3">
-                    {% for tag in plugin.tags %}
-                    <span class="badge bg-light text-dark border">{{ tag }}</span>
-                    {% endfor %}
+        {% if not plugins %}
+        <div class="text-center p-5">
+            <div class="card">
+                <div class="card-body">
+                    <h3 class="text-accent">NO NEURAL MODULES DETECTED</h3>
+                    <p class="text-secondary">System scan complete. No plugins found in neural matrix.</p>
+                    <p class="text-secondary">Check plugin directory: <code>app/plugins/</code></p>
+                    <a href="/how-to" class="btn btn-outline">LEARN TO BUILD MODULES</a>
                 </div>
             </div>
-            <div class="card-body">
-                <div class="small text-muted mb-3">
-                    <div><strong>Inputs:</strong> {{ plugin.inputs|length }} field(s)</div>
-                    <div><strong>Output:</strong> {{ plugin.output.name }}</div>
-                    {% if plugin.author %}
-                    <div><strong>Author:</strong> {{ plugin.author }}</div>
-                    {% endif %}
+        </div>
+        {% endif %}
+    </section>
+    
+    <!-- System Stats Section -->
+    <section class="mt-5 mb-5">
+        <div class="row">
+            <div class="col-12 col-md-4 mb-3">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <h3 class="text-primary">{{ plugins|length }}</h3>
+                        <p class="text-secondary">ACTIVE MODULES</p>
+                    </div>
                 </div>
             </div>
-            <div class="card-footer bg-transparent border-top-0 text-end">
-                <a href="/plugin/{{ plugin.id }}" class="btn btn-sm 
-                    {% if plugin.dependency_status and not plugin.dependency_status.all_met %}
-                    btn-secondary disabled
-                    {% else %}
-                    btn-outline-primary
-                    {% endif %}">Use Plugin</a>
-                <a href="/api/plugin/{{ plugin.id }}" target="_blank" class="btn btn-outline-secondary btn-sm ms-2">
-                    <i class="bi bi-code me-1"></i>
-                    API
-                </a>
+            <div class="col-12 col-md-4 mb-3">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <h3 class="text-success">{{ plugins|selectattr('dependency_status.all_met')|list|length }}</h3>
+                        <p class="text-secondary">OPERATIONAL</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-12 col-md-4 mb-3">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <h3 class="text-accent">{{ plugins|rejectattr('dependency_status.all_met')|list|length }}</h3>
+                        <p class="text-secondary">ERRORS DETECTED</p>
+                    </div>
+                </div>
             </div>
         </div>
-    </div>
-    {% endfor %}
-</div>
-{% else %}
-<div class="row">
-    <div class="col-12">
-        <div class="alert alert-warning text-center">
-            <i class="bi bi-exclamation-triangle fs-1 text-warning mb-3"></i>
-            <h4>No Plugins Found</h4>
-            <p class="mb-0">No plugins are currently available. Please check the plugins directory.</p>
-        </div>
-    </div>
-</div>
-{% endif %}
-
-<!-- Features Section -->
-<div class="row mt-5">
-    <div class="col-12">
-        <h2 class="mb-4">
-            <i class="bi bi-star me-2"></i>
-            Features
-        </h2>
-    </div>
-</div>
-
-<div class="row">
-    <div class="col-md-4 mb-3">
-        <div class="feature-box text-center p-4">
-            <i class="bi bi-lightning-charge fs-1 text-primary mb-3"></i>
-            <h5>Dynamic Loading</h5>
-            <p class="text-muted">Plugins are loaded dynamically at runtime with automatic discovery.</p>
-        </div>
-    </div>
-    <div class="col-md-4 mb-3">
-        <div class="feature-box text-center p-4">
-            <i class="bi bi-shield-check fs-1 text-success mb-3"></i>
-            <h5>Type Safety</h5>
-            <p class="text-muted">Full Pydantic validation ensures type safety and data integrity.</p>
-        </div>
-    </div>
-    <div class="col-md-4 mb-3">
-        <div class="feature-box text-center p-4">
-            <i class="bi bi-palette fs-1 text-info mb-3"></i>
-            <h5>Custom UI</h5>
-            <p class="text-muted">Each plugin defines its own UI components and output format.</p>
-        </div>
-    </div>
+    </section>
 </div>
 {% endblock %}
 
 {% block extra_scripts %}
 <script>
-async function refreshPlugins() {
-    try {
-        const response = await fetch('/api/refresh-plugins', {
-            method: 'POST'
-        });
-        const result = await response.json();
-        if (result.success) {
-            location.reload();
+// Intersection Observer for card animations
+const observerCyber = new IntersectionObserver((entries) => {
+    entries.forEach((entry, index) => {
+        if (entry.isIntersecting) {
+            setTimeout(() => {
+                entry.target.style.animation = 'fadeInCyber 1s ease-out both';
+            }, index * 200);
         }
-    } catch (error) {
-        console.error('Error refreshing plugins:', error);
-    }
-}
+    });
+}, {
+    threshold: 0.1,
+    rootMargin: '0px 0px -50px 0px'
+});
 
-// Initialize tooltips
-var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
-var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
-    return new bootstrap.Tooltip(tooltipTriggerEl)
-})
+// Observe cards for animation
+document.querySelectorAll('.card').forEach(card => {
+    observerCyber.observe(card);
+});
+
+// Smooth scroll for "ACCESS PLUGINS" button
+document.querySelector('a[href="#plugins"]').addEventListener('click', function(e) {
+    e.preventDefault();
+    document.querySelector('#plugins').scrollIntoView({
+        behavior: 'smooth'
+    });
+});
 </script>
 {% endblock %} 

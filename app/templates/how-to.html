@@ -1,161 +1,420 @@
 {% extends "base.html" %}
 
-{% block title %}How to Build Plugins{% endblock %}
+{% block title %}NEURAL INTERFACE GUIDE{% endblock %}
 
 {% block content %}
-<div class="container mt-5">
-    <div class="card bg-light border-dark">
-        <div class="card-header">
-            <h1 class="card-title">How to Build a New Plugin</h1>
+<div class="container">
+    <!-- Hero Section -->
+    <div class="hero" style="padding: 80px 0;">
+        <div class="text-center">
+            <h1 class="glitch" data-text="NEURAL INTERFACE GUIDE">NEURAL INTERFACE GUIDE</h1>
+            <p class="text-secondary">Complete documentation for building and deploying neural plugin modules</p>
         </div>
-        <div class="card-body">
-            <p class="lead">This guide provides a complete walkthrough of how to create, test, and troubleshoot your own custom plugins.</p>
+    </div>
 
-            <hr class="my-4">
+    <div class="row">
+        <div class="col-12 col-lg-9">
+            <!-- Introduction Card -->
+            <div class="card mb-5">
+                <div class="card-header">
+                    <h2 class="card-title">SYSTEM OVERVIEW</h2>
+                </div>
+                <div class="card-body">
+                    <p>This neural interface guide provides complete specifications for creating, testing, and deploying custom plugin modules within the matrix. Each module is an autonomous unit with defined inputs, outputs, and processing capabilities.</p>
+                    
+                    <div class="alert alert-primary mt-3">
+                        <strong>⚡ NEURAL ARCHITECTURE:</strong> All modules are self-contained within the <code>app/plugins/</code> directory and auto-discovered by the system matrix.
+                    </div>
+                </div>
+            </div>
 
-            <h2 class="mb-3">1. The Anatomy of a Plugin</h2>
-            <p>Every plugin is self-contained within its own directory inside <code>app/plugins/</code>. At a minimum, a plugin must include two files:</p>
-            <ul>
-                <li><code>manifest.json</code>: A JSON file that defines the plugin's metadata, UI, and dependencies.</li>
-                <li><code>plugin.py</code>: A Python script that contains the core logic of the plugin.</li>
-            </ul>
-            <p>For Python-based plugins that have their own internal modules, you should also include an empty <code>__init__.py</code> file in the same directory.</p>
+            <!-- Plugin Anatomy -->
+            <div class="card mb-5">
+                <div class="card-header">
+                    <h2 class="card-title">MODULE ARCHITECTURE</h2>
+                </div>
+                <div class="card-body">
+                    <p>Every neural module requires two core components for system integration:</p>
+                    
+                    <div class="row mt-4">
+                        <div class="col-12 col-md-6">
+                            <div class="alert alert-secondary">
+                                <h4 class="text-primary">manifest.json</h4>
+                                <p class="mb-0">Defines module metadata, UI specifications, and dependency requirements for system integration.</p>
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <div class="alert alert-secondary">
+                                <h4 class="text-accent">plugin.py</h4>
+                                <p class="mb-0">Contains the core processing logic and execution algorithms for the neural module.</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="alert alert-success mt-3">
+                        <strong>NOTE:</strong> For modules with internal Python packages, include an empty <code>__init__.py</code> file in the module directory.
+                    </div>
+                </div>
+            </div>
 
-            <div class="accordion" id="development-steps">
-                
-                <!-- Step 1: Manifest -->
-                <div class="accordion-item">
-                    <h2 class="accordion-header" id="headingOne">
-                        <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
-                            <strong>Step 1: Define the Manifest (`manifest.json`)</strong>
-                        </button>
-                    </h2>
-                    <div id="collapseOne" class="accordion-collapse collapse show" aria-labelledby="headingOne" data-bs-parent="#development-steps">
-                        <div class="accordion-body">
-                            <p>The <code>manifest.json</code> file is the heart of your plugin. It tells the system everything it needs to know to render the UI, validate inputs, and execute your code. Below is an example from the Pandoc Converter plugin:</p>
-                            <pre class="bg-dark text-white p-2 rounded"><code>{
-  "id": "pandoc_converter",
-  "name": "Pandoc Document Converter",
-  "version": "1.0.0",
-  "description": "Converts documents from one format to another using Pandoc.",
-  "author": "AI Assistant",
+            <!-- Development Steps -->
+            <div class="card mb-5">
+                <div class="card-header">
+                    <h2 class="card-title">DEVELOPMENT PROTOCOL</h2>
+                </div>
+                <div class="card-body">
+                    
+                    <!-- Step 1: Manifest -->
+                    <div class="accordion mb-4">
+                        <div class="accordion-header">
+                            <button type="button" class="accordion-button" onclick="toggleStep('step1')">
+                                STEP 1: DEFINE MANIFEST SPECIFICATIONS
+                            </button>
+                        </div>
+                        <div id="step1" class="accordion-body" style="display: none;">
+                            <p>The <code>manifest.json</code> file serves as the neural interface definition. It specifies all metadata, UI components, validation rules, and system dependencies.</p>
+                            
+                            <h5 class="text-primary mt-4">EXAMPLE MANIFEST:</h5>
+                            <pre><code>{
+  "id": "neural_processor",
+  "name": "Neural Data Processor",
+  "version": "2.0.0",
+  "description": "Advanced neural network processing module with real-time analysis.",
+  "author": "Neural Systems Division",
   "inputs": [
     {
-      "name": "input_file",
-      "label": "Source Document",
-      "field_type": "file",
+      "name": "input_data",
+      "label": "Data Input Stream",
+      "field_type": "textarea",
       "required": true,
-      "help": "Upload the document you want to convert."
+      "placeholder": "Enter neural data for processing...",
+      "validation": {
+        "min_length": 10,
+        "max_length": 50000
+      },
+      "help": "Raw data input for neural processing algorithms."
     },
     {
-      "name": "output_format",
-      "label": "Output Format",
+      "name": "processing_mode",
+      "label": "Processing Mode",
       "field_type": "select",
       "required": true,
-      "options": [
-        {"value": "docx", "label": "Word Document"},
-        {"value": "pdf", "label": "PDF"},
-        {"value": "html", "label": "HTML"},
-        {"value": "md", "label": "Markdown"}
-      ],
-      "default_value": "docx"
+      "options": ["STANDARD", "ENHANCED", "DEEP_ANALYSIS"],
+      "default_value": "STANDARD"
+    },
+    {
+      "name": "enable_optimization",
+      "label": "Enable Neural Optimization",
+      "field_type": "checkbox",
+      "required": false,
+      "default_value": true
     }
   ],
   "output": {
-    "name": "converted_file",
-    "description": "The converted output file."
+    "name": "neural_analysis_result",
+    "description": "Processed neural analysis with enhanced metrics",
+    "schema": {
+      "type": "object",
+      "properties": {
+        "analysis_score": {"type": "number"},
+        "confidence_level": {"type": "number"},
+        "processing_time": {"type": "number"},
+        "data_points": {"type": "array"}
+      }
+    }
   },
+  "tags": ["neural", "processing", "analysis"],
   "dependencies": {
-    "external": [{"name": "pandoc"}]
+    "external": [
+      {
+        "name": "tensorflow",
+        "help": "TensorFlow is required for neural processing. Install with: pip install tensorflow"
+      }
+    ]
   }
 }</code></pre>
                         </div>
                     </div>
-                </div>
 
-                <!-- Step 2: Plugin Logic -->
-                <div class="accordion-item">
-                    <h2 class="accordion-header" id="headingTwo">
-                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
-                            <strong>Step 2: Implement the Logic (`plugin.py`)</strong>
-                        </button>
-                    </h2>
-                    <div id="collapseTwo" class="accordion-collapse collapse" aria-labelledby="headingTwo" data-bs-parent="#development-steps">
-                        <div class="accordion-body">
-                            <p>The <code>plugin.py</code> file must contain a <code>Plugin</code> class with an <code>execute</code> method. This method takes a dictionary of the user's input and should return a dictionary containing the output.</p>
-                            <p>For plugins that generate a file, the `execute` method should return a dictionary with `file_path` and `file_name` keys.</p>
-                            <pre class="bg-dark text-white p-2 rounded"><code>from pathlib import Path
-import subprocess
-import tempfile
-from typing import Dict, Any
+                    <!-- Step 2: Plugin Logic -->
+                    <div class="accordion mb-4">
+                        <div class="accordion-header">
+                            <button type="button" class="accordion-button" onclick="toggleStep('step2')">
+                                STEP 2: IMPLEMENT PROCESSING LOGIC
+                            </button>
+                        </div>
+                        <div id="step2" class="accordion-body" style="display: none;">
+                            <p>The <code>plugin.py</code> file must implement a <code>Plugin</code> class with an <code>execute</code> method. This method processes input data and returns structured output.</p>
+                            
+                            <h5 class="text-primary mt-4">IMPLEMENTATION TEMPLATE:</h5>
+                            <pre><code>from typing import Dict, Any
+import time
+import json
 
 class Plugin:
+    """
+    Neural Processing Module
+    Handles data analysis and processing operations
+    """
+    
     def execute(self, data: Dict[str, Any]) -> Dict[str, Any]:
-        input_file = data.get("input_file")
-        output_format = data.get("output_format")
-
-        if not input_file or not output_format:
-            raise ValueError("Missing required inputs.")
-
-        # Create a temporary directory to store files
-        with tempfile.TemporaryDirectory() as temp_dir:
-            input_path = Path(temp_dir) / input_file["filename"]
-            with open(input_path, "wb") as f:
-                f.write(input_file["content"])
-
-            # Prepare the output path
-            output_filename = f"{input_path.stem}.{output_format}"
-            output_path = Path(temp_dir) / output_filename
+        """
+        Execute neural processing on input data
+        
+        Args:
+            data: Dictionary containing validated input parameters
             
-            # Execute the pandoc command
-            subprocess.run(
-                ["pandoc", str(input_path), "-o", str(output_path)],
-                check=True
-            )
-
-            # Return the path to the generated file
-            return {
-                "file_path": str(output_path),
-                "file_name": output_filename
-            }
+        Returns:
+            Dictionary with processing results
+        """
+        start_time = time.time()
+        
+        # Extract input parameters
+        input_data = data.get('input_data', '')
+        processing_mode = data.get('processing_mode', 'STANDARD')
+        enable_optimization = data.get('enable_optimization', False)
+        
+        # Validate inputs
+        if not input_data:
+            raise ValueError("Neural data input is required for processing")
+        
+        # Process data based on mode
+        if processing_mode == "ENHANCED":
+            result = self._enhanced_processing(input_data)
+        elif processing_mode == "DEEP_ANALYSIS":
+            result = self._deep_analysis(input_data)
+        else:
+            result = self._standard_processing(input_data)
+        
+        # Apply optimization if enabled
+        if enable_optimization:
+            result = self._optimize_result(result)
+        
+        processing_time = time.time() - start_time
+        
+        # Return structured output
+        return {
+            "analysis_score": result.get("score", 0.0),
+            "confidence_level": result.get("confidence", 0.0),
+            "processing_time": processing_time,
+            "data_points": result.get("points", []),
+            "optimization_applied": enable_optimization,
+            "processing_mode": processing_mode
+        }
+    
+    def _standard_processing(self, data: str) -> Dict[str, Any]:
+        """Standard neural processing algorithm"""
+        # Implement your processing logic here
+        return {
+            "score": len(data) * 0.1,
+            "confidence": 0.85,
+            "points": data.split()[:10]
+        }
+    
+    def _enhanced_processing(self, data: str) -> Dict[str, Any]:
+        """Enhanced neural processing with advanced algorithms"""
+        # Implement enhanced processing
+        return {
+            "score": len(data) * 0.15,
+            "confidence": 0.92,
+            "points": data.split()[:20]
+        }
+    
+    def _deep_analysis(self, data: str) -> Dict[str, Any]:
+        """Deep neural analysis with comprehensive metrics"""
+        # Implement deep analysis
+        return {
+            "score": len(data) * 0.25,
+            "confidence": 0.97,
+            "points": data.split()
+        }
+    
+    def _optimize_result(self, result: Dict[str, Any]) -> Dict[str, Any]:
+        """Apply neural optimization algorithms"""
+        result["score"] *= 1.2  # Apply optimization multiplier
+        result["confidence"] = min(result["confidence"] * 1.1, 1.0)
+        return result
 </code></pre>
+
+                            <div class="alert alert-primary mt-3">
+                                <strong>FILE OUTPUT:</strong> For modules that generate files, return a dictionary with <code>file_path</code> and <code>file_name</code> keys.
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <hr class="my-4">
-
-            <h2 class="mb-3">2. Testing Your Plugin</h2>
-            <p>To test your plugin, simply restart the web application. It will be automatically discovered and loaded. You can then test it using either the web interface or the API.</p>
-
-            <h4 class="mt-3">Via the Web Interface</h4>
-            <ol>
-                <li>Navigate to the <a href="/">homepage</a>.</li>
-                <li>Find your plugin and click "Use Plugin".</li>
-                <li>Fill out the form and click "Execute Plugin" to see the results.</li>
-            </ol>
-
-            <h4 class="mt-3">Via the API with `curl`</h4>
-            <p>You can also test your plugin programmatically. First, get the list of plugins to find your plugin's ID:</p>
-            <pre class="bg-dark text-white p-2 rounded"><code>curl http://localhost:8000/api/plugins</code></pre>
-            <p>Then, send a POST request to your plugin's `execute` endpoint. For file uploads, use the `-F` flag:</p>
-            <pre class="bg-dark text-white p-2 rounded"><code>curl -X POST -F "input_file=@/path/to/your/document.md" \
--F "output_format=docx" http://localhost:8000/api/plugin/pandoc_converter/execute \
---output converted_document.docx</code></pre>
-
-            <hr class="my-4">
-
-            <h2 class="mb-3">3. Troubleshooting Tips</h2>
-            <div class="alert alert-warning">
-                <ul class="mb-0">
-                    <li><strong>Plugin Not Loading</strong>: Double-check your <code>manifest.json</code> for syntax errors. Make sure your <code>plugin.py</code> has a <code>Plugin</code> class with a valid <code>execute</code> method.</li>
-                    <li><strong>Dependency Errors</strong>: If your plugin relies on external tools (like `pandoc`), make sure they are installed on the server and accessible in the system's `PATH`.
-                    <li><strong>Validation Errors</strong>: Ensure the data you provide matches the input types defined in your manifest. All required fields must be provided.</li>
-                </ul>
+            <!-- Testing Section -->
+            <div class="card mb-5">
+                <div class="card-header">
+                    <h2 class="card-title">TESTING PROTOCOLS</h2>
+                </div>
+                <div class="card-body">
+                    <p>Test your neural module using multiple validation methods to ensure proper system integration.</p>
+                    
+                    <div class="row mt-4">
+                        <div class="col-12 col-md-6">
+                            <h4 class="text-primary">WEB INTERFACE TESTING</h4>
+                            <ol class="text-secondary">
+                                <li>Navigate to the <a href="/" class="text-accent">Neural Matrix homepage</a></li>
+                                <li>Locate your module in the available modules list</li>
+                                <li>Click "EXECUTE MODULE" to access the interface</li>
+                                <li>Input test data and execute to validate functionality</li>
+                            </ol>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <h4 class="text-accent">API TESTING PROTOCOL</h4>
+                            <div class="mt-3">
+                                <strong>List available modules:</strong>
+                                <pre class="mt-2"><code>curl http://localhost:8000/api/plugins</code></pre>
+                                
+                                <strong class="mt-3 d-block">Execute module via API:</strong>
+                                <pre class="mt-2"><code>curl -X POST http://localhost:8000/api/plugin/neural_processor/execute \
+  -H "Content-Type: application/json" \
+  -d '{
+    "input_data": "Sample neural data for processing",
+    "processing_mode": "ENHANCED",
+    "enable_optimization": true
+  }'</code></pre>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
 
+            <!-- Troubleshooting -->
+            <div class="card mb-5">
+                <div class="card-header">
+                    <h2 class="card-title">SYSTEM DIAGNOSTICS</h2>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-12 col-md-4">
+                            <div class="alert alert-secondary">
+                                <h5 class="text-accent">MODULE NOT LOADING</h5>
+                                <ul class="mb-0 text-secondary">
+                                    <li>Validate <code>manifest.json</code> syntax</li>
+                                    <li>Verify <code>Plugin</code> class exists</li>
+                                    <li>Check <code>execute</code> method signature</li>
+                                    <li>Ensure directory structure is correct</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-4">
+                            <div class="alert alert-secondary">
+                                <h5 class="text-accent">DEPENDENCY ERRORS</h5>
+                                <ul class="mb-0 text-secondary">
+                                    <li>Install external dependencies</li>
+                                    <li>Verify system PATH configuration</li>
+                                    <li>Check dependency status in module info</li>
+                                    <li>Review dependency help messages</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-4">
+                            <div class="alert alert-secondary">
+                                <h5 class="text-accent">VALIDATION FAILURES</h5>
+                                <ul class="mb-0 text-secondary">
+                                    <li>Match input types to manifest specs</li>
+                                    <li>Provide all required fields</li>
+                                    <li>Check field validation rules</li>
+                                    <li>Verify file upload constraints</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="col-12 col-lg-3">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title">QUICK REFERENCE</h5>
+                </div>
+                <div class="card-body">
+                    <h6 class="text-primary">FIELD TYPES</h6>
+                    <ul class="list-group mb-3">
+                        <li class="list-group-item">text</li>
+                        <li class="list-group-item">textarea</li>
+                        <li class="list-group-item">number</li>
+                        <li class="list-group-item">select</li>
+                        <li class="list-group-item">checkbox</li>
+                        <li class="list-group-item">file</li>
+                    </ul>
+                    
+                    <h6 class="text-primary">REQUIRED FILES</h6>
+                    <ul class="list-group mb-3">
+                        <li class="list-group-item">manifest.json</li>
+                        <li class="list-group-item">plugin.py</li>
+                        <li class="list-group-item">__init__.py (optional)</li>
+                    </ul>
+                    
+                    <h6 class="text-primary">SYSTEM ENDPOINTS</h6>
+                    <ul class="list-group">
+                        <li class="list-group-item">GET /api/plugins</li>
+                        <li class="list-group-item">POST /api/plugin/{id}/execute</li>
+                        <li class="list-group-item">GET /plugin/{id}</li>
+                    </ul>
+                </div>
+            </div>
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+// Toggle accordion steps
+function toggleStep(stepId) {
+    const element = document.getElementById(stepId);
+    const button = event.target;
+    
+    if (element.style.display === 'none') {
+        element.style.display = 'block';
+        button.textContent = button.textContent.replace('DEFINE', 'HIDE').replace('IMPLEMENT', 'HIDE');
+    } else {
+        element.style.display = 'none';
+        button.textContent = button.textContent.replace('HIDE', 'DEFINE').replace('HIDE', 'IMPLEMENT');
+    }
+}
+
+// Initialize page
+document.addEventListener('DOMContentLoaded', function() {
+    // Animate cards on load
+    document.querySelectorAll('.card').forEach((card, index) => {
+        card.style.animation = `fadeInCyber 0.8s ease-out ${index * 0.1}s both`;
+    });
+    
+    // Random glitch effect for title
+    setTimeout(() => {
+        const title = document.querySelector('.glitch');
+        if (title) {
+            title.style.animation = 'glitch-1 0.5s ease-in-out';
+            setTimeout(() => {
+                title.style.animation = '';
+            }, 500);
+        }
+    }, 2000);
+});
+
+// Copy code to clipboard
+document.querySelectorAll('pre code').forEach(codeBlock => {
+    codeBlock.addEventListener('click', function() {
+        navigator.clipboard.writeText(this.textContent).then(() => {
+            // Visual feedback
+            const original = this.style.background;
+            this.style.background = 'rgba(0, 245, 255, 0.2)';
+            setTimeout(() => {
+                this.style.background = original;
+            }, 500);
+        });
+    });
+    
+    // Add hover effect
+    codeBlock.style.cursor = 'pointer';
+    codeBlock.title = 'Click to copy';
+});
+</script>
 {% endblock %} 

@@ -3,38 +3,39 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Plugin System{% endblock %}</title>
+    <title>{% block title %}NEURAL PLUGIN SYSTEM{% endblock %}</title>
     
-    <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Bootstrap Icons -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
-    <!-- Custom CSS -->
-    <link href="{{ url_for('static', path='/css/style.css') }}" rel="stylesheet">
+    <!-- Cyberpunk Design System CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', path='/css/cyberpunk.css') }}">
     
+    <!-- Google Fonts for Roboto Mono -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@300;400;500;600;700;900&display=swap" rel="stylesheet">
+    
+    {% block extra_styles %}{% endblock %}
     {% block extra_head %}{% endblock %}
 </head>
 <body>
-    <!-- Navigation -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
-        <div class="container">
-            <a class="navbar-brand" href="/">
-                <i class="bi bi-puzzle me-2"></i>
-                Plugin System
+    <!-- Cyberpunk Navigation -->
+    <nav>
+        <div>
+            <a href="/" class="glitch" data-text="NEURAL SYSTEMS">
+                NEURAL SYSTEMS
             </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
+            <button type="button" style="display: none;">
+                <span></span>
             </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
-                    <li class="nav-item">
-                        <a class="nav-link" href="/">Home</a>
+            <div id="navbarNav">
+                <ul>
+                    <li>
+                        <a href="/">HOME</a>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="/how-to">How-to Guide</a>
+                    <li>
+                        <a href="/how-to">INTERFACE GUIDE</a>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="/docs" target="_blank">API Docs</a>
+                    <li>
+                        <a href="/docs" target="_blank">API MATRIX</a>
                     </li>
                 </ul>
             </div>
@@ -42,24 +43,62 @@
     </nav>
 
     <!-- Main Content -->
-    <main class="container my-4">
+    <main>
+        {% block hero %}{% endblock %}
         {% block content %}{% endblock %}
     </main>
 
-    <!-- Footer -->
-    <footer class="bg-light mt-5 py-4">
-        <div class="container text-center">
-            <p class="text-muted mb-0">
-                <i class="bi bi-gear me-1"></i>
-                FastAPI + Pydantic Plugin System Demo
+    <!-- Cyberpunk Footer -->
+    <footer>
+        <div class="container">
+            <p>
+                ⚡ FASTAPI + PYDANTIC NEURAL PLUGIN MATRIX ⚡<br>
+                <small>System Status: <span class="text-success">OPERATIONAL</span> | Timestamp: <span id="timestamp"></span></small>
             </p>
         </div>
     </footer>
 
-    <!-- Bootstrap JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <!-- Custom JS -->
+    <!-- Cyberpunk JS Effects -->
     <script src="{{ url_for('static', path='/js/app.js') }}"></script>
+    <script>
+        // Update timestamp
+        function updateTimestamp() {
+            const now = new Date();
+            const timestamp = now.getFullYear() + '.' + 
+                             String(now.getMonth() + 1).padStart(2, '0') + '.' + 
+                             String(now.getDate()).padStart(2, '0') + '.' + 
+                             String(now.getHours()).padStart(2, '0') + ':' + 
+                             String(now.getMinutes()).padStart(2, '0') + ':' + 
+                             String(now.getSeconds()).padStart(2, '0');
+            document.getElementById('timestamp').textContent = timestamp;
+        }
+        
+        // Update timestamp every second
+        setInterval(updateTimestamp, 1000);
+        updateTimestamp();
+        
+        // Random glitch effect for navigation
+        setInterval(() => {
+            if (Math.random() < 0.05) { // 5% chance every 3 seconds
+                const logo = document.querySelector('.glitch');
+                if (logo) {
+                    logo.style.animation = 'glitch-1 0.3s ease-in-out';
+                    setTimeout(() => {
+                        logo.style.animation = '';
+                    }, 300);
+                }
+            }
+        }, 3000);
+        
+        // Header scroll effect
+        window.addEventListener('scroll', () => {
+            const nav = document.querySelector('nav');
+            const scrollPercent = window.scrollY / 100;
+            const glowIntensity = Math.min(scrollPercent * 0.3, 0.3);
+            
+            nav.style.boxShadow = `0 4px 20px rgba(0, 245, 255, ${glowIntensity})`;
+        });
+    </script>
     
     {% block extra_scripts %}{% endblock %}
 </body>

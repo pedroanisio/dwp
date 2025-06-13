@@ -1,307 +1,358 @@
 {% extends "base.html" %}
 
-{% block title %}Results - {{ plugin.name }}{% endblock %}
+{% block title %}EXECUTION RESULTS - {{ plugin.name|upper }}{% endblock %}
 
 {% block content %}
-<div class="row">
-    <div class="col-12">
-        <nav aria-label="breadcrumb">
-            <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a href="/">Home</a></li>
-                <li class="breadcrumb-item"><a href="/plugin/{{ plugin.id }}">{{ plugin.name }}</a></li>
-                <li class="breadcrumb-item active">Results</li>
-            </ol>
-        </nav>
+<div class="container">
+    <!-- Breadcrumb Navigation -->
+    <div class="breadcrumb mt-3">
+        <ol>
+            <li><a href="/">NEURAL MATRIX</a></li>
+            <li><a href="/plugin/{{ plugin.id }}">{{ plugin.name|upper }}</a></li>
+            <li>EXECUTION RESULTS</li>
+        </ol>
     </div>
-</div>
 
-<div class="row">
-    <div class="col-12">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h1 class="display-6">
-                <i class="bi bi-file-earmark-text me-2"></i>
-                Execution Results
-            </h1>
-            <div>
-                <a href="/plugin/{{ plugin.id }}" class="btn btn-outline-primary me-2">
-                    <i class="bi bi-arrow-left me-1"></i>
-                    Try Again
+    <!-- Header Section -->
+    <div class="hero" style="padding: 60px 0;">
+        <div class="text-center">
+            <h1 class="glitch" data-text="EXECUTION RESULTS">EXECUTION RESULTS</h1>
+            <div class="mt-4">
+                <a href="/plugin/{{ plugin.id }}" class="btn btn-primary">
+                    RE-EXECUTE MODULE
                 </a>
-                <a href="/" class="btn btn-outline-secondary">
-                    <i class="bi bi-house me-1"></i>
-                    Home
+                <a href="/" class="btn btn-secondary">
+                    RETURN TO MATRIX
                 </a>
             </div>
         </div>
     </div>
-</div>
 
-<!-- Execution Status -->
-<div class="row mb-4">
-    <div class="col-12">
-        {% if result.success %}
-            <div class="alert alert-success d-flex align-items-center">
-                <i class="bi bi-check-circle-fill fs-4 me-3"></i>
-                <div>
-                    <strong>Execution Successful!</strong>
+    <!-- Execution Status Section -->
+    <div class="row mb-5">
+        <div class="col-12">
+            {% if result.success %}
+                <div class="alert alert-success">
+                    <h3>⚡ EXECUTION SUCCESSFUL</h3>
+                    <p>Neural module processed data successfully. Operation completed without errors.</p>
                     {% if result.execution_time %}
-                        <div class="small">Completed in {{ "%.3f"|format(result.execution_time) }}s</div>
+                        <div class="mt-2">
+                            <strong>Processing Time:</strong> 
+                            <code>{{ "%.3f"|format(result.execution_time) }}s</code>
+                        </div>
                     {% endif %}
                 </div>
-            </div>
-        {% else %}
-            <div class="alert alert-danger">
-                <h4 class="alert-heading">Execution Failed</h4>
-                <p>The plugin encountered an error.</p>
-                <hr>
-                <div class="d-flex justify-content-between align-items-center">
-                    <p class="mb-0"><strong>Error details:</strong> <code id="error-text">{{ result.error }}</code></p>
-                    <button class="btn btn-sm btn-outline-secondary" onclick="copyToClipboard()" 
-                            data-bs-toggle="tooltip" data-bs-placement="top" title="Copy error" id="copyBtn">
-                        <i class="bi bi-clipboard"></i>
-                    </button>
+            {% else %}
+                <div class="alert alert-secondary">
+                    <h3>⚠️ EXECUTION FAILED</h3>
+                    <p>The neural module encountered a critical error during processing.</p>
+                    <div class="mt-3">
+                        <strong class="text-primary">Error Details:</strong>
+                        <div class="mt-2">
+                            <code id="error-text" class="d-block p-3" style="background: var(--darker-bg); border: 1px solid var(--border-glow); white-space: pre-wrap;">{{ result.error }}</code>
+                        </div>
+                        <button class="btn btn-outline mt-2" onclick="copyToClipboard()" id="copyBtn">
+                            COPY ERROR LOG
+                        </button>
+                    </div>
                 </div>
-            </div>
-        {% endif %}
+            {% endif %}
+        </div>
     </div>
-</div>
 
-{% if result.success and result.data %}
-<div class="row">
-    <div class="col-lg-8">
+    {% if result.success and result.data %}
+    <div class="row">
         <!-- Results Display -->
-        <div class="card shadow-sm">
-            <div class="card-header bg-success text-white">
-                <h3 class="card-title mb-0">
-                    <i class="bi bi-graph-up me-2"></i>
-                    {{ plugin.output.name }}
-                </h3>
-            </div>
-            <div class="card-body">
-                {% if plugin.id == "text_stat" %}
-                    <!-- Specialized display for text statistics -->
-                    <div class="row mb-4">
-                        <div class="col-md-3">
-                            <div class="stat-card text-center p-3 border rounded">
-                                <h4 class="text-primary mb-0">{{ result.data.character_count }}</h4>
-                                <small class="text-muted">Total Characters</small>
-                            </div>
-                        </div>
-                        <div class="col-md-3">
-                            <div class="stat-card text-center p-3 border rounded">
-                                <h4 class="text-info mb-0">{{ result.data.word_count }}</h4>
-                                <small class="text-muted">Total Words</small>
-                            </div>
-                        </div>
-                        <div class="col-md-3">
-                            <div class="stat-card text-center p-3 border rounded">
-                                <h4 class="text-warning mb-0">{{ result.data.line_count }}</h4>
-                                <small class="text-muted">Lines</small>
-                            </div>
-                        </div>
-                        <div class="col-md-3">
-                            <div class="stat-card text-center p-3 border rounded">
-                                <h4 class="text-success mb-0">{{ result.data.sentence_count }}</h4>
-                                <small class="text-muted">Sentences</small>
-                            </div>
-                        </div>
-                    </div>
+        <div class="col-12 col-lg-8">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">{{ plugin.name|upper }} OUTPUT</h3>
+                    <small class="text-secondary">Neural Processing Results</small>
+                </div>
+                <div class="card-body">
+                    {% if result.data.custom_template is defined %}
+                        {# The plugin has provided a custom template to render its output #}
+                        {% include result.data.custom_template %}
                     
-                    <div class="row mb-4">
-                        <div class="col-md-4">
-                            <h6><i class="bi bi-text-left me-2"></i>Character Analysis</h6>
-                            <ul class="list-unstyled">
-                                <li><strong>With Spaces:</strong> {{ result.data.character_count }}</li>
-                                <li><strong>Without Spaces:</strong> {{ result.data.character_count_no_spaces }}</li>
-                                <li><strong>Unique Characters:</strong> {{ result.data.unique_characters }}</li>
-                            </ul>
-                        </div>
-                        <div class="col-md-4">
-                            <h6><i class="bi bi-alphabet me-2"></i>Word Analysis</h6>
-                            <ul class="list-unstyled">
-                                <li><strong>Total Words:</strong> {{ result.data.word_count }}</li>
-                                <li><strong>Unique Words:</strong> {{ result.data.unique_words }}</li>
-                                <li><strong>Avg Word Length:</strong> {{ result.data.average_word_length }}</li>
-                            </ul>
-                        </div>
-                        <div class="col-md-4">
-                            <h6><i class="bi bi-file-text me-2"></i>Document Structure</h6>
-                            <ul class="list-unstyled">
-                                <li><strong>Lines:</strong> {{ result.data.line_count }}</li>
-                                <li><strong>Sentences:</strong> {{ result.data.sentence_count }}</li>
-                                <li><strong>Vocabulary:</strong> {{ ((result.data.unique_words / result.data.word_count) * 100) | round(1) }}%</li>
-                            </ul>
-                        </div>
-                    </div>
-                    
-                    <!-- Word Frequency -->
-                    {% if result.data.word_frequency %}
-                    <div class="mb-4">
-                        <h6><i class="bi bi-bar-chart me-2"></i>Top Words</h6>
+                    {% else %}
+                        {# Enhanced display for key-value data #}
                         <div class="table-responsive">
-                            <table class="table table-sm">
+                            <table class="table">
                                 <thead>
                                     <tr>
-                                        <th>Word</th>
-                                        <th>Frequency</th>
-                                        <th>Percentage</th>
+                                        <th>DATA FIELD</th>
+                                        <th>OUTPUT VALUE</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {% for word, count in (result.data.word_frequency.items() | sort(attribute=1, reverse=true))[:10] %}
+                                    {% for key, value in result.data.items() %}
                                     <tr>
-                                        <td><code>{{ word }}</code></td>
-                                        <td>{{ count }}</td>
-                                        <td>{{ ((count / result.data.word_count) * 100) | round(1) }}%</td>
-                                    </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                    {% endif %}
-                    
-                    <!-- Character Frequency (Top 20) -->
-                    {% if result.data.character_frequency %}
-                    <div class="mb-4">
-                        <h6><i class="bi bi-123 me-2"></i>Character Distribution (Top 20)</h6>
-                        <div class="table-responsive">
-                            <table class="table table-sm">
-                                <thead>
-                                    <tr>
-                                        <th>Character</th>
-                                        <th>Frequency</th>
-                                        <th>Percentage</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {% for char, count in (result.data.character_frequency.items() | sort(attribute=1, reverse=true))[:20] %}
-                                    <tr>
+                                        <th>{{ key.replace('_', ' ')|upper }}</th>
                                         <td>
-                                            {% if char == ' ' %}
-                                                <code>&lt;space&gt;</code>
-                                            {% elif char == '\n' %}
-                                                <code>&lt;newline&gt;</code>
-                                            {% elif char == '\t' %}
-                                                <code>&lt;tab&gt;</code>
+                                            {% if value is mapping %}
+                                                <div class="accordion mb-2">
+                                                    <div class="accordion-header">
+                                                        <button type="button" class="accordion-button" onclick="toggleData('{{ key }}')">
+                                                            VIEW OBJECT DATA
+                                                        </button>
+                                                    </div>
+                                                    <div id="data-{{ key }}" class="accordion-body" style="display: none;">
+                                                        <pre><code>{{ value | tojsonpretty }}</code></pre>
+                                                    </div>
+                                                </div>
+                                            {% elif value is sequence and value is not string %}
+                                                {% if value|length > 10 %}
+                                                    <div class="accordion mb-2">
+                                                        <div class="accordion-header">
+                                                            <button type="button" class="accordion-button" onclick="toggleData('{{ key }}')">
+                                                                VIEW {{ value|length }} ITEMS
+                                                            </button>
+                                                        </div>
+                                                        <div id="data-{{ key }}" class="accordion-body" style="display: none;">
+                                                            <ul class="list-group">
+                                                                {% for item in value %}
+                                                                    <li class="list-group-item">{{ item }}</li>
+                                                                {% endfor %}
+                                                            </ul>
+                                                        </div>
+                                                    </div>
+                                                {% else %}
+                                                    <ul class="list-group">
+                                                        {% for item in value %}
+                                                            <li class="list-group-item">{{ item }}</li>
+                                                        {% endfor %}
+                                                    </ul>
+                                                {% endif %}
+                                            {% elif value is number %}
+                                                <span class="text-primary">{{ value }}</span>
+                                            {% elif value|string|length > 100 %}
+                                                <div class="accordion mb-2">
+                                                    <div class="accordion-header">
+                                                        <button type="button" class="accordion-button" onclick="toggleData('{{ key }}')">
+                                                            VIEW LONG TEXT ({{ value|string|length }} chars)
+                                                        </button>
+                                                    </div>
+                                                    <div id="data-{{ key }}" class="accordion-body" style="display: none;">
+                                                        <div style="white-space: pre-wrap; max-height: 300px; overflow-y: auto;">{{ value }}</div>
+                                                    </div>
+                                                </div>
                                             {% else %}
-                                                <code>{{ char }}</code>
+                                                {{ value }}
                                             {% endif %}
                                         </td>
-                                        <td>{{ count }}</td>
-                                        <td>{{ ((count / result.data.character_count) * 100) | round(1) }}%</td>
                                     </tr>
                                     {% endfor %}
                                 </tbody>
                             </table>
                         </div>
-                    </div>
-                    {% endif %}
-                    
-                {% else %}
-                    <!-- Generic display for other plugins -->
-                    <div class="table-responsive">
-                        <table class="table table-striped">
-                            {% for key, value in result.data.items() %}
-                            <tr>
-                                <th style="width: 30%;">{{ key.replace('_', ' ').title() }}</th>
-                                <td>
-                                    {% if value is mapping %}
-                                        <pre class="small mb-0">{{ value | tojsonpretty }}</pre>
-                                    {% elif value is sequence and value is not string %}
-                                        <ul class="mb-0">
-                                            {% for item in value %}
-                                                <li>{{ item }}</li>
-                                            {% endfor %}
-                                        </ul>
-                                    {% else %}
-                                        {{ value }}
-                                    {% endif %}
-                                </td>
-                            </tr>
-                            {% endfor %}
-                        </table>
-                    </div>
-                {% endif %}
-            </div>
-        </div>
-    </div>
-    
-    <div class="col-lg-4">
-        <!-- Input Summary -->
-        <div class="card shadow-sm mb-4">
-            <div class="card-header">
-                <h5 class="card-title mb-0">
-                    <i class="bi bi-input-cursor me-2"></i>
-                    Input Summary
-                </h5>
-            </div>
-            <div class="card-body">
-                {% for key, value in input_data.items() %}
-                <div class="mb-3">
-                    <strong>{{ key.replace('_', ' ').title() }}:</strong>
-                    {% if value|length > 100 %}
-                        <div class="small text-muted mt-1">
-                            {{ value[:100] }}...
-                            <br><em>({{ value|length }} characters total)</em>
-                        </div>
-                    {% else %}
-                        <div class="small text-muted mt-1">{{ value }}</div>
                     {% endif %}
                 </div>
-                {% endfor %}
             </div>
         </div>
         
-        <!-- Raw JSON Output -->
-        <div class="card shadow-sm">
-            <div class="card-header">
-                <h5 class="card-title mb-0">
-                    <i class="bi bi-code-square me-2"></i>
-                    Raw JSON Output
-                </h5>
-            </div>
-            <div class="card-body">
-                <div class="accordion accordion-flush" id="rawOutput">
-                    <div class="accordion-item">
-                        <h2 class="accordion-header">
-                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#rawCollapse">
-                                View Raw Data
-                            </button>
-                        </h2>
-                        <div id="rawCollapse" class="accordion-collapse collapse" data-bs-parent="#rawOutput">
-                            <div class="accordion-body">
-                                <pre class="small"><code>{{ result.data | tojsonpretty }}</code></pre>
-                                <button class="btn btn-sm btn-outline-secondary mt-2" onclick="copyToClipboard()">
-                                    <i class="bi bi-clipboard me-1"></i>
-                                    Copy JSON
-                                </button>
+        <!-- Sidebar Information -->
+        <div class="col-12 col-lg-4">
+            <!-- Input Summary -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title">INPUT PARAMETERS</h5>
+                </div>
+                <div class="card-body">
+                    {% if input_data.input_file %}
+                        <div class="mb-3">
+                            <dt>File Upload:</dt>
+                            <dd>
+                                <code>{{ input_data.input_file.filename }}</code>
+                            </dd>
+                        </div>
+                    {% endif %}
+
+                    {% for key, value in input_data.items() %}
+                        {% if key != 'input_file' %}
+                            <div class="mb-3">
+                                <dt>{{ key.replace('_', ' ')|upper }}:</dt>
+                                <dd>
+                                    {% if value|string|length > 50 %}
+                                        <div class="accordion">
+                                            <div class="accordion-header">
+                                                <button type="button" class="accordion-button" onclick="toggleData('input-{{ key }}')">
+                                                    VIEW INPUT
+                                                </button>
+                                            </div>
+                                            <div id="data-input-{{ key }}" class="accordion-body" style="display: none;">
+                                                <div style="white-space: pre-wrap; max-height: 200px; overflow-y: auto;">{{ value }}</div>
+                                            </div>
+                                        </div>
+                                    {% else %}
+                                        <code>{{ value }}</code>
+                                    {% endif %}
+                                </dd>
                             </div>
+                        {% endif %}
+                    {% endfor %}
+                    
+                    {% if not input_data or input_data|length == 0 %}
+                        <p class="text-secondary">No input parameters provided.</p>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Execution Stats -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title">EXECUTION STATS</h5>
+                </div>
+                <div class="card-body">
+                    <dl>
+                        <dt>Module ID:</dt>
+                        <dd><code>{{ plugin.id }}</code></dd>
+                        
+                        <dt>Status:</dt>
+                        <dd>
+                            {% if result.success %}
+                                <span class="text-success">✓ SUCCESS</span>
+                            {% else %}
+                                <span class="text-accent">✗ FAILED</span>
+                            {% endif %}
+                        </dd>
+                        
+                        {% if result.execution_time %}
+                        <dt>Processing Time:</dt>
+                        <dd><code>{{ "%.3f"|format(result.execution_time) }}s</code></dd>
+                        {% endif %}
+                        
+                        <dt>Output Fields:</dt>
+                        <dd>{{ result.data|length if result.data else 0 }} field(s)</dd>
+                        
+                        <dt>Timestamp:</dt>
+                        <dd id="execution-timestamp"></dd>
+                    </dl>
+                </div>
+            </div>
+            
+            <!-- Raw JSON Output -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title">RAW DATA EXPORT</h5>
+                </div>
+                <div class="card-body">
+                    <div class="accordion">
+                        <div class="accordion-header">
+                            <button type="button" class="accordion-button" onclick="toggleRawData()">
+                                VIEW JSON OUTPUT
+                            </button>
+                        </div>
+                        <div id="rawCollapse" class="accordion-body" style="display: none;">
+                            <pre><code>{{ result.data | tojsonpretty }}</code></pre>
+                            <button class="btn btn-outline mt-2" onclick="copyJsonToClipboard()">
+                                COPY JSON
+                            </button>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
+    {% endif %}
 </div>
-{% endif %}
+{% endblock %}
 
+{% block extra_scripts %}
 <script>
+// Copy error to clipboard
 function copyToClipboard() {
     const errorText = document.getElementById('error-text').innerText;
     navigator.clipboard.writeText(errorText).then(() => {
         const copyBtn = document.getElementById('copyBtn');
-        const originalIcon = copyBtn.innerHTML;
-        copyBtn.innerHTML = '<i class="bi bi-check-lg"></i>';
+        const originalText = copyBtn.innerHTML;
+        copyBtn.innerHTML = '✓ COPIED';
+        copyBtn.classList.add('text-success');
         
-        const tooltip = bootstrap.Tooltip.getInstance(copyBtn);
-        tooltip.setContent({ '.tooltip-inner': 'Copied!' });
-
         setTimeout(() => {
-            copyBtn.innerHTML = originalIcon;
-            tooltip.setContent({ '.tooltip-inner': 'Copy error' });
+            copyBtn.innerHTML = originalText;
+            copyBtn.classList.remove('text-success');
         }, 2000);
     });
 }
+
+// Copy JSON to clipboard
+function copyJsonToClipboard() {
+    const jsonText = document.querySelector('#rawCollapse pre code').innerText;
+    navigator.clipboard.writeText(jsonText).then(() => {
+        const copyBtn = event.target;
+        const originalText = copyBtn.innerHTML;
+        copyBtn.innerHTML = '✓ COPIED';
+        copyBtn.classList.add('text-success');
+        
+        setTimeout(() => {
+            copyBtn.innerHTML = originalText;
+            copyBtn.classList.remove('text-success');
+        }, 2000);
+    });
+}
+
+// Toggle data displays
+function toggleData(key) {
+    const element = document.getElementById('data-' + key);
+    const button = event.target;
+    
+    if (element.style.display === 'none') {
+        element.style.display = 'block';
+        button.textContent = button.textContent.replace('VIEW', 'HIDE');
+    } else {
+        element.style.display = 'none';
+        button.textContent = button.textContent.replace('HIDE', 'VIEW');
+    }
+}
+
+// Toggle raw data display
+function toggleRawData() {
+    const element = document.getElementById('rawCollapse');
+    const button = event.target;
+    
+    if (element.style.display === 'none') {
+        element.style.display = 'block';
+        button.textContent = 'HIDE JSON OUTPUT';
+    } else {
+        element.style.display = 'none';
+        button.textContent = 'VIEW JSON OUTPUT';
+    }
+}
+
+// Set execution timestamp
+function setTimestamp() {
+    const now = new Date();
+    const timestamp = now.getFullYear() + '.' + 
+                     String(now.getMonth() + 1).padStart(2, '0') + '.' + 
+                     String(now.getDate()).padStart(2, '0') + '.' + 
+                     String(now.getHours()).padStart(2, '0') + ':' + 
+                     String(now.getMinutes()).padStart(2, '0') + ':' + 
+                     String(now.getSeconds()).padStart(2, '0');
+    const timestampElement = document.getElementById('execution-timestamp');
+    if (timestampElement) {
+        timestampElement.textContent = timestamp;
+    }
+}
+
+// Initialize
+document.addEventListener('DOMContentLoaded', function() {
+    setTimestamp();
+    
+    // Animate cards on load
+    document.querySelectorAll('.card').forEach((card, index) => {
+        card.style.animation = `fadeInCyber 0.6s ease-out ${index * 0.1}s both`;
+    });
+    
+    // Random glitch effect for title
+    setTimeout(() => {
+        const title = document.querySelector('.glitch');
+        if (title) {
+            title.style.animation = 'glitch-1 0.5s ease-in-out';
+            setTimeout(() => {
+                title.style.animation = '';
+            }, 500);
+        }
+    }, 1000);
+});
 </script>
 {% endblock %} 
