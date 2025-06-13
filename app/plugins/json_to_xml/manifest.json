@@ -14,19 +14,19 @@
         "allowed_extensions": ["json"]
       },
       "help": "Upload a Pandoc JSON file (e.g., one generated with 'pandoc -t json -o output.json')."
+    },
+    {
+      "name": "ignore_line_breaks",
+      "label": "Ignore Line Breaks",
+      "field_type": "checkbox",
+      "required": false,
+      "default_value": true,
+      "help": "If checked, soft and hard line breaks will be ignored, resulting in more compact paragraphs."
     }
   ],
   "output": {
-    "name": "xml_output",
-    "description": "The converted XML content.",
-    "schema": {
-      "type": "object",
-      "properties": {
-        "xml_output": {
-          "type": "string"
-        }
-      }
-    }
+    "name": "xml_file",
+    "description": "The converted XML file."
   },
   "tags": ["json", "xml", "pandoc"],
   "dependencies": {

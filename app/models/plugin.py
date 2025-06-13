@@ -27,7 +27,7 @@ class InputField(BaseModel):
 class OutputFormat(BaseModel):
     name: str = Field(..., description="Output format name")
     description: str = Field(..., description="Description of the output")
-    schema_definition: Dict[str, Any] = Field(..., description="JSON schema for output validation", alias="schema")
+    schema_definition: Optional[Dict[str, Any]] = Field(default=None, description="JSON schema for output validation", alias="schema")
 
 
 class Dependency(BaseModel):

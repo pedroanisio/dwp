@@ -1,3 +1,4 @@
+
 # Dynamic Web-Based Plugin System
 
 This project is a modern, web-based application that features a dynamic plugin system built with FastAPI and Pydantic. Each plugin can define its own user interface and I/O specifications through a simple, yet powerful, manifest-driven architecture. The system automatically discovers and loads plugins at runtime, making it highly extensible and easy to maintain.
