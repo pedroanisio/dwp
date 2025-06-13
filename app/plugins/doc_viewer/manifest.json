@@ -1,0 +1,26 @@
+{
+  "id": "doc_viewer",
+  "name": "Document Viewer",
+  "version": "1.0.0",
+  "description": "A plugin to render structured JSON documents.",
+  "author": "Your Name",
+  "inputs": [
+    {
+      "name": "input_file",
+      "label": "JSON Document",
+      "field_type": "file",
+      "required": true,
+      "validation": {
+        "allowed_extensions": ["json"]
+      }
+    }
+  ],
+  "output": {
+    "name": "document_view",
+    "description": "A rendered view of the structured document."
+  },
+  "dependencies": {
+    "external": [],
+    "internal": []
+  }
+} 
