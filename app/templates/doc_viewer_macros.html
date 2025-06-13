@@ -1,0 +1,110 @@
+<!-- NEURAL DOCUMENT VIEWER MACROS -->
+<!-- Cyberpunk-styled macros for rendering structured JSON documents -->
+
+{% macro render_content_block(block) %}
+    {% if block.type == "heading" %}
+        {{ render_heading(block) }}
+    {% elif block.type == "paragraph" %}
+        {{ render_paragraph(block) }}
+    {% elif block.type == "div" %}
+        {{ render_div(block) }}
+    {% elif block.type == "quote" %}
+        {{ render_quote(block) }}
+    {% elif block.type == "raw_html" %}
+        {{ render_raw_html(block) }}
+    {% elif block.type == "structural" %}
+        {{ render_structural(block) }}
+    {% else %}
+        <div class="alert alert-secondary mb-3">
+            <strong>UNKNOWN BLOCK TYPE:</strong> {{ block.type }}
+        </div>
+    {% endif %}
+{% endmacro %}
+
+{% macro render_heading(heading) %}
+    {% set heading_tag = "h" ~ (heading.level + 2) %}
+    {% set heading_class = "text-primary" if heading.level == 1 else "text-accent" if heading.level == 2 else "text-success" %}
+    
+    <{{ heading_tag }} class="{{ heading_class }} mb-3 mt-4" style="border-left: 4px solid var(--neon-blue); padding-left: 15px;">
+        {% for content in heading.content %}
+            {{ render_inline_content(content) }}
+        {% endfor %}
+    </{{ heading_tag }}>
+{% endmacro %}
+
+{% macro render_paragraph(paragraph) %}
+    <div class="paragraph-block mb-3 p-3" style="border-left: 2px solid var(--border-glow); background: rgba(0, 245, 255, 0.02);">
+        {% if paragraph.semantic_label %}
+            <span class="badge mb-2">{{ paragraph.semantic_label|upper }}</span>
+        {% endif %}
+        <p class="mb-0">
+            {% for content in paragraph.content %}
+                {{ render_inline_content(content) }}
+            {% endfor %}
+        </p>
+    </div>
+{% endmacro %}
+
+{% macro render_div(div) %}
+    <div class="div-block mb-4 p-3" style="border: 1px solid var(--border-glow); clip-path: polygon(0 0, calc(100% - 10px) 0, 100% 100%, 10px 100%); background: rgba(131, 56, 236, 0.05);">
+        <div class="mb-2">
+            <span class="badge badge-primary">CONTAINER BLOCK</span>
+        </div>
+        {% for content in div.content %}
+            {{ render_content_block(content) }}
+        {% endfor %}
+    </div>
+{% endmacro %}
+
+{% macro render_quote(quote) %}
+    <blockquote class="quote-block mb-4 p-4" style="border-left: 4px solid var(--neon-pink); background: rgba(255, 0, 110, 0.1); clip-path: polygon(0 0, calc(100% - 15px) 0, 100% 100%, 15px 100%);">
+        <div class="mb-2">
+            <span class="badge" style="background: var(--neon-pink);">QUOTE</span>
+        </div>
+        {% for content in quote.content %}
+            {{ render_content_block(content) }}
+        {% endfor %}
+    </blockquote>
+{% endmacro %}
+
+{% macro render_raw_html(html) %}
+    <div class="raw-html-block mb-3 p-3" style="border: 2px solid var(--neon-green); background: var(--darker-bg);">
+        <div class="mb-2">
+            <span class="badge" style="background: var(--neon-green); color: var(--dark-bg);">RAW HTML</span>
+        </div>
+        <div class="html-content">
+            {{ html.content|safe }}
+        </div>
+    </div>
+{% endmacro %}
+
+{% macro render_structural(structural) %}
+    <div class="structural-block mb-3 p-2 text-center" style="border: 1px dashed var(--border-glow); background: rgba(0, 245, 255, 0.05);">
+        <span class="badge">{{ structural.element_type|upper }}</span>
+        {% if structural.element_type == "HorizontalRule" %}
+            <hr style="border-color: var(--neon-blue); margin: 10px 0;">
+        {% elif structural.element_type == "Image" %}
+            <div class="text-primary">📷 IMAGE PLACEHOLDER</div>
+        {% elif structural.element_type == "Link" %}
+            <div class="text-accent">🔗 LINK ELEMENT</div>
+        {% elif structural.element_type == "Table" %}
+            <div class="text-success">📊 TABLE ELEMENT</div>
+        {% else %}
+            <div class="text-secondary">{{ structural.element_type }} ELEMENT</div>
+        {% endif %}
+    </div>
+{% endmacro %}
+
+{% macro render_inline_content(content) %}
+    {% if content.type == "text" %}
+        {{ content.content }}
+    {% elif content.type == "emphasis" %}
+        <em class="text-accent" style="text-shadow: 0 0 5px var(--neon-pink);">{{ content.content }}</em>
+    {% elif content.type == "structural" %}
+        <span class="inline-structural badge" style="font-size: 0.8em;">{{ content.element_type|upper }}</span>
+    {% elif content.type == "raw_html" %}
+        {{ content.content|safe }}
+    {% else %}
+        <span class="text-secondary">[{{ content.type|upper }}]</span>
+    {% endif %}
+{% endmacro %} 

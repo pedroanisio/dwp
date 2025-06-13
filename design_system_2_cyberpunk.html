@@ -1,0 +1,845 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Design System 2: Dark Cyberpunk Neon</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --neon-blue: #00f5ff;
+            --neon-pink: #ff006e;
+            --neon-purple: #8338ec;
+            --neon-green: #3a86ff;
+            --electric-blue: #1e3a8a;
+            --dark-bg: #0a0a0a;
+            --darker-bg: #050505;
+            --card-bg: #111111;
+            --border-glow: rgba(0, 245, 255, 0.3);
+            --text-primary: #ffffff;
+            --text-secondary: #b8bcc8;
+            --text-accent: var(--neon-blue);
+            --shadow-neon: 0 0 20px var(--neon-blue);
+            --shadow-pink: 0 0 20px var(--neon-pink);
+            --shadow-purple: 0 0 20px var(--neon-purple);
+        }
+
+        body {
+            font-family: 'Roboto Mono', 'Courier New', monospace;
+            background: var(--dark-bg);
+            background-image: 
+                radial-gradient(circle at 25% 25%, var(--electric-blue) 0%, transparent 50%),
+                radial-gradient(circle at 75% 75%, var(--neon-purple) 0%, transparent 50%);
+            min-height: 100vh;
+            color: var(--text-primary);
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* Cyberpunk grid background */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(rgba(0, 245, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 245, 255, 0.03) 1px, transparent 1px);
+            background-size: 50px 50px;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        /* Header */
+        .header {
+            padding: 20px 0;
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+            background: rgba(10, 10, 10, 0.8);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border-glow);
+            box-shadow: 0 4px 20px rgba(0, 245, 255, 0.1);
+        }
+
+        .nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--neon-blue);
+            text-shadow: 0 0 10px var(--neon-blue);
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 40px;
+            list-style: none;
+        }
+
+        .nav-link {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.3s ease;
+            position: relative;
+            padding: 10px 0;
+        }
+
+        .nav-link::before {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: linear-gradient(90deg, var(--neon-blue), var(--neon-pink));
+            transition: width 0.3s ease;
+        }
+
+        .nav-link:hover {
+            color: var(--neon-blue);
+            text-shadow: 0 0 5px var(--neon-blue);
+        }
+
+        .nav-link:hover::before {
+            width: 100%;
+        }
+
+        /* Main content */
+        .main {
+            padding-top: 120px;
+        }
+
+        /* Hero section */
+        .hero {
+            text-align: center;
+            padding: 100px 0;
+            position: relative;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 300px;
+            height: 300px;
+            background: radial-gradient(circle, var(--neon-blue) 0%, transparent 70%);
+            transform: translate(-50%, -50%);
+            opacity: 0.1;
+            animation: pulse 4s ease-in-out infinite;
+        }
+
+        .hero h1 {
+            font-size: clamp(3rem, 6vw, 5rem);
+            font-weight: 900;
+            margin-bottom: 20px;
+            background: linear-gradient(45deg, var(--neon-blue), var(--neon-pink), var(--neon-purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-transform: uppercase;
+            letter-spacing: 4px;
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+
+        .hero p {
+            font-size: 1.2rem;
+            color: var(--text-secondary);
+            margin-bottom: 50px;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            line-height: 1.8;
+        }
+
+        /* Buttons */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 15px 35px;
+            border: 2px solid;
+            background: transparent;
+            color: var(--text-primary);
+            text-decoration: none;
+            text-transform: uppercase;
+            font-weight: 700;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            clip-path: polygon(0 0, calc(100% - 20px) 0, 100% 100%, 20px 100%);
+        }
+
+        .btn-primary {
+            border-color: var(--neon-blue);
+            color: var(--neon-blue);
+            box-shadow: 
+                inset 0 0 0 0 var(--neon-blue),
+                0 0 10px rgba(0, 245, 255, 0.3);
+        }
+
+        .btn-primary:hover {
+            color: var(--dark-bg);
+            box-shadow: 
+                inset 300px 0 0 0 var(--neon-blue),
+                0 0 20px var(--neon-blue);
+            text-shadow: none;
+        }
+
+        .btn-secondary {
+            border-color: var(--neon-pink);
+            color: var(--neon-pink);
+            box-shadow: 
+                inset 0 0 0 0 var(--neon-pink),
+                0 0 10px rgba(255, 0, 110, 0.3);
+        }
+
+        .btn-secondary:hover {
+            color: var(--dark-bg);
+            box-shadow: 
+                inset 300px 0 0 0 var(--neon-pink),
+                0 0 20px var(--neon-pink);
+        }
+
+        .btn::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.7s;
+        }
+
+        .btn:hover::after {
+            left: 100%;
+        }
+
+        /* Component showcase */
+        .showcase {
+            padding: 100px 0;
+        }
+
+        .section-title {
+            font-size: 3rem;
+            font-weight: 900;
+            text-align: center;
+            margin-bottom: 80px;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            color: var(--neon-blue);
+            text-shadow: 0 0 20px var(--neon-blue);
+        }
+
+        .components-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 40px;
+            margin-bottom: 80px;
+        }
+
+        /* Cards */
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-glow);
+            padding: 40px;
+            position: relative;
+            transition: all 0.4s ease;
+            clip-path: polygon(0 0, calc(100% - 30px) 0, 100% 30px, 100% 100%, 30px 100%, 0 calc(100% - 30px));
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(45deg, var(--neon-blue), var(--neon-pink), var(--neon-purple));
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            z-index: -1;
+        }
+
+        .card:hover {
+            transform: translateY(-10px);
+            box-shadow: 
+                0 20px 40px rgba(0, 245, 255, 0.2),
+                0 0 30px rgba(0, 245, 255, 0.1);
+            border-color: var(--neon-blue);
+        }
+
+        .card:hover::before {
+            opacity: 0.05;
+        }
+
+        .card h3 {
+            color: var(--neon-blue);
+            margin-bottom: 15px;
+            font-size: 1.4rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .card p {
+            color: var(--text-secondary);
+            margin-bottom: 25px;
+            line-height: 1.6;
+        }
+
+        /* Form elements */
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 10px;
+            color: var(--neon-blue);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 15px 20px;
+            background: var(--darker-bg);
+            border: 2px solid var(--border-glow);
+            color: var(--text-primary);
+            font-size: 16px;
+            font-family: inherit;
+            transition: all 0.3s ease;
+            clip-path: polygon(0 0, calc(100% - 15px) 0, 100% 100%, 15px 100%);
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--neon-blue);
+            box-shadow: 0 0 15px rgba(0, 245, 255, 0.4);
+            background: rgba(0, 245, 255, 0.05);
+        }
+
+        .form-input::placeholder {
+            color: var(--text-secondary);
+        }
+
+        /* Toggle switch */
+        .toggle {
+            position: relative;
+            display: inline-block;
+            width: 80px;
+            height: 40px;
+        }
+
+        .toggle input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider-cyber {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: var(--darker-bg);
+            transition: 0.3s;
+            border: 2px solid var(--border-glow);
+            clip-path: polygon(0 0, calc(100% - 10px) 0, 100% 100%, 10px 100%);
+        }
+
+        .slider-cyber:before {
+            position: absolute;
+            content: "";
+            height: 30px;
+            width: 30px;
+            left: 5px;
+            bottom: 3px;
+            background: var(--neon-blue);
+            transition: 0.3s;
+            clip-path: polygon(0 0, calc(100% - 8px) 0, 100% 100%, 8px 100%);
+            box-shadow: 0 0 10px var(--neon-blue);
+        }
+
+        input:checked + .slider-cyber {
+            background: rgba(0, 245, 255, 0.2);
+            border-color: var(--neon-blue);
+        }
+
+        input:checked + .slider-cyber:before {
+            transform: translateX(40px);
+            background: var(--neon-pink);
+            box-shadow: 0 0 10px var(--neon-pink);
+        }
+
+        /* Progress bar */
+        .progress-container {
+            margin: 30px 0;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 12px;
+            background: var(--darker-bg);
+            border: 1px solid var(--border-glow);
+            overflow: hidden;
+            clip-path: polygon(0 0, calc(100% - 10px) 0, 100% 100%, 10px 100%);
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--neon-blue), var(--neon-pink));
+            transition: width 1s ease;
+            position: relative;
+            box-shadow: 0 0 10px var(--neon-blue);
+        }
+
+        .progress-fill::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.6), transparent);
+            animation: scan 2s infinite;
+        }
+
+        /* Loading spinner */
+        .spinner-cyber {
+            width: 50px;
+            height: 50px;
+            border: 3px solid var(--darker-bg);
+            border-top: 3px solid var(--neon-blue);
+            border-right: 3px solid var(--neon-pink);
+            border-radius: 50%;
+            animation: spin-glow 1s linear infinite;
+            margin: 20px auto;
+            box-shadow: 0 0 20px rgba(0, 245, 255, 0.5);
+        }
+
+        /* Button states demo */
+        .button-states {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin: 40px 0;
+        }
+
+        .btn-disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+            border-color: var(--text-secondary);
+            color: var(--text-secondary);
+        }
+
+        .btn-disabled:hover {
+            transform: none;
+            box-shadow: none;
+        }
+
+        .btn-loading {
+            position: relative;
+            color: transparent;
+            border-color: var(--neon-purple);
+        }
+
+        .btn-loading::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 20px;
+            height: 20px;
+            margin: -10px 0 0 -10px;
+            border: 2px solid transparent;
+            border-top: 2px solid var(--neon-purple);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        /* Notification */
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 20px 30px;
+            background: var(--card-bg);
+            border: 2px solid var(--neon-green);
+            color: var(--neon-green);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transform: translateX(400px);
+            transition: transform 0.5s ease;
+            z-index: 1001;
+            clip-path: polygon(0 0, calc(100% - 15px) 0, 100% 100%, 15px 100%);
+            box-shadow: 0 0 20px rgba(58, 134, 255, 0.4);
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        /* Glitch effect */
+        .glitch {
+            position: relative;
+        }
+
+        .glitch::before,
+        .glitch::after {
+            content: attr(data-text);
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        .glitch::before {
+            animation: glitch-1 0.5s infinite;
+            color: var(--neon-pink);
+            z-index: -1;
+        }
+
+        .glitch::after {
+            animation: glitch-2 0.5s infinite;
+            color: var(--neon-blue);
+            z-index: -2;
+        }
+
+        /* Animations */
+        @keyframes pulse {
+            0%, 100% { opacity: 0.1; }
+            50% { opacity: 0.3; }
+        }
+
+        @keyframes glow {
+            0% { text-shadow: 0 0 5px var(--neon-blue); }
+            100% { text-shadow: 0 0 20px var(--neon-blue), 0 0 30px var(--neon-blue); }
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @keyframes spin-glow {
+            0% { 
+                transform: rotate(0deg);
+                box-shadow: 0 0 20px rgba(0, 245, 255, 0.5);
+            }
+            50% { 
+                box-shadow: 0 0 30px rgba(255, 0, 110, 0.7);
+            }
+            100% { 
+                transform: rotate(360deg);
+                box-shadow: 0 0 20px rgba(0, 245, 255, 0.5);
+            }
+        }
+
+        @keyframes scan {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        @keyframes glitch-1 {
+            0%, 100% { transform: translateX(0); }
+            10% { transform: translateX(-2px); }
+            20% { transform: translateX(2px); }
+            30% { transform: translateX(-2px); }
+            40% { transform: translateX(2px); }
+            50% { transform: translateX(-2px); }
+            60% { transform: translateX(2px); }
+            70% { transform: translateX(-2px); }
+            80% { transform: translateX(2px); }
+            90% { transform: translateX(-2px); }
+        }
+
+        @keyframes glitch-2 {
+            0%, 100% { transform: translateY(0); }
+            10% { transform: translateY(-1px); }
+            20% { transform: translateY(1px); }
+            30% { transform: translateY(-1px); }
+            40% { transform: translateY(1px); }
+            50% { transform: translateY(-1px); }
+            60% { transform: translateY(1px); }
+            70% { transform: translateY(-1px); }
+            80% { transform: translateY(1px); }
+            90% { transform: translateY(-1px); }
+        }
+
+        .fade-in-cyber {
+            animation: fadeInCyber 1s ease-out;
+        }
+
+        @keyframes fadeInCyber {
+            from {
+                opacity: 0;
+                transform: translateY(50px) scale(0.9);
+                filter: blur(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+                filter: blur(0);
+            }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+            }
+            
+            .components-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .button-states {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .hero h1 {
+                font-size: 2.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <nav class="nav">
+                <div class="logo glitch" data-text="CYBERPUNK">CYBERPUNK</div>
+                <ul class="nav-links">
+                    <li><a href="#" class="nav-link">Home</a></li>
+                    <li><a href="#" class="nav-link">Interface</a></li>
+                    <li><a href="#" class="nav-link">Systems</a></li>
+                    <li><a href="#" class="nav-link">Neural</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <main class="main">
+        <section class="hero">
+            <div class="container">
+                <h1>DARK CYBERPUNK NEON</h1>
+                <p>A futuristic design system with neon aesthetics, geometric forms, and electric micro interactions that pulse with digital energy</p>
+                <div class="button-states">
+                    <a href="#" class="btn btn-primary">JACK IN</a>
+                    <a href="#" class="btn btn-secondary">DECRYPT</a>
+                </div>
+            </div>
+        </section>
+
+        <section class="showcase">
+            <div class="container">
+                <h2 class="section-title">INTERFACE MODULES</h2>
+                
+                <div class="components-grid">
+                    <div class="card fade-in-cyber">
+                        <h3>COMMAND BUTTONS</h3>
+                        <p>Multi-state interface elements with electric animations and hover protocols</p>
+                        <div class="button-states" style="flex-direction: column; align-items: stretch;">
+                            <button class="btn btn-primary">PRIMARY COMMAND</button>
+                            <button class="btn btn-secondary">SECONDARY LINK</button>
+                            <button class="btn btn-primary btn-disabled">OFFLINE MODULE</button>
+                            <button class="btn btn-primary btn-loading">PROCESSING...</button>
+                        </div>
+                    </div>
+
+                    <div class="card fade-in-cyber">
+                        <h3>DATA INPUT</h3>
+                        <p>Neural interface form elements with focus scanning and validation protocols</p>
+                        <div class="form-group">
+                            <label class="form-label">USER ID</label>
+                            <input type="text" class="form-input" placeholder="Enter neural ID">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">ACCESS CODE</label>
+                            <input type="password" class="form-input" placeholder="••••••••••">
+                        </div>
+                    </div>
+
+                    <div class="card fade-in-cyber">
+                        <h3>SYSTEM TOGGLES</h3>
+                        <p>Binary state controllers with neon transition effects</p>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin: 20px 0;">
+                            <span class="form-label">STEALTH MODE</span>
+                            <label class="toggle">
+                                <input type="checkbox" id="stealthToggle">
+                                <span class="slider-cyber"></span>
+                            </label>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin: 20px 0;">
+                            <span class="form-label">NEURAL LINK</span>
+                            <label class="toggle">
+                                <input type="checkbox" checked>
+                                <span class="slider-cyber"></span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="card fade-in-cyber">
+                        <h3>PROGRESS SCANNERS</h3>
+                        <p>Data transfer indicators with scanning animations and glow effects</p>
+                        <div class="progress-container">
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: 65%"></div>
+                            </div>
+                        </div>
+                        <div class="spinner-cyber"></div>
+                        <button class="btn btn-primary" onclick="updateProgressCyber()">INITIATE SCAN</button>
+                    </div>
+
+                    <div class="card fade-in-cyber">
+                        <h3>NEURAL FEEDBACK</h3>
+                        <p>Interactive response systems with electric pulse animations</p>
+                        <button class="btn btn-primary" onclick="showNotificationCyber()">SEND SIGNAL</button>
+                        <button class="btn btn-secondary" onclick="triggerGlitch()" style="margin-left: 10px;">GLITCH MODE</button>
+                    </div>
+
+                    <div class="card fade-in-cyber">
+                        <h3>DATA TYPOGRAPHY</h3>
+                        <p>Monospace font hierarchy for terminal interfaces</p>
+                        <h1 style="font-size: 2rem; margin: 10px 0; color: var(--neon-blue);">LEVEL 1 HEADER</h1>
+                        <h2 style="font-size: 1.5rem; margin: 10px 0; color: var(--neon-pink);">LEVEL 2 HEADER</h2>
+                        <h3 style="font-size: 1.25rem; margin: 10px 0; color: var(--neon-purple);">LEVEL 3 HEADER</h3>
+                        <p style="color: var(--text-secondary);">System status: All neural pathways operational. Data stream nominal.</p>
+                        <small style="color: var(--border-glow);">Timestamp: 2077.12.25.15:42:33</small>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <div class="notification" id="notification-cyber">
+        ⚡ NEURAL SIGNAL TRANSMITTED
+    </div>
+
+    <script>
+        // Progress bar animation
+        function updateProgressCyber() {
+            const progressFill = document.querySelector('.progress-fill');
+            const currentWidth = parseInt(progressFill.style.width) || 0;
+            const newWidth = Math.min(currentWidth + 20, 100);
+            progressFill.style.width = newWidth + '%';
+            
+            if (newWidth >= 100) {
+                setTimeout(() => {
+                    progressFill.style.width = '0%';
+                }, 1500);
+            }
+        }
+
+        // Notification system
+        function showNotificationCyber() {
+            const notification = document.getElementById('notification-cyber');
+            notification.classList.add('show');
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 4000);
+        }
+
+        // Glitch animation trigger
+        function triggerGlitch() {
+            const logo = document.querySelector('.logo');
+            const cards = document.querySelectorAll('.card');
+            
+            logo.style.animation = 'glitch-1 0.5s ease-in-out';
+            cards.forEach(card => {
+                card.style.animation = 'glitch-1 0.3s ease-in-out';
+            });
+            
+            setTimeout(() => {
+                logo.style.animation = '';
+                cards.forEach(card => {
+                    card.style.animation = '';
+                });
+            }, 500);
+        }
+
+        // Stealth mode toggle
+        document.getElementById('stealthToggle').addEventListener('change', function() {
+            if (this.checked) {
+                document.body.style.filter = 'brightness(0.3) contrast(1.5)';
+                document.body.style.transition = 'filter 0.5s ease';
+            } else {
+                document.body.style.filter = 'none';
+            }
+        });
+
+        // Intersection Observer for cyber animations
+        const observerCyber = new IntersectionObserver((entries) => {
+            entries.forEach((entry, index) => {
+                if (entry.isIntersecting) {
+                    setTimeout(() => {
+                        entry.target.style.animation = 'fadeInCyber 1s ease-out both';
+                    }, index * 200);
+                }
+            });
+        }, {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        });
+
+        // Observe cards for animation
+        document.querySelectorAll('.card').forEach(card => {
+            observerCyber.observe(card);
+        });
+
+        // Header glow effect on scroll
+        window.addEventListener('scroll', () => {
+            const header = document.querySelector('.header');
+            const scrollPercent = window.scrollY / 100;
+            const glowIntensity = Math.min(scrollPercent * 0.3, 0.3);
+            
+            header.style.boxShadow = `0 4px 20px rgba(0, 245, 255, ${glowIntensity})`;
+        });
+
+        // Random glitch effect
+        setInterval(() => {
+            if (Math.random() < 0.1) { // 10% chance every 3 seconds
+                const logo = document.querySelector('.logo');
+                logo.style.animation = 'glitch-1 0.2s ease-in-out';
+                setTimeout(() => {
+                    logo.style.animation = '';
+                }, 200);
+            }
+        }, 3000);
+    </script>
+</body>
+</html> 

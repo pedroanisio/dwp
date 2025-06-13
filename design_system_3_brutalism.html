@@ -1,0 +1,821 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Design System 3: Minimalist Brutalism</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-black: #000000;
+            --primary-white: #ffffff;
+            --accent-red: #ff0000;
+            --accent-yellow: #ffff00;
+            --gray-light: #f5f5f5;
+            --gray-medium: #cccccc;
+            --gray-dark: #333333;
+            --shadow-harsh: 8px 8px 0px 0px var(--primary-black);
+            --shadow-medium: 4px 4px 0px 0px var(--primary-black);
+            --shadow-small: 2px 2px 0px 0px var(--primary-black);
+        }
+
+        body {
+            font-family: 'Helvetica', 'Arial Black', sans-serif;
+            background: var(--primary-white);
+            color: var(--primary-black);
+            line-height: 1.2;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* Typography */
+        h1, h2, h3, h4, h5, h6 {
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: -1px;
+        }
+
+        /* Header */
+        .header {
+            background: var(--primary-black);
+            color: var(--primary-white);
+            padding: 20px 0;
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+            border-bottom: 8px solid var(--accent-red);
+        }
+
+        .nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 2rem;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: -2px;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 0;
+            list-style: none;
+        }
+
+        .nav-link {
+            color: var(--primary-white);
+            text-decoration: none;
+            font-weight: 700;
+            text-transform: uppercase;
+            padding: 15px 25px;
+            background: var(--primary-black);
+            border-right: 2px solid var(--primary-white);
+            transition: all 0.2s ease;
+            position: relative;
+        }
+
+        .nav-link:hover {
+            background: var(--accent-red);
+            transform: translate(-2px, -2px);
+            box-shadow: var(--shadow-small);
+        }
+
+        .nav-link:active {
+            transform: translate(0, 0);
+            box-shadow: none;
+        }
+
+        /* Main content */
+        .main {
+            padding-top: 120px;
+        }
+
+        /* Hero section */
+        .hero {
+            padding: 80px 0;
+            background: var(--gray-light);
+            border-bottom: 8px solid var(--primary-black);
+        }
+
+        .hero-content {
+            text-align: left;
+            max-width: 800px;
+        }
+
+        .hero h1 {
+            font-size: clamp(3rem, 8vw, 6rem);
+            font-weight: 900;
+            margin-bottom: 30px;
+            line-height: 0.9;
+            text-transform: uppercase;
+        }
+
+        .hero h1 .accent {
+            color: var(--accent-red);
+            display: block;
+        }
+
+        .hero p {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 50px;
+            max-width: 600px;
+            line-height: 1.3;
+        }
+
+        /* Buttons */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 15px;
+            padding: 20px 40px;
+            background: var(--primary-white);
+            color: var(--primary-black);
+            text-decoration: none;
+            font-weight: 900;
+            text-transform: uppercase;
+            border: 4px solid var(--primary-black);
+            transition: all 0.15s ease;
+            position: relative;
+            margin-right: 20px;
+            margin-bottom: 20px;
+        }
+
+        .btn-primary {
+            background: var(--accent-red);
+            color: var(--primary-white);
+            box-shadow: var(--shadow-harsh);
+        }
+
+        .btn-primary:hover {
+            transform: translate(-4px, -4px);
+            box-shadow: 12px 12px 0px 0px var(--primary-black);
+        }
+
+        .btn-primary:active {
+            transform: translate(4px, 4px);
+            box-shadow: var(--shadow-small);
+        }
+
+        .btn-secondary {
+            background: var(--accent-yellow);
+            color: var(--primary-black);
+            box-shadow: var(--shadow-harsh);
+        }
+
+        .btn-secondary:hover {
+            transform: translate(-4px, -4px);
+            box-shadow: 12px 12px 0px 0px var(--primary-black);
+        }
+
+        .btn-secondary:active {
+            transform: translate(4px, 4px);
+            box-shadow: var(--shadow-small);
+        }
+
+        .btn-outline {
+            background: var(--primary-white);
+            color: var(--primary-black);
+            box-shadow: var(--shadow-medium);
+        }
+
+        .btn-outline:hover {
+            background: var(--primary-black);
+            color: var(--primary-white);
+            transform: translate(-2px, -2px);
+            box-shadow: 6px 6px 0px 0px var(--gray-dark);
+        }
+
+        .btn-outline:active {
+            transform: translate(2px, 2px);
+            box-shadow: 1px 1px 0px 0px var(--primary-black);
+        }
+
+        /* Component showcase */
+        .showcase {
+            padding: 100px 0;
+            background: var(--primary-white);
+        }
+
+        .section-title {
+            font-size: 3.5rem;
+            font-weight: 900;
+            margin-bottom: 80px;
+            text-transform: uppercase;
+            letter-spacing: -2px;
+            text-align: center;
+        }
+
+        .section-title::after {
+            content: '';
+            display: block;
+            width: 200px;
+            height: 8px;
+            background: var(--accent-red);
+            margin: 20px auto 0;
+        }
+
+        .components-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 40px;
+            margin-bottom: 80px;
+        }
+
+        /* Cards */
+        .card {
+            background: var(--primary-white);
+            border: 4px solid var(--primary-black);
+            padding: 40px;
+            box-shadow: var(--shadow-harsh);
+            transition: all 0.2s ease;
+            position: relative;
+        }
+
+        .card:hover {
+            transform: translate(-4px, -4px);
+            box-shadow: 12px 12px 0px 0px var(--primary-black);
+        }
+
+        .card.card-black {
+            background: var(--primary-black);
+            color: var(--primary-white);
+        }
+
+        .card.card-black:hover {
+            box-shadow: 12px 12px 0px 0px var(--accent-red);
+        }
+
+        .card.card-accent {
+            background: var(--accent-yellow);
+            color: var(--primary-black);
+        }
+
+        .card.card-accent:hover {
+            box-shadow: 12px 12px 0px 0px var(--accent-red);
+        }
+
+        .card h3 {
+            font-size: 1.8rem;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+            font-weight: 900;
+        }
+
+        .card p {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 30px;
+            line-height: 1.4;
+        }
+
+        /* Form elements */
+        .form-group {
+            margin-bottom: 30px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: 900;
+            text-transform: uppercase;
+            font-size: 1.1rem;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 15px 20px;
+            background: var(--primary-white);
+            border: 4px solid var(--primary-black);
+            color: var(--primary-black);
+            font-size: 18px;
+            font-weight: 700;
+            font-family: inherit;
+            transition: all 0.2s ease;
+        }
+
+        .form-input:focus {
+            outline: none;
+            background: var(--gray-light);
+            transform: translate(-2px, -2px);
+            box-shadow: var(--shadow-medium);
+        }
+
+        .form-input::placeholder {
+            color: var(--gray-medium);
+            font-weight: 600;
+        }
+
+        /* Toggle switch */
+        .toggle-brutalist {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .switch {
+            position: relative;
+            width: 80px;
+            height: 40px;
+            background: var(--primary-white);
+            border: 4px solid var(--primary-black);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .switch-slider {
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 32px;
+            height: 32px;
+            background: var(--accent-red);
+            transition: 0.2s ease;
+            border: 2px solid var(--primary-black);
+        }
+
+        input:checked + .switch-slider {
+            transform: translateX(40px);
+            background: var(--accent-yellow);
+        }
+
+        .switch:hover {
+            transform: translate(-2px, -2px);
+            box-shadow: var(--shadow-small);
+        }
+
+        /* Progress bar */
+        .progress-container {
+            margin: 30px 0;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background: var(--primary-white);
+            border: 4px solid var(--primary-black);
+            overflow: hidden;
+            position: relative;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--accent-red);
+            transition: width 0.8s ease;
+            position: relative;
+            border-right: 4px solid var(--primary-black);
+        }
+
+        .progress-fill::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: repeating-linear-gradient(
+                45deg,
+                transparent,
+                transparent 5px,
+                var(--primary-black) 5px,
+                var(--primary-black) 7px
+            );
+            animation: march 1s linear infinite;
+        }
+
+        /* Loading states */
+        .loading-brutalist {
+            width: 60px;
+            height: 60px;
+            background: var(--accent-yellow);
+            border: 4px solid var(--primary-black);
+            margin: 20px auto;
+            animation: brutalist-spin 2s linear infinite;
+            position: relative;
+        }
+
+        .loading-brutalist::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 20px;
+            height: 20px;
+            background: var(--accent-red);
+            border: 2px solid var(--primary-black);
+            transform: translate(-50%, -50%);
+        }
+
+        /* Button states demo */
+        .button-states {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            margin: 40px 0;
+        }
+
+        .btn-disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            background: var(--gray-medium);
+            color: var(--gray-dark);
+            transform: none !important;
+            box-shadow: 2px 2px 0px 0px var(--gray-dark) !important;
+        }
+
+        .btn-loading {
+            position: relative;
+            background: var(--gray-light);
+            color: transparent;
+        }
+
+        .btn-loading::after {
+            content: 'LOADING...';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: var(--primary-black);
+            font-weight: 900;
+            animation: blink 1s infinite;
+        }
+
+        /* Notification */
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 25px 35px;
+            background: var(--accent-yellow);
+            border: 4px solid var(--primary-black);
+            color: var(--primary-black);
+            font-weight: 900;
+            text-transform: uppercase;
+            transform: translateX(400px);
+            transition: transform 0.3s ease;
+            z-index: 1001;
+            box-shadow: var(--shadow-harsh);
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        /* Grid pattern overlay */
+        .grid-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            opacity: 0.02;
+            background-image: 
+                linear-gradient(var(--primary-black) 1px, transparent 1px),
+                linear-gradient(90deg, var(--primary-black) 1px, transparent 1px);
+            background-size: 20px 20px;
+            z-index: -1;
+        }
+
+        /* Animations */
+        @keyframes brutalist-spin {
+            0% { transform: rotate(0deg); }
+            25% { transform: rotate(90deg); }
+            50% { transform: rotate(180deg); }
+            75% { transform: rotate(270deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @keyframes march {
+            0% { transform: translateX(-10px); }
+            100% { transform: translateX(10px); }
+        }
+
+        @keyframes blink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0.3; }
+        }
+
+        @keyframes slide-in {
+            from {
+                transform: translateX(-100px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .slide-in {
+            animation: slide-in 0.4s ease-out;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+            }
+            
+            .components-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .button-states {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .hero h1 {
+                font-size: 3rem;
+            }
+
+            .btn {
+                margin-right: 0;
+                margin-bottom: 15px;
+            }
+        }
+
+        /* High contrast mode */
+        .high-contrast {
+            filter: contrast(1.5);
+        }
+
+        /* Accessibility */
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border: 0;
+        }
+
+        /* Print styles */
+        @media print {
+            .header { display: none; }
+            .btn { background: white !important; }
+            * { box-shadow: none !important; }
+        }
+    </style>
+</head>
+<body>
+    <div class="grid-overlay"></div>
+    
+    <header class="header">
+        <div class="container">
+            <nav class="nav">
+                <div class="logo">BRUTALISM</div>
+                <ul class="nav-links">
+                    <li><a href="#" class="nav-link">HOME</a></li>
+                    <li><a href="#" class="nav-link">DESIGN</a></li>
+                    <li><a href="#" class="nav-link">SYSTEM</a></li>
+                    <li><a href="#" class="nav-link">CONTACT</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <main class="main">
+        <section class="hero">
+            <div class="container">
+                <div class="hero-content">
+                    <h1>
+                        MINIMALIST
+                        <span class="accent">BRUTALISM</span>
+                    </h1>
+                    <p>Bold typography. Sharp edges. High contrast. A design system that makes no compromises and demands attention through pure geometric power.</p>
+                    <div class="button-states">
+                        <a href="#" class="btn btn-primary">START NOW</a>
+                        <a href="#" class="btn btn-secondary">EXPLORE</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="showcase">
+            <div class="container">
+                <h2 class="section-title">SYSTEM COMPONENTS</h2>
+                
+                <div class="components-grid">
+                    <div class="card slide-in">
+                        <h3>ACTION BUTTONS</h3>
+                        <p>High-impact interface elements with sharp shadows and precise interactions. No gradients. No curves. Pure function.</p>
+                        <div class="button-states" style="flex-direction: column; align-items: stretch;">
+                            <button class="btn btn-primary">PRIMARY ACTION</button>
+                            <button class="btn btn-secondary">SECONDARY ACTION</button>
+                            <button class="btn btn-outline">OUTLINE BUTTON</button>
+                            <button class="btn btn-primary btn-disabled">DISABLED STATE</button>
+                            <button class="btn btn-primary btn-loading">LOADING STATE</button>
+                        </div>
+                    </div>
+
+                    <div class="card card-black slide-in">
+                        <h3>DATA ENTRY</h3>
+                        <p>Form elements that demand attention and provide clear feedback. Every interaction is intentional and precise.</p>
+                        <div class="form-group">
+                            <label class="form-label">USERNAME</label>
+                            <input type="text" class="form-input" placeholder="ENTER USERNAME">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">PASSWORD</label>
+                            <input type="password" class="form-input" placeholder="ENTER PASSWORD">
+                        </div>
+                    </div>
+
+                    <div class="card card-accent slide-in">
+                        <h3>BINARY CONTROLS</h3>
+                        <p>Toggle switches with mechanical precision. On or off. Black or white. No ambiguity.</p>
+                        <div class="toggle-brutalist">
+                            <span class="form-label">DARK MODE</span>
+                            <label class="switch">
+                                <input type="checkbox" id="darkModeToggle">
+                                <span class="switch-slider"></span>
+                            </label>
+                        </div>
+                        <div class="toggle-brutalist">
+                            <span class="form-label">HIGH CONTRAST</span>
+                            <label class="switch">
+                                <input type="checkbox" id="contrastToggle" checked>
+                                <span class="switch-slider"></span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="card slide-in">
+                        <h3>PROGRESS TRACKING</h3>
+                        <p>Linear progress indicators with harsh geometric patterns. Progress is measured, not estimated.</p>
+                        <div class="progress-container">
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: 70%"></div>
+                            </div>
+                        </div>
+                        <div class="loading-brutalist"></div>
+                        <button class="btn btn-outline" onclick="updateProgressBrutalist()">UPDATE PROGRESS</button>
+                    </div>
+
+                    <div class="card card-black slide-in">
+                        <h3>SYSTEM FEEDBACK</h3>
+                        <p>Notifications and alerts that cut through interface noise with geometric precision and harsh contrasts.</p>
+                        <button class="btn btn-secondary" onclick="showNotificationBrutalist()">TRIGGER ALERT</button>
+                        <button class="btn btn-outline" onclick="triggerSlideAnimation()" style="margin-left: 15px;">ANIMATE CARDS</button>
+                    </div>
+
+                    <div class="card card-accent slide-in">
+                        <h3>TYPE HIERARCHY</h3>
+                        <p>Typography that commands respect through weight and scale. Every character has purpose.</p>
+                        <h1 style="font-size: 2.5rem; margin: 15px 0;">HEADING LEVEL 1</h1>
+                        <h2 style="font-size: 2rem; margin: 15px 0;">HEADING LEVEL 2</h2>
+                        <h3 style="font-size: 1.5rem; margin: 15px 0;">HEADING LEVEL 3</h3>
+                        <p style="font-weight: 600; margin: 15px 0;">Body text maintains hierarchy through weight and spacing. No decorative elements distract from content.</p>
+                        <small style="font-weight: 700; text-transform: uppercase;">CAPTION TEXT • METADATA • LABELS</small>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <div class="notification" id="notification-brutalist">
+        ⚠️ SYSTEM ALERT TRIGGERED
+    </div>
+
+    <script>
+        // Progress bar animation
+        function updateProgressBrutalist() {
+            const progressFill = document.querySelector('.progress-fill');
+            const currentWidth = parseInt(progressFill.style.width) || 0;
+            const newWidth = Math.min(currentWidth + 15, 100);
+            progressFill.style.width = newWidth + '%';
+            
+            if (newWidth >= 100) {
+                setTimeout(() => {
+                    progressFill.style.width = '0%';
+                }, 2000);
+            }
+        }
+
+        // Notification system
+        function showNotificationBrutalist() {
+            const notification = document.getElementById('notification-brutalist');
+            notification.classList.add('show');
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3500);
+        }
+
+        // Slide animation trigger
+        function triggerSlideAnimation() {
+            const cards = document.querySelectorAll('.card');
+            cards.forEach((card, index) => {
+                card.style.animation = 'none';
+                setTimeout(() => {
+                    card.style.animation = `slide-in 0.4s ease-out ${index * 0.1}s both`;
+                }, 100);
+            });
+        }
+
+        // Dark mode toggle
+        document.getElementById('darkModeToggle').addEventListener('change', function() {
+            if (this.checked) {
+                document.documentElement.style.setProperty('--primary-white', '#000000');
+                document.documentElement.style.setProperty('--primary-black', '#ffffff');
+                document.documentElement.style.setProperty('--gray-light', '#222222');
+            } else {
+                document.documentElement.style.setProperty('--primary-white', '#ffffff');
+                document.documentElement.style.setProperty('--primary-black', '#000000');
+                document.documentElement.style.setProperty('--gray-light', '#f5f5f5');
+            }
+        });
+
+        // High contrast toggle
+        document.getElementById('contrastToggle').addEventListener('change', function() {
+            document.body.classList.toggle('high-contrast', this.checked);
+        });
+
+        // Intersection Observer for slide animations
+        const observerBrutalist = new IntersectionObserver((entries) => {
+            entries.forEach((entry, index) => {
+                if (entry.isIntersecting) {
+                    setTimeout(() => {
+                        entry.target.style.animation = 'slide-in 0.4s ease-out both';
+                    }, index * 100);
+                }
+            });
+        }, {
+            threshold: 0.2,
+            rootMargin: '0px 0px -20px 0px'
+        });
+
+        // Observe cards for animation
+        document.querySelectorAll('.card').forEach(card => {
+            observerBrutalist.observe(card);
+        });
+
+        // Aggressive button feedback
+        document.querySelectorAll('.btn').forEach(btn => {
+            if (!btn.classList.contains('btn-disabled')) {
+                btn.addEventListener('mousedown', function() {
+                    this.style.transform = 'translate(4px, 4px)';
+                    this.style.boxShadow = '1px 1px 0px 0px var(--primary-black)';
+                });
+                
+                btn.addEventListener('mouseup', function() {
+                    this.style.transform = '';
+                    this.style.boxShadow = '';
+                });
+                
+                btn.addEventListener('mouseleave', function() {
+                    this.style.transform = '';
+                    this.style.boxShadow = '';
+                });
+            }
+        });
+
+        // Keyboard accessibility
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Tab') {
+                document.body.classList.add('keyboard-nav');
+            }
+        });
+
+        document.addEventListener('mousedown', function() {
+            document.body.classList.remove('keyboard-nav');
+        });
+
+        // Add focus styles for keyboard navigation
+        const style = document.createElement('style');
+        style.textContent = `
+            .keyboard-nav *:focus {
+                outline: 4px solid var(--accent-red) !important;
+                outline-offset: 2px !important;
+            }
+        `;
+        document.head.appendChild(style);
+    </script>
+</body>
+</html>
