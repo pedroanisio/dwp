@@ -173,6 +173,68 @@ async def refresh_plugins():
     return {"success": True, "message": "Plugins refreshed", "count": len(plugins)}
 
 
+@app.get("/api/plugin-compliance")
+async def check_plugin_compliance():
+    """
+    Check plugin compliance with the rule: ALL PLUGINS MUST DEFINE PYDANTIC RESPONSE MODELS
+    
+    Returns information about which plugins are compliant and which need to be updated.
+    """
+    all_plugins = plugin_manager.get_all_plugins()
+    non_compliant = plugin_manager.get_non_compliant_plugins()
+    
+    compliant_plugins = []
+    for plugin in all_plugins:
+        status = getattr(plugin, 'compliance_status', {})
+        if status.get('compliant', False):
+            compliant_plugins.append({
+                "plugin_id": plugin.id,
+                "plugin_name": plugin.name,
+                "response_model": status.get('response_model', 'Unknown')
+            })
+    
+    return {
+        "success": True,
+        "rule": "ALL PLUGINS MUST DEFINE PYDANTIC RESPONSE MODELS",
+        "summary": {
+            "total_plugins": len(all_plugins),
+            "compliant_count": len(compliant_plugins),
+            "non_compliant_count": len(non_compliant),
+            "compliance_percentage": round((len(compliant_plugins) / len(all_plugins) * 100) if all_plugins else 0, 2)
+        },
+        "compliant_plugins": compliant_plugins,
+        "non_compliant_plugins": non_compliant,
+        "fix_instructions": {
+            "steps": [
+                "Make your plugin class inherit from BasePlugin",
+                "Define a Pydantic response model inheriting from BasePluginResponse", 
+                "Implement the get_response_model() class method",
+                "Ensure execute() returns data that validates against your model"
+            ],
+            "example_code": """
+from typing import Dict, Any, Type
+from pydantic import BaseModel, Field
+from ...models.plugin import BasePlugin, BasePluginResponse
+
+class YourPluginResponse(BasePluginResponse):
+    result: str = Field(..., description="Your result field")
+    count: int = Field(..., description="Some count")
+
+class Plugin(BasePlugin):
+    @classmethod
+    def get_response_model(cls) -> Type[BasePluginResponse]:
+        return YourPluginResponse
+    
+    def execute(self, data: Dict[str, Any]) -> Dict[str, Any]:
+        return {
+            "result": "some value",
+            "count": 42
+        }
+            """
+        }
+    }
+
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000) 

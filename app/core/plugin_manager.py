@@ -1,7 +1,8 @@
 import time
 import shutil
 from typing import Dict, Any, Optional, List
-from ..models.plugin import PluginManifest, PluginInput, PluginOutput
+from pydantic import ValidationError
+from ..models.plugin import PluginManifest, PluginInput, PluginOutput, BasePlugin
 from ..models.response import PluginExecutionResponse
 from .plugin_loader import PluginLoader
 
@@ -17,6 +18,72 @@ class PluginManager:
         self.plugins = self.loader.discover_plugins()
         for plugin in self.plugins.values():
             self._check_dependencies(plugin)
+            self._validate_plugin_compliance(plugin)
+    
+    def _validate_plugin_compliance(self, plugin: PluginManifest):
+        """
+        Validate that the plugin complies with the rule that all plugins 
+        must define Pydantic response models.
+        """
+        try:
+            plugin_class = self.loader.get_plugin_class(plugin.id)
+            if not plugin_class:
+                plugin.compliance_status = {
+                    "compliant": False,
+                    "error": f"Could not load plugin class for '{plugin.id}'"
+                }
+                return
+            
+            # Check if plugin inherits from BasePlugin
+            if not issubclass(plugin_class, BasePlugin):
+                plugin.compliance_status = {
+                    "compliant": False,
+                    "error": f"Plugin '{plugin.id}' must inherit from BasePlugin"
+                }
+                return
+            
+            # Check if plugin implements get_response_model method
+            if not hasattr(plugin_class, 'get_response_model'):
+                plugin.compliance_status = {
+                    "compliant": False,
+                    "error": f"Plugin '{plugin.id}' must implement get_response_model() method"
+                }
+                return
+            
+            # Try to get the response model
+            try:
+                response_model = plugin_class.get_response_model()
+                if not response_model:
+                    plugin.compliance_status = {
+                        "compliant": False,
+                        "error": f"Plugin '{plugin.id}' get_response_model() returned None"
+                    }
+                    return
+                
+                # Verify it's a Pydantic model
+                if not hasattr(response_model, '__fields__'):
+                    plugin.compliance_status = {
+                        "compliant": False,
+                        "error": f"Plugin '{plugin.id}' response model must be a Pydantic BaseModel"
+                    }
+                    return
+                
+                plugin.compliance_status = {
+                    "compliant": True,
+                    "response_model": response_model.__name__
+                }
+                
+            except Exception as e:
+                plugin.compliance_status = {
+                    "compliant": False,
+                    "error": f"Plugin '{plugin.id}' get_response_model() failed: {str(e)}"
+                }
+                
+        except Exception as e:
+            plugin.compliance_status = {
+                "compliant": False,
+                "error": f"Plugin '{plugin.id}' compliance check failed: {str(e)}"
+            }
     
     def _check_dependencies(self, plugin: PluginManifest):
         """Check plugin dependencies and update its status"""
@@ -40,6 +107,18 @@ class PluginManager:
         """Get a specific plugin by ID"""
         return self.plugins.get(plugin_id)
     
+    def get_non_compliant_plugins(self) -> List[Dict[str, Any]]:
+        """Get list of plugins that don't comply with the response model rule"""
+        non_compliant = []
+        for plugin in self.plugins.values():
+            if hasattr(plugin, 'compliance_status') and not plugin.compliance_status.get("compliant", False):
+                non_compliant.append({
+                    "plugin_id": plugin.id,
+                    "plugin_name": plugin.name,
+                    "error": plugin.compliance_status.get("error", "Unknown compliance error")
+                })
+        return non_compliant
+    
     def execute_plugin(self, plugin_input: PluginInput) -> PluginExecutionResponse:
         """Execute a plugin with the given input"""
         start_time = time.time()
@@ -53,6 +132,17 @@ class PluginManager:
                     error=f"Plugin '{plugin_input.plugin_id}' not found"
                 )
             
+            # Get plugin manifest
+            manifest = self.plugins[plugin_input.plugin_id]
+            
+            # Check plugin compliance
+            if hasattr(manifest, 'compliance_status') and not manifest.compliance_status.get("compliant", False):
+                return PluginExecutionResponse(
+                    success=False,
+                    plugin_id=plugin_input.plugin_id,
+                    error=f"Plugin '{plugin_input.plugin_id}' is not compliant: {manifest.compliance_status.get('error', 'Unknown error')}"
+                )
+            
             # Load plugin class
             plugin_class = self.loader.get_plugin_class(plugin_input.plugin_id)
             if not plugin_class:
@@ -61,9 +151,6 @@ class PluginManager:
                     plugin_id=plugin_input.plugin_id,
                     error=f"Could not load plugin class for '{plugin_input.plugin_id}'"
                 )
-            
-            # Validate input against plugin manifest
-            manifest = self.plugins[plugin_input.plugin_id]
 
             # Check if dependencies are met before execution
             if hasattr(manifest, 'dependency_status') and not manifest.dependency_status["all_met"]:
@@ -84,6 +171,24 @@ class PluginManager:
             # Execute plugin
             plugin_instance = plugin_class()
             result = plugin_instance.execute(plugin_input.data)
+            
+            # Validate response against plugin's response model
+            try:
+                validated_response = plugin_instance.validate_response(result)
+                # Convert back to dict for consistent API
+                result = validated_response.dict()
+            except ValidationError as e:
+                return PluginExecutionResponse(
+                    success=False,
+                    plugin_id=plugin_input.plugin_id,
+                    error=f"Plugin response validation failed: {str(e)}"
+                )
+            except Exception as e:
+                return PluginExecutionResponse(
+                    success=False,
+                    plugin_id=plugin_input.plugin_id,
+                    error=f"Plugin response validation error: {str(e)}"
+                )
             
             execution_time = time.time() - start_time
             

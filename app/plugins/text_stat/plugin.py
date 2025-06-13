@@ -1,10 +1,31 @@
 import re
-from typing import Dict, Any
+from typing import Dict, Any, Type
 from collections import Counter
+from pydantic import BaseModel, Field
+from ...models.plugin import BasePlugin, BasePluginResponse
 
 
-class Plugin:
+class TextStatResponse(BasePluginResponse):
+    """Pydantic model for text statistics plugin response"""
+    character_count: int = Field(..., description="Total number of characters including spaces and punctuation")
+    character_count_no_spaces: int = Field(..., description="Total number of characters excluding spaces")
+    word_count: int = Field(..., description="Total number of words")
+    line_count: int = Field(..., description="Total number of lines")
+    unique_words: int = Field(..., description="Number of unique words (case-insensitive)")
+    unique_characters: int = Field(..., description="Number of unique characters")
+    word_frequency: Dict[str, int] = Field(..., description="Frequency count of each word")
+    character_frequency: Dict[str, int] = Field(..., description="Frequency count of each character")
+    average_word_length: float = Field(..., description="Average length of words")
+    sentence_count: int = Field(..., description="Estimated number of sentences")
+
+
+class Plugin(BasePlugin):
     """Text Statistics Plugin - Analyzes text and provides comprehensive statistics"""
+    
+    @classmethod
+    def get_response_model(cls) -> Type[BasePluginResponse]:
+        """Return the Pydantic model for this plugin's response"""
+        return TextStatResponse
     
     def execute(self, data: Dict[str, Any]) -> Dict[str, Any]:
         """
@@ -14,13 +35,24 @@ class Plugin:
             data: Dictionary containing 'text' key with the text to analyze
             
         Returns:
-            Dictionary with comprehensive text statistics
+            Dictionary with comprehensive text statistics that validates against TextStatResponse
         """
         text = data.get('text', '')
         
         if not text:
+            # For error cases, we might want to have a separate error response model
+            # For now, we'll return a valid response with zeros
             return {
-                "error": "No text provided for analysis"
+                "character_count": 0,
+                "character_count_no_spaces": 0,
+                "word_count": 0,
+                "line_count": 0,
+                "unique_words": 0,
+                "unique_characters": 0,
+                "word_frequency": {},
+                "character_frequency": {},
+                "average_word_length": 0.0,
+                "sentence_count": 0
             }
         
         # Basic counts
@@ -42,7 +74,7 @@ class Plugin:
         character_frequency = dict(Counter(text))
         
         # Advanced statistics
-        average_word_length = sum(len(word) for word in words) / word_count if word_count > 0 else 0
+        average_word_length = sum(len(word) for word in words) / word_count if word_count > 0 else 0.0
         sentence_count = self._count_sentences(text)
         
         return {

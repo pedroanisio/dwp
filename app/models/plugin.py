@@ -1,6 +1,7 @@
-from typing import Dict, Any, List, Optional, Union
+from typing import Dict, Any, List, Optional, Union, Type
 from pydantic import BaseModel, Field
 from enum import Enum
+from abc import ABC, abstractmethod
 
 
 class InputFieldType(str, Enum):
@@ -64,4 +65,62 @@ class PluginOutput(BaseModel):
     plugin_id: str
     success: bool
     data: Optional[Dict[str, Any]] = None
-    error: Optional[str] = None 
+    error: Optional[str] = None
+
+
+class BasePluginResponse(BaseModel):
+    """Base class for all plugin response models"""
+    pass
+
+
+class BasePlugin(ABC):
+    """
+    Base class for all plugins. 
+    
+    RULE: All plugins MUST define a Pydantic model for their response by implementing
+    the get_response_model() method and ensure their execute() method returns data
+    that validates against this model.
+    """
+    
+    @abstractmethod
+    def execute(self, data: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Execute the plugin with the given input data.
+        
+        Args:
+            data: Input data dictionary
+            
+        Returns:
+            Dictionary that MUST validate against the model returned by get_response_model()
+        """
+        pass
+    
+    @classmethod
+    @abstractmethod
+    def get_response_model(cls) -> Type[BasePluginResponse]:
+        """
+        Return the Pydantic model class that defines the structure of this plugin's response.
+        
+        This is REQUIRED for all plugins. The response from execute() must validate
+        against this model.
+        
+        Returns:
+            Pydantic model class inheriting from BasePluginResponse
+        """
+        pass
+    
+    def validate_response(self, response_data: Dict[str, Any]) -> BasePluginResponse:
+        """
+        Validate the response data against the plugin's response model.
+        
+        Args:
+            response_data: The response data to validate
+            
+        Returns:
+            Validated response model instance
+            
+        Raises:
+            ValidationError: If the response doesn't match the model
+        """
+        response_model = self.get_response_model()
+        return response_model(**response_data) 

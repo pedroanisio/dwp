@@ -1,0 +1,116 @@
+{
+  "id": "web_sentence_analyzer",
+  "name": "Web Sentence Analyzer",
+  "version": "1.0.0",
+  "description": "Fetches a webpage, extracts and analyzes sentences, providing frequency counts and statistics. Useful for content analysis, SEO research, and text mining from web sources.",
+  "author": "Plugin System User",
+  "inputs": [
+    {
+      "name": "url",
+      "label": "Website URL",
+      "field_type": "text",
+      "required": true,
+      "placeholder": "https://example.com",
+      "validation": {
+        "min_length": 8,
+        "max_length": 2000
+      },
+      "help": "Enter the full URL of the webpage you want to analyze (must include http:// or https://)"
+    },
+    {
+      "name": "max_sentences",
+      "label": "Maximum Sentences to Return",
+      "field_type": "number",
+      "required": false,
+      "default_value": 50,
+      "validation": {
+        "min": 1,
+        "max": 1000
+      },
+      "help": "Limit the number of sentences in the results (default: 50)"
+    },
+    {
+      "name": "min_sentence_length",
+      "label": "Minimum Sentence Length",
+      "field_type": "number",
+      "required": false,
+      "default_value": 10,
+      "validation": {
+        "min": 1,
+        "max": 200
+      },
+      "help": "Filter out sentences shorter than this number of characters (default: 10)"
+    }
+  ],
+  "output": {
+    "name": "webSentenceAnalysis",
+    "description": "Comprehensive analysis of sentences found on the webpage",
+    "schema": {
+      "type": "object",
+      "properties": {
+        "url": {
+          "type": "string",
+          "description": "The analyzed URL"
+        },
+        "total_sentences": {
+          "type": "integer",
+          "description": "Total number of sentences found"
+        },
+        "unique_sentences": {
+          "type": "integer",
+          "description": "Number of unique sentences"
+        },
+        "most_common_sentences": {
+          "type": "array",
+          "description": "List of sentences sorted by frequency",
+          "items": {
+            "type": "object",
+            "properties": {
+              "sentence": {
+                "type": "string",
+                "description": "The sentence text"
+              },
+              "frequency": {
+                "type": "integer",
+                "description": "How many times this sentence appears"
+              },
+              "rank": {
+                "type": "integer",
+                "description": "Ranking by frequency"
+              }
+            }
+          }
+        },
+        "page_title": {
+          "type": "string",
+          "description": "Title of the webpage"
+        },
+        "total_text_length": {
+          "type": "integer",
+          "description": "Total character count of extracted text"
+        },
+        "average_sentence_length": {
+          "type": "number",
+          "description": "Average length of sentences in characters"
+        }
+      }
+    }
+  },
+  "dependencies": {
+    "python": [
+      {
+        "name": "requests",
+        "help": "Install with: pip install requests"
+      },
+      {
+        "name": "beautifulsoup4",
+        "help": "Install with: pip install beautifulsoup4"
+      },
+      {
+        "name": "nltk",
+        "help": "Install with: pip install nltk"
+      }
+    ]
+  },
+  "tags": ["web", "scraping", "text", "analysis", "sentences", "nlp"]
+} 
