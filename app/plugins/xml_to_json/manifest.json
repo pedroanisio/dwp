@@ -1,0 +1,25 @@
+{
+  "id": "xml_to_json",
+  "name": "XML to Structured JSON",
+  "version": "1.0.0",
+  "description": "Parses a structured XML file into a nested JSON document using a predefined Pydantic model, ideal for creating AI/LLM datasets.",
+  "author": "AI Assistant",
+  "inputs": [
+    {
+      "name": "input_file",
+      "label": "XML Source File",
+      "field_type": "file",
+      "required": true,
+      "validation": {
+        "allowed_extensions": ["xml"]
+      },
+      "help": "Upload the XML file to be parsed into a structured JSON document."
+    }
+  ],
+  "output": {
+    "name": "json_file",
+    "description": "The structured JSON output file."
+  },
+  "tags": ["xml", "json", "parser", "dataset"],
+  "dependencies": {}
+} 
