@@ -37,43 +37,35 @@ The application comes with several pre-built plugins to demonstrate its capabili
 
 **Note**: Some existing plugins may need to be updated to comply with the response model rule. Use the compliance checker to identify which plugins need updates.
 
-## 🛠️ Getting Started
+## ��️ Getting Started
 
-Follow these steps to get the application up and running:
+### Prerequisites
 
-### 1. Installation
+- Python 3.9+
+- Node.js and npm
 
-First, clone the repository and install the required Python dependencies:
+### Installation
 
-```bash
-pip install -r requirements.txt
-```
-
-### 2. Install External Dependencies
-
-Some plugins, like the Pandoc Converter, rely on external command-line tools. You'll need to install `pandoc` on your system. On Debian/Ubuntu, you can do so with:
-
-```bash
-sudo apt-get update && sudo apt-get install pandoc
-```
-
-### 3. Running the Application
-
-Once everything is installed, you can run the web server:
-
-```bash
-uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
-```
-
-The application will be available at <http://localhost:8000>.
-
-### 4. Check Plugin Compliance
-
-Check that all plugins follow the response model rule:
-
-```bash
-python check_plugin_compliance.py
-```
+1.  Clone the repository:
+    ```bash
+    git clone https://github.com/pedroanisio/dwp.git
+    ```
+2.  Install Python dependencies:
+    ```bash
+    pip install -r requirements.txt
+    ```
+3.  Install Node.js dependencies:
+    ```bash
+    npm install
+    ```
+4.  Build the CSS:
+    ```bash
+    npm run build-css
+    ```
+5.  Run the application:
+    ```bash
+    uvicorn app.main:app --reload
+    ```
 
 ## 🔌 Developing a New Plugin
 
