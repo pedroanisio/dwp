@@ -1,0 +1,27 @@
+{
+  "name": "dynamic-web-plugins",
+  "version": "1.0.0",
+  "description": "This project is a modern, web-based application that features a dynamic plugin system built with FastAPI and Pydantic. Each plugin can define its own user interface and I/O specifications through a simple, yet powerful, manifest-driven architecture. The system automatically discovers and loads plugins at runtime, making it highly extensible and easy to maintain.",
+  "main": "index.js",
+  "scripts": {
+    "build-css": "./node_modules/.bin/tailwindcss -i ./app/static/css/src/main.css -o ./app/static/css/dist/main.css",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/pedroanisio/dwp.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/pedroanisio/dwp/issues"
+  },
+  "homepage": "https://github.com/pedroanisio/dwp#readme",
+  "devDependencies": {
+    "@tailwindcss/cli": "^4.1.10",
+    "autoprefixer": "^10.4.21",
+    "postcss": "^8.5.5",
+    "tailwindcss": "^4.1.10"
+  }
+}
