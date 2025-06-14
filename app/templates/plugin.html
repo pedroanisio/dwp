@@ -1,35 +1,48 @@
 {% extends "base.html" %}
+{% from "components/button.html" import button %}
 
 {% block title %}{{ plugin.name|upper }} - NEURAL MODULE{% endblock %}
 
 {% block content %}
-<div class="container">
+<div class="container mx-auto">
     <!-- Breadcrumb Navigation -->
-    <div class="breadcrumb mt-3">
-        <ol>
-            <li><a href="/">NEURAL MATRIX</a></li>
-            <li>{{ plugin.name|upper }}</li>
-        </ol>
+    <div class="my-4">
+        <nav class="flex" aria-label="Breadcrumb">
+            <ol class="inline-flex items-center space-x-1 md:space-x-3">
+                <li class="inline-flex items-center">
+                    <a href="/" class="inline-flex items-center text-sm font-medium text-muted-foreground hover:text-primary">
+                        <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"></path></svg>
+                        NEURAL MATRIX
+                    </a>
+                </li>
+                <li>
+                    <div class="flex items-center">
+                        <svg class="w-6 h-6 text-muted-foreground" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path></svg>
+                        <span class="ml-1 text-sm font-medium text-foreground md:ml-2">{{ plugin.name|upper }}</span>
+                    </div>
+                </li>
+            </ol>
+        </nav>
     </div>
 
-    <div class="row mt-4">
+    <div class="flex flex-wrap -mx-4">
         <!-- Main Plugin Interface -->
-        <div class="col-12 col-lg-8">
-            <div class="card">
-                <div class="card-header">
-                    <h2 class="card-title">{{ plugin.name|upper }}</h2>
-                    <small class="text-secondary">Version {{ plugin.version }} | Neural Interface</small>
+        <div class="w-full lg:w-2/3 px-4">
+            <div class="bg-card text-card-foreground rounded-lg shadow-md">
+                <div class="p-4 border-b border-border">
+                    <h2 class="text-2xl font-bold">{{ plugin.name|upper }}</h2>
+                    <p class="text-sm text-muted-foreground">Version {{ plugin.version }} | Neural Interface</p>
                 </div>
-                <div class="card-body">
+                <div class="p-4">
                     <p class="mb-4">{{ plugin.description }}</p>
                     
                     <!-- Dependency Status Alert -->
                     {% if plugin.dependency_status and not plugin.dependency_status.all_met %}
-                    <div class="alert alert-secondary mb-4">
-                        <strong>⚠️ DEPENDENCY ERROR</strong><br>
+                    <div class="p-4 mb-4 text-sm text-yellow-700 bg-yellow-100 rounded-lg" role="alert">
+                        <span class="font-medium">⚠️ DEPENDENCY ERROR</span><br>
                         This neural module requires external dependencies to function properly.
                         {% if plugin.dependency_status.details %}
-                        <ul class="mt-2 mb-0">
+                        <ul class="mt-2 list-disc list-inside">
                             {% for dep in plugin.dependency_status.details %}
                                 {% if not dep.met %}
                                 <li>{{ dep.name }} - Missing required system component</li>
@@ -41,107 +54,49 @@
                     {% endif %}
                     
                     <!-- Plugin Execution Form -->
-                    <form action="/plugin/{{ plugin.id }}/execute" method="post" enctype="multipart/form-data" id="pluginForm">
+                    <form action="/plugin/{{ plugin.id }}/execute" method="post" enctype="multipart/form-data" id="pluginForm" class="space-y-4">
                         {% for input_field in plugin.inputs %}
-                        <div class="form-group">
-                            <label for="{{ input_field.name }}" class="form-label">
+                        <div>
+                            <label for="{{ input_field.name }}" class="block mb-2 text-sm font-medium text-foreground">
                                 {{ input_field.label|upper }}
                                 {% if input_field.required %}
-                                    <span class="text-accent">*</span>
+                                    <span class="text-red-500">*</span>
                                 {% endif %}
                             </label>
                             
                             {% if input_field.field_type == "text" %}
-                                <input type="text" 
-                                       id="{{ input_field.name }}" 
-                                       name="{{ input_field.name }}"
-                                       class="form-control"
-                                       {% if input_field.placeholder %}placeholder="{{ input_field.placeholder }}"{% endif %}
-                                       {% if input_field.required %}required{% endif %}
-                                       {% if input_field.default_value %}value="{{ input_field.default_value }}"{% endif %}>
-                            
+                                <input type="text" id="{{ input_field.name }}" name="{{ input_field.name }}" class="bg-input border border-border text-foreground text-sm rounded-lg focus:ring-primary focus:border-primary block w-full p-2.5" {% if input_field.placeholder %}placeholder="{{ input_field.placeholder }}"{% endif %} {% if input_field.required %}required{% endif %} {% if input_field.default_value %}value="{{ input_field.default_value }}"{% endif %}>
                             {% elif input_field.field_type == "textarea" %}
-                                <textarea id="{{ input_field.name }}" 
-                                          name="{{ input_field.name }}"
-                                          class="form-control"
-                                          rows="8"
-                                          {% if input_field.placeholder %}placeholder="{{ input_field.placeholder }}"{% endif %}
-                                          {% if input_field.required %}required{% endif %}>{% if input_field.default_value %}{{ input_field.default_value }}{% endif %}</textarea>
-                            
+                                <textarea id="{{ input_field.name }}" name="{{ input_field.name }}" rows="8" class="block p-2.5 w-full text-sm text-foreground bg-input rounded-lg border border-border focus:ring-primary focus:border-primary" {% if input_field.placeholder %}placeholder="{{ input_field.placeholder }}"{% endif %} {% if input_field.required %}required{% endif %}>{% if input_field.default_value %}{{ input_field.default_value }}{% endif %}</textarea>
                             {% elif input_field.field_type == "number" %}
-                                <input type="number" 
-                                       id="{{ input_field.name }}" 
-                                       name="{{ input_field.name }}"
-                                       class="form-control"
-                                       {% if input_field.placeholder %}placeholder="{{ input_field.placeholder }}"{% endif %}
-                                       {% if input_field.required %}required{% endif %}
-                                       {% if input_field.default_value %}value="{{ input_field.default_value }}"{% endif %}>
-                            
+                                <input type="number" id="{{ input_field.name }}" name="{{ input_field.name }}" class="bg-input border border-border text-foreground text-sm rounded-lg focus:ring-primary focus:border-primary block w-full p-2.5" {% if input_field.placeholder %}placeholder="{{ input_field.placeholder }}"{% endif %} {% if input_field.required %}required{% endif %} {% if input_field.default_value %}value="{{ input_field.default_value }}"{% endif %}>
                             {% elif input_field.field_type == "select" %}
-                                <select id="{{ input_field.name }}" 
-                                        name="{{ input_field.name }}"
-                                        class="form-control"
-                                        {% if input_field.required %}required{% endif %}>
-                                    {% if not input_field.required %}
-                                        <option value="">CHOOSE OPTION...</option>
-                                    {% endif %}
-                                    {% if input_field.options %}
-                                        {% for option in input_field.options %}
-                                            <option value="{{ option }}" 
-                                                    {% if input_field.default_value == option %}selected{% endif %}>
-                                                {{ option|upper }}
-                                            </option>
-                                        {% endfor %}
-                                    {% endif %}
+                                <select id="{{ input_field.name }}" name="{{ input_field.name }}" class="bg-input border border-border text-foreground text-sm rounded-lg focus:ring-primary focus:border-primary block w-full p-2.5">
+                                    {% if not input_field.required %}<option value="">CHOOSE OPTION...</option>{% endif %}
+                                    {% for option in input_field.options %}<option value="{{ option }}" {% if input_field.default_value == option %}selected{% endif %}>{{ option|upper }}</option>{% endfor %}
                                 </select>
-                            
                             {% elif input_field.field_type == "checkbox" %}
-                                <div class="form-check">
-                                    <input type="checkbox" 
-                                           id="{{ input_field.name }}" 
-                                           name="{{ input_field.name }}"
-                                           value="true"
-                                           {% if input_field.default_value %}checked{% endif %}>
-                                    <label for="{{ input_field.name }}">
-                                        ENABLE {{ input_field.label|upper }}
-                                    </label>
+                                <div class="flex items-center">
+                                    <input id="{{ input_field.name }}" name="{{ input_field.name }}" type="checkbox" value="true" class="w-4 h-4 text-primary bg-gray-100 border-gray-300 rounded focus:ring-primary" {% if input_field.default_value %}checked{% endif %}>
+                                    <label for="{{ input_field.name }}" class="ml-2 text-sm font-medium text-foreground">ENABLE {{ input_field.label|upper }}</label>
                                 </div>
-                            
                             {% elif input_field.field_type == "file" %}
-                                <input type="file" 
-                                       id="{{ input_field.name }}" 
-                                       name="{{ input_field.name }}"
-                                       class="form-control"
-                                       {% if input_field.validation and input_field.validation.allowed_extensions %}
-                                       accept=".{{ input_field.validation.allowed_extensions | join(',.') }}"
-                                       {% endif %}
-                                       {% if input_field.required %}required{% endif %}>
+                                <input type="file" id="{{ input_field.name }}" name="{{ input_field.name }}" class="block w-full text-sm text-foreground border border-border rounded-lg cursor-pointer bg-input focus:outline-none" {% if input_field.validation and input_field.validation.allowed_extensions %}accept=".{{ input_field.validation.allowed_extensions | join(',.') }}"{% endif %} {% if input_field.required %}required{% endif %}>
                             {% endif %}
                             
-                            {% if input_field.validation %}
-                                <small class="text-secondary">
-                                    {% if input_field.validation.min_length %}
-                                        Min {{ input_field.validation.min_length }} characters. 
-                                    {% endif %}
-                                    {% if input_field.validation.max_length %}
-                                        Max {{ input_field.validation.max_length }} characters.
-                                    {% endif %}
-                                    {% if input_field.validation.allowed_extensions %}
-                                        Allowed: {{ input_field.validation.allowed_extensions | join(', ') | upper }}
-                                    {% endif %}
-                                </small>
-                            {% endif %}
-                            
-                            {% if input_field.help_text %}
-                                <small class="text-secondary">{{ input_field.help_text }}</small>
+                            {% if input_field.validation or input_field.help_text %}
+                                <p class="mt-2 text-xs text-muted-foreground">
+                                    {% if input_field.validation.min_length %}Min {{ input_field.validation.min_length }} characters. {% endif %}
+                                    {% if input_field.validation.max_length %}Max {{ input_field.validation.max_length }} characters. {% endif %}
+                                    {% if input_field.validation.allowed_extensions %}Allowed: {{ input_field.validation.allowed_extensions | join(', ') | upper }} {% endif %}
+                                    {% if input_field.help_text %}{{ input_field.help_text }}{% endif %}
+                                </p>
                             {% endif %}
                         </div>
                         {% endfor %}
                         
-                        <div class="text-center mt-4">
-                            <button type="submit" id="executeBtn" class="btn btn-primary">
-                                EXECUTE MODULE
-                            </button>
+                        <div class="text-center">
+                            {{ button(variant='primary', text='EXECUTE MODULE', id='executeBtn') }}
                         </div>
                     </form>
                 </div>
@@ -149,46 +104,46 @@
         </div>
         
         <!-- Plugin Information Sidebar -->
-        <div class="col-12 col-lg-4">
+        <div class="w-full lg:w-1/3 px-4">
             <!-- System Information -->
-            <div class="card mb-4">
-                <div class="card-header">
-                    <h5 class="card-title">SYSTEM INFORMATION</h5>
+            <div class="mb-4 bg-card text-card-foreground rounded-lg shadow-md">
+                <div class="p-4 border-b border-border">
+                    <h5 class="text-xl font-bold">SYSTEM INFORMATION</h5>
                 </div>
-                <div class="card-body">
-                    <dl>
-                        <dt>Module ID:</dt>
+                <div class="p-4">
+                    <dl class="grid grid-cols-2 gap-2">
+                        <dt class="font-bold">Module ID:</dt>
                         <dd><code>{{ plugin.id }}</code></dd>
                         
-                        <dt>Version:</dt>
+                        <dt class="font-bold">Version:</dt>
                         <dd>{{ plugin.version }}</dd>
                         
                         {% if plugin.author %}
-                        <dt>Author:</dt>
+                        <dt class="font-bold">Author:</dt>
                         <dd>{{ plugin.author }}</dd>
                         {% endif %}
                         
-                        <dt>Input Fields:</dt>
+                        <dt class="font-bold">Input Fields:</dt>
                         <dd>{{ plugin.inputs|length }} field(s)</dd>
                         
-                        <dt>Output Format:</dt>
+                        <dt class="font-bold">Output Format:</dt>
                         <dd>{{ plugin.output.name }}</dd>
                         
-                        <dt>Status:</dt>
+                        <dt class="font-bold">Status:</dt>
                         <dd>
                             {% if plugin.dependency_status and plugin.dependency_status.all_met %}
-                                <span class="text-success">✓ OPERATIONAL</span>
+                                <span class="text-green-500">✓ OPERATIONAL</span>
                             {% else %}
-                                <span class="text-accent">⚠ ERROR</span>
+                                <span class="text-red-500">⚠ ERROR</span>
                             {% endif %}
                         </dd>
                     </dl>
                     
                     {% if plugin.tags %}
                     <div class="mt-3">
-                        <strong class="text-primary">Tags:</strong><br>
+                        <strong class="font-bold">Tags:</strong><br>
                         {% for tag in plugin.tags %}
-                            <span class="badge">{{ tag|upper }}</span>
+                            <span class="inline-block bg-secondary text-secondary-foreground text-xs font-semibold mr-2 px-2.5 py-0.5 rounded-full">{{ tag|upper }}</span>
                         {% endfor %}
                     </div>
                     {% endif %}
@@ -197,18 +152,18 @@
             
             <!-- Dependencies Status -->
             {% if plugin.dependency_status and plugin.dependency_status.details %}
-            <div class="card mb-4">
-                <div class="card-header">
-                    <h5 class="card-title">DEPENDENCIES</h5>
+            <div class="mb-4 bg-card text-card-foreground rounded-lg shadow-md">
+                <div class="p-4 border-b border-border">
+                    <h5 class="text-xl font-bold">DEPENDENCIES</h5>
                 </div>
-                <div class="card-body">
+                <div class="p-4 space-y-2">
                     {% for dep in plugin.dependency_status.details %}
-                    <div class="mb-2">
+                    <div>
                         <strong>{{ dep.name }}</strong><br>
                         {% if dep.met %}
-                            <span class="text-success">✓ INSTALLED</span>
+                            <span class="text-green-500">✓ INSTALLED</span>
                         {% else %}
-                            <span class="text-accent">✗ MISSING</span>
+                            <span class="text-red-500">✗ MISSING</span>
                         {% endif %}
                     </div>
                     {% endfor %}
@@ -217,22 +172,20 @@
             {% endif %}
             
             <!-- Output Schema -->
-            <div class="card">
-                <div class="card-header">
-                    <h5 class="card-title">OUTPUT SCHEMA</h5>
+            <div class="bg-card text-card-foreground rounded-lg shadow-md">
+                <div class="p-4 border-b border-border">
+                    <h5 class="text-xl font-bold">OUTPUT SCHEMA</h5>
                 </div>
-                <div class="card-body">
-                    <h6>{{ plugin.output.name|upper }}</h6>
-                    <p class="text-secondary">{{ plugin.output.description }}</p>
+                <div class="p-4">
+                    <h6 class="font-bold">{{ plugin.output.name|upper }}</h6>
+                    <p class="text-muted-foreground">{{ plugin.output.description }}</p>
                     
-                    <div class="accordion mt-3">
-                        <div class="accordion-header">
-                            <button type="button" class="accordion-button" onclick="toggleSchema()">
-                                VIEW JSON SCHEMA
-                            </button>
-                        </div>
-                        <div id="schemaCollapse" class="accordion-body hidden">
-                            <pre><code>{{ plugin.output.schema_definition | tojsonpretty }}</code></pre>
+                    <div class="mt-3">
+                        <button type="button" class="w-full text-left p-2 bg-muted hover:bg-muted/80 rounded-lg font-bold" onclick="toggleSchema()">
+                            VIEW JSON SCHEMA
+                        </button>
+                        <div id="schemaCollapse" class="hidden mt-2 p-2 bg-input rounded-lg">
+                            <pre class="text-sm"><code>{{ plugin.output.schema_definition | tojsonpretty }}</code></pre>
                         </div>
                     </div>
                 </div>

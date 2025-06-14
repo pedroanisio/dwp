@@ -3,79 +3,75 @@
 {% block title %}NEURAL INTERFACE GUIDE{% endblock %}
 
 {% block content %}
-<div class="container">
+<div class="container mx-auto">
     <!-- Hero Section -->
-    <div class="hero">
-        <div class="text-center">
-            <h1 class="glitch" data-text="NEURAL INTERFACE GUIDE">NEURAL INTERFACE GUIDE</h1>
-            <p class="text-secondary">Complete documentation for building and deploying neural plugin modules</p>
-        </div>
+    <div class="py-12 text-center">
+        <h1 class="text-4xl font-bold">NEURAL INTERFACE GUIDE</h1>
+        <p class="text-muted-foreground">Complete documentation for building and deploying neural plugin modules</p>
     </div>
 
-    <div class="row">
-        <div class="col-12 col-lg-9">
+    <div class="flex flex-wrap -mx-4">
+        <div class="w-full lg:w-3/4 px-4">
             <!-- Introduction Card -->
-            <div class="card mb-5">
-                <div class="card-header">
-                    <h2 class="card-title">SYSTEM OVERVIEW</h2>
+            <div class="mb-8 bg-card text-card-foreground rounded-lg shadow-md">
+                <div class="p-4 border-b border-border">
+                    <h2 class="text-2xl font-bold">SYSTEM OVERVIEW</h2>
                 </div>
-                <div class="card-body">
+                <div class="p-4">
                     <p>This neural interface guide provides complete specifications for creating, testing, and deploying custom plugin modules within the matrix. Each module is an autonomous unit with defined inputs, outputs, and processing capabilities.</p>
                     
-                    <div class="alert alert-primary mt-3">
+                    <div class="mt-4 p-4 bg-primary/10 text-primary rounded-lg">
                         <strong>⚡ NEURAL ARCHITECTURE:</strong> All modules are self-contained within the <code>app/plugins/</code> directory and auto-discovered by the system matrix.
                     </div>
                 </div>
             </div>
 
             <!-- Plugin Anatomy -->
-            <div class="card mb-5">
-                <div class="card-header">
-                    <h2 class="card-title">MODULE ARCHITECTURE</h2>
+            <div class="mb-8 bg-card text-card-foreground rounded-lg shadow-md">
+                <div class="p-4 border-b border-border">
+                    <h2 class="text-2xl font-bold">MODULE ARCHITECTURE</h2>
                 </div>
-                <div class="card-body">
+                <div class="p-4">
                     <p>Every neural module requires two core components for system integration:</p>
                     
-                    <div class="row mt-4">
-                        <div class="col-12 col-md-6">
-                            <div class="alert alert-secondary">
-                                <h4 class="text-primary">manifest.json</h4>
+                    <div class="flex flex-wrap -mx-2 mt-4">
+                        <div class="w-full md:w-1/2 px-2">
+                            <div class="p-4 bg-secondary text-secondary-foreground rounded-lg">
+                                <h4 class="font-bold text-lg">manifest.json</h4>
                                 <p class="mb-0">Defines module metadata, UI specifications, and dependency requirements for system integration.</p>
                             </div>
                         </div>
-                        <div class="col-12 col-md-6">
-                            <div class="alert alert-secondary">
-                                <h4 class="text-accent">plugin.py</h4>
+                        <div class="w-full md:w-1/2 px-2">
+                            <div class="p-4 bg-secondary text-secondary-foreground rounded-lg">
+                                <h4 class="font-bold text-lg">plugin.py</h4>
                                 <p class="mb-0">Contains the core processing logic and execution algorithms for the neural module.</p>
                             </div>
                         </div>
                     </div>
                     
-                    <div class="alert alert-success mt-3">
+                    <div class="mt-4 p-4 bg-green-500/10 text-green-500 rounded-lg">
                         <strong>NOTE:</strong> For modules with internal Python packages, include an empty <code>__init__.py</code> file in the module directory.
                     </div>
                 </div>
             </div>
 
             <!-- Development Steps -->
-            <div class="card mb-5">
-                <div class="card-header">
-                    <h2 class="card-title">DEVELOPMENT PROTOCOL</h2>
+            <div class="mb-8 bg-card text-card-foreground rounded-lg shadow-md">
+                <div class="p-4 border-b border-border">
+                    <h2 class="text-2xl font-bold">DEVELOPMENT PROTOCOL</h2>
                 </div>
-                <div class="card-body">
+                <div class="p-4">
                     
                     <!-- Step 1: Manifest -->
-                    <div class="accordion mb-4">
-                        <div class="accordion-header">
-                            <button type="button" class="accordion-button" onclick="toggleStep('step1')">
-                                STEP 1: DEFINE MANIFEST SPECIFICATIONS
-                            </button>
-                        </div>
-                        <div id="step1" class="accordion-body hidden">
+                    <div class="mb-4">
+                        <button type="button" class="w-full text-left p-4 bg-muted hover:bg-muted/80 rounded-lg font-bold" onclick="toggleStep('step1')">
+                            STEP 1: DEFINE MANIFEST SPECIFICATIONS
+                        </button>
+                        <div id="step1" class="hidden mt-2 p-4 bg-input rounded-lg">
                             <p>The <code>manifest.json</code> file serves as the neural interface definition. It specifies all metadata, UI components, validation rules, and system dependencies.</p>
                             
-                            <h5 class="text-primary mt-4">EXAMPLE MANIFEST:</h5>
-                            <pre><code>{
+                            <h5 class="font-bold text-lg mt-4">EXAMPLE MANIFEST:</h5>
+                            <pre class="p-2 rounded-md bg-background text-foreground mt-2"><code>{
   "id": "neural_processor",
   "name": "Neural Data Processor",
   "version": "2.0.0",
@@ -137,17 +133,15 @@
                     </div>
 
                     <!-- Step 2: Plugin Logic -->
-                    <div class="accordion mb-4">
-                        <div class="accordion-header">
-                            <button type="button" class="accordion-button" onclick="toggleStep('step2')">
-                                STEP 2: IMPLEMENT PROCESSING LOGIC
-                            </button>
-                        </div>
-                        <div id="step2" class="accordion-body hidden">
+                    <div>
+                        <button type="button" class="w-full text-left p-4 bg-muted hover:bg-muted/80 rounded-lg font-bold" onclick="toggleStep('step2')">
+                            STEP 2: IMPLEMENT PROCESSING LOGIC
+                        </button>
+                        <div id="step2" class="hidden mt-2 p-4 bg-input rounded-lg">
                             <p>The <code>plugin.py</code> file must implement a <code>Plugin</code> class with an <code>execute</code> method. This method processes input data and returns structured output.</p>
                             
-                            <h5 class="text-primary mt-4">IMPLEMENTATION TEMPLATE:</h5>
-                            <pre><code>from typing import Dict, Any
+                            <h5 class="font-bold text-lg mt-4">IMPLEMENTATION TEMPLATE:</h5>
+                            <pre class="p-2 rounded-md bg-background text-foreground mt-2"><code>from typing import Dict, Any
 import time
 import json
 
@@ -236,7 +230,7 @@ class Plugin:
         return result
 </code></pre>
 
-                            <div class="alert alert-primary mt-3">
+                            <div class="mt-4 p-4 bg-primary/10 text-primary rounded-lg">
                                 <strong>FILE OUTPUT:</strong> For modules that generate files, return a dictionary with <code>file_path</code> and <code>file_name</code> keys.
                             </div>
                         </div>
@@ -245,31 +239,31 @@ class Plugin:
             </div>
 
             <!-- Testing Section -->
-            <div class="card mb-5">
-                <div class="card-header">
-                    <h2 class="card-title">TESTING PROTOCOLS</h2>
+            <div class="mb-8 bg-card text-card-foreground rounded-lg shadow-md">
+                <div class="p-4 border-b border-border">
+                    <h2 class="text-2xl font-bold">TESTING PROTOCOLS</h2>
                 </div>
-                <div class="card-body">
+                <div class="p-4">
                     <p>Test your neural module using multiple validation methods to ensure proper system integration.</p>
                     
-                    <div class="row mt-4">
-                        <div class="col-12 col-md-6">
-                            <h4 class="text-primary">WEB INTERFACE TESTING</h4>
-                            <ol class="text-secondary">
-                                <li>Navigate to the <a href="/" class="text-accent">Neural Matrix homepage</a></li>
+                    <div class="flex flex-wrap -mx-2 mt-4">
+                        <div class="w-full md:w-1/2 px-2">
+                            <h4 class="font-bold text-lg">WEB INTERFACE TESTING</h4>
+                            <ol class="list-decimal list-inside text-muted-foreground">
+                                <li>Navigate to the <a href="/" class="text-primary hover:underline">Neural Matrix homepage</a></li>
                                 <li>Locate your module in the available modules list</li>
                                 <li>Click "EXECUTE MODULE" to access the interface</li>
                                 <li>Input test data and execute to validate functionality</li>
                             </ol>
                         </div>
-                        <div class="col-12 col-md-6">
-                            <h4 class="text-accent">API TESTING PROTOCOL</h4>
+                        <div class="w-full md:w-1/2 px-2">
+                            <h4 class="font-bold text-lg">API TESTING PROTOCOL</h4>
                             <div class="mt-3">
                                 <strong>List available modules:</strong>
-                                <pre class="mt-2"><code>curl http://localhost:8000/api/plugins</code></pre>
+                                <pre class="p-2 rounded-md bg-background text-foreground mt-2"><code>curl http://localhost:8000/api/plugins</code></pre>
                                 
-                                <strong class="mt-3 d-block">Execute module via API:</strong>
-                                <pre class="mt-2"><code>curl -X POST http://localhost:8000/api/plugin/neural_processor/execute \
+                                <strong class="mt-3 block">Execute module via API:</strong>
+                                <pre class="p-2 rounded-md bg-background text-foreground mt-2"><code>curl -X POST http://localhost:8000/api/plugin/neural_processor/execute \
   -H "Content-Type: application/json" \
   -d '{
     "input_data": "Sample neural data for processing",
@@ -283,16 +277,16 @@ class Plugin:
             </div>
 
             <!-- Troubleshooting -->
-            <div class="card mb-5">
-                <div class="card-header">
-                    <h2 class="card-title">SYSTEM DIAGNOSTICS</h2>
+            <div class="mb-8 bg-card text-card-foreground rounded-lg shadow-md">
+                <div class="p-4 border-b border-border">
+                    <h2 class="text-2xl font-bold">SYSTEM DIAGNOSTICS</h2>
                 </div>
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-12 col-md-4">
-                            <div class="alert alert-secondary">
-                                <h5 class="text-accent">MODULE NOT LOADING</h5>
-                                <ul class="mb-0 text-secondary">
+                <div class="p-4">
+                    <div class="flex flex-wrap -mx-2">
+                        <div class="w-full md:w-1/3 px-2">
+                            <div class="p-4 bg-secondary text-secondary-foreground rounded-lg">
+                                <h5 class="font-bold text-lg">MODULE NOT LOADING</h5>
+                                <ul class="list-disc list-inside">
                                     <li>Validate <code>manifest.json</code> syntax</li>
                                     <li>Verify <code>Plugin</code> class exists</li>
                                     <li>Check <code>execute</code> method signature</li>
@@ -300,10 +294,10 @@ class Plugin:
                                 </ul>
                             </div>
                         </div>
-                        <div class="col-12 col-md-4">
-                            <div class="alert alert-secondary">
-                                <h5 class="text-accent">DEPENDENCY ERRORS</h5>
-                                <ul class="mb-0 text-secondary">
+                        <div class="w-full md:w-1/3 px-2">
+                            <div class="p-4 bg-secondary text-secondary-foreground rounded-lg">
+                                <h5 class="font-bold text-lg">DEPENDENCY ERRORS</h5>
+                                <ul class="list-disc list-inside">
                                     <li>Install external dependencies</li>
                                     <li>Verify system PATH configuration</li>
                                     <li>Check dependency status in module info</li>
@@ -311,10 +305,10 @@ class Plugin:
                                 </ul>
                             </div>
                         </div>
-                        <div class="col-12 col-md-4">
-                            <div class="alert alert-secondary">
-                                <h5 class="text-accent">VALIDATION FAILURES</h5>
-                                <ul class="mb-0 text-secondary">
+                        <div class="w-full md:w-1/3 px-2">
+                            <div class="p-4 bg-secondary text-secondary-foreground rounded-lg">
+                                <h5 class="font-bold text-lg">VALIDATION FAILURES</h5>
+                                <ul class="list-disc list-inside">
                                     <li>Match input types to manifest specs</li>
                                     <li>Provide all required fields</li>
                                     <li>Check field validation rules</li>
@@ -328,35 +322,41 @@ class Plugin:
         </div>
 
         <!-- Sidebar -->
-        <div class="col-12 col-lg-3">
-            <div class="card">
-                <div class="card-header">
-                    <h5 class="card-title">QUICK REFERENCE</h5>
+        <div class="w-full lg:w-1/4 px-4">
+            <div class="bg-card text-card-foreground rounded-lg shadow-md">
+                <div class="p-4 border-b border-border">
+                    <h5 class="text-xl font-bold">QUICK REFERENCE</h5>
                 </div>
-                <div class="card-body">
-                    <h6 class="text-primary">FIELD TYPES</h6>
-                    <ul class="list-group mb-3">
-                        <li class="list-group-item">text</li>
-                        <li class="list-group-item">textarea</li>
-                        <li class="list-group-item">number</li>
-                        <li class="list-group-item">select</li>
-                        <li class="list-group-item">checkbox</li>
-                        <li class="list-group-item">file</li>
-                    </ul>
+                <div class="p-4 space-y-4">
+                    <div>
+                        <h6 class="font-bold text-lg">FIELD TYPES</h6>
+                        <ul class="list-disc list-inside text-muted-foreground">
+                            <li>text</li>
+                            <li>textarea</li>
+                            <li>number</li>
+                            <li>select</li>
+                            <li>checkbox</li>
+                            <li>file</li>
+                        </ul>
+                    </div>
                     
-                    <h6 class="text-primary">REQUIRED FILES</h6>
-                    <ul class="list-group mb-3">
-                        <li class="list-group-item">manifest.json</li>
-                        <li class="list-group-item">plugin.py</li>
-                        <li class="list-group-item">__init__.py (optional)</li>
-                    </ul>
+                    <div>
+                        <h6 class="font-bold text-lg">REQUIRED FILES</h6>
+                        <ul class="list-disc list-inside text-muted-foreground">
+                            <li>manifest.json</li>
+                            <li>plugin.py</li>
+                            <li>__init__.py (optional)</li>
+                        </ul>
+                    </div>
                     
-                    <h6 class="text-primary">SYSTEM ENDPOINTS</h6>
-                    <ul class="list-group">
-                        <li class="list-group-item">GET /api/plugins</li>
-                        <li class="list-group-item">POST /api/plugin/{id}/execute</li>
-                        <li class="list-group-item">GET /plugin/{id}</li>
-                    </ul>
+                    <div>
+                        <h6 class="font-bold text-lg">SYSTEM ENDPOINTS</h6>
+                        <ul class="list-disc list-inside text-muted-foreground">
+                            <li>GET /api/plugins</li>
+                            <li>POST /api/plugin/{id}/execute</li>
+                            <li>GET /plugin/{id}</li>
+                        </ul>
+                    </div>
                 </div>
             </div>
         </div>

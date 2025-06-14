@@ -15,7 +15,7 @@
     {% elif block.type == "structural" %}
         {{ render_structural(block) }}
     {% else %}
-        <div class="alert alert-secondary mb-3">
+        <div class="my-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg">
             <strong>UNKNOWN BLOCK TYPE:</strong> {{ block.type }}
         </div>
     {% endif %}
@@ -23,9 +23,9 @@
 
 {% macro render_heading(heading) %}
     {% set heading_tag = "h" ~ (heading.level + 2) %}
-    {% set heading_class = "text-primary" if heading.level == 1 else "text-accent" if heading.level == 2 else "text-success" %}
+    {% set heading_class = "text-primary" if heading.level == 1 else "text-accent-foreground" if heading.level == 2 else "text-green-500" %}
     
-    <{{ heading_tag }} class="{{ heading_class }} mb-3 mt-4">
+    <{{ heading_tag }} class="font-bold my-4 {{ heading_class }}">
         {% for content in heading.content %}
             {{ render_inline_content(content) }}
         {% endfor %}
@@ -33,9 +33,9 @@
 {% endmacro %}
 
 {% macro render_paragraph(paragraph) %}
-    <div class="paragraph-block mb-3 p-3">
+    <div class="my-4 p-4 bg-muted rounded-lg">
         {% if paragraph.semantic_label %}
-            <span class="badge mb-2">{{ paragraph.semantic_label|upper }}</span>
+            <span class="inline-block bg-secondary text-secondary-foreground text-xs font-semibold mr-2 px-2.5 py-0.5 rounded-full mb-2">{{ paragraph.semantic_label|upper }}</span>
         {% endif %}
         <p class="mb-0">
             {% for content in paragraph.content %}
@@ -46,9 +46,9 @@
 {% endmacro %}
 
 {% macro render_div(div) %}
-    <div class="div-block mb-4 p-3">
+    <div class="my-4 p-4 border border-border rounded-lg">
         <div class="mb-2">
-            <span class="badge badge-primary">CONTAINER BLOCK</span>
+            <span class="inline-block bg-primary text-primary-foreground text-xs font-semibold mr-2 px-2.5 py-0.5 rounded-full">CONTAINER BLOCK</span>
         </div>
         {% for content in div.content %}
             {{ render_content_block(content) }}
@@ -57,9 +57,9 @@
 {% endmacro %}
 
 {% macro render_quote(quote) %}
-    <blockquote class="quote-block mb-4 p-4">
+    <blockquote class="my-4 p-4 border-l-4 border-primary bg-muted">
         <div class="mb-2">
-            <span class="badge">QUOTE</span>
+            <span class="inline-block bg-secondary text-secondary-foreground text-xs font-semibold mr-2 px-2.5 py-0.5 rounded-full">QUOTE</span>
         </div>
         {% for content in quote.content %}
             {{ render_content_block(content) }}
@@ -68,29 +68,29 @@
 {% endmacro %}
 
 {% macro render_raw_html(html) %}
-    <div class="raw-html-block mb-3 p-3">
+    <div class="my-4 p-4 bg-input rounded-lg">
         <div class="mb-2">
-            <span class="badge">RAW HTML</span>
+            <span class="inline-block bg-secondary text-secondary-foreground text-xs font-semibold mr-2 px-2.5 py-0.5 rounded-full">RAW HTML</span>
         </div>
-        <div class="html-content">
+        <div class="html-content prose max-w-none">
             {{ html.content|safe }}
         </div>
     </div>
 {% endmacro %}
 
 {% macro render_structural(structural) %}
-    <div class="structural-block mb-3 p-2 text-center">
-        <span class="badge">{{ structural.element_type|upper }}</span>
+    <div class="my-4 p-2 text-center border border-border rounded-lg">
+        <span class="inline-block bg-secondary text-secondary-foreground text-xs font-semibold mr-2 px-2.5 py-0.5 rounded-full">{{ structural.element_type|upper }}</span>
         {% if structural.element_type == "HorizontalRule" %}
-            <hr>
+            <hr class="my-2">
         {% elif structural.element_type == "Image" %}
             <div class="text-primary">📷 IMAGE PLACEHOLDER</div>
         {% elif structural.element_type == "Link" %}
-            <div class="text-accent">🔗 LINK ELEMENT</div>
+            <div class="text-accent-foreground">🔗 LINK ELEMENT</div>
         {% elif structural.element_type == "Table" %}
-            <div class="text-success">📊 TABLE ELEMENT</div>
+            <div class="text-green-500">📊 TABLE ELEMENT</div>
         {% else %}
-            <div class="text-secondary">{{ structural.element_type }} ELEMENT</div>
+            <div class="text-muted-foreground">{{ structural.element_type }} ELEMENT</div>
         {% endif %}
     </div>
 {% endmacro %}
@@ -99,12 +99,12 @@
     {% if content.type == "text" %}
         {{ content.content }}
     {% elif content.type == "emphasis" %}
-        <em class="text-accent">{{ content.content }}</em>
+        <em class="text-accent-foreground">{{ content.content }}</em>
     {% elif content.type == "structural" %}
-        <span class="inline-structural badge">{{ content.element_type|upper }}</span>
+        <span class="inline-block bg-secondary text-secondary-foreground text-xs font-semibold mx-1 px-2 py-0.5 rounded-full">{{ content.element_type|upper }}</span>
     {% elif content.type == "raw_html" %}
         {{ content.content|safe }}
     {% else %}
-        <span class="text-secondary">[{{ content.type|upper }}]</span>
+        <span class="text-red-500">[{{ content.type|upper }}]</span>
     {% endif %}
 {% endmacro %} 

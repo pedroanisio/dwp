@@ -2,58 +2,57 @@
 <!-- Cyberpunk-styled template for displaying structured JSON documents -->
 
 {% from 'doc_viewer_macros.html' import render_content_block, render_heading, render_paragraph, render_div, render_quote, render_raw_html, render_structural, render_inline_content %}
+{% from "components/button.html" import button %}
 
-<div class="doc-viewer-container fade-in">
+<div class="container mx-auto">
     <!-- Document Header Section -->
-    <div class="card mb-4">
-        <div class="card-header">
-            <h2 class="card-title text-center">NEURAL DOCUMENT INTERFACE</h2>
-            <div class="progress mt-3">
-                <div class="progress-bar"></div>
-            </div>
+    <div class="bg-card text-card-foreground rounded-lg shadow-md my-4 p-4 text-center">
+        <h2 class="text-2xl font-bold">NEURAL DOCUMENT INTERFACE</h2>
+        <div class="w-full bg-gray-200 rounded-full h-1 mt-3">
+            <div class="bg-primary h-1 rounded-full" style="width: 100%"></div>
         </div>
     </div>
 
     <!-- Document Metadata Section -->
     {% if result.data.document.metadata %}
-    <div class="card mb-4">
-        <div class="card-header">
-            <h3 class="card-title">DOCUMENT METADATA</h3>
+    <div class="bg-card text-card-foreground rounded-lg shadow-md my-4">
+        <div class="p-4 border-b border-border">
+            <h3 class="text-xl font-bold">DOCUMENT METADATA</h3>
         </div>
-        <div class="card-body">
-            <div class="row">
+        <div class="p-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {% if result.data.document.metadata.title %}
-                <div class="col-12 col-md-6 mb-3">
-                    <dt>TITLE:</dt>
-                    <dd class="text-primary">{{ result.data.document.metadata.title }}</dd>
+                <div>
+                    <dt class="font-bold text-primary">TITLE:</dt>
+                    <dd>{{ result.data.document.metadata.title }}</dd>
                 </div>
                 {% endif %}
                 
                 {% if result.data.document.metadata.author %}
-                <div class="col-12 col-md-6 mb-3">
-                    <dt>AUTHOR:</dt>
-                    <dd class="text-accent">{{ result.data.document.metadata.author }}</dd>
+                <div>
+                    <dt class="font-bold text-primary">AUTHOR:</dt>
+                    <dd class="text-accent-foreground">{{ result.data.document.metadata.author }}</dd>
                 </div>
                 {% endif %}
                 
                 {% if result.data.document.metadata.release_date %}
-                <div class="col-12 col-md-6 mb-3">
-                    <dt>RELEASE DATE:</dt>
-                    <dd class="text-success">{{ result.data.document.metadata.release_date }}</dd>
+                <div>
+                    <dt class="font-bold text-primary">RELEASE DATE:</dt>
+                    <dd class="text-green-500">{{ result.data.document.metadata.release_date }}</dd>
                 </div>
                 {% endif %}
                 
                 {% if result.data.document.metadata.language %}
-                <div class="col-12 col-md-6 mb-3">
-                    <dt>LANGUAGE:</dt>
-                    <dd class="text-secondary">{{ result.data.document.metadata.language|upper }}</dd>
+                <div>
+                    <dt class="font-bold text-primary">LANGUAGE:</dt>
+                    <dd class="text-secondary-foreground">{{ result.data.document.metadata.language|upper }}</dd>
                 </div>
                 {% endif %}
                 
                 {% if result.data.document.metadata.credits %}
-                <div class="col-12 mb-3">
-                    <dt>CREDITS:</dt>
-                    <dd class="text-secondary">{{ result.data.document.metadata.credits }}</dd>
+                <div class="col-span-2">
+                    <dt class="font-bold text-primary">CREDITS:</dt>
+                    <dd class="text-secondary-foreground">{{ result.data.document.metadata.credits }}</dd>
                 </div>
                 {% endif %}
             </div>
@@ -62,13 +61,13 @@
     {% endif %}
 
     <!-- Document Body Section -->
-    <div class="card">
-        <div class="card-header">
-            <h3 class="card-title">NEURAL DOCUMENT CONTENT</h3>
-            <small class="text-secondary">Structured content rendering with cyberpunk interface</small>
+    <div class="bg-card text-card-foreground rounded-lg shadow-md my-4">
+        <div class="p-4 border-b border-border">
+            <h3 class="text-xl font-bold">NEURAL DOCUMENT CONTENT</h3>
+            <small class="text-muted-foreground">Structured content rendering with cyberpunk interface</small>
         </div>
-        <div class="card-body">
-            <div class="document-content">
+        <div class="p-4">
+            <div class="prose max-w-none">
                 {% for block in result.data.document.body %}
                     {{ render_content_block(block) }}
                 {% endfor %}
@@ -83,16 +82,13 @@ document.addEventListener('DOMContentLoaded', function() {
     // Add copy functionality to code blocks
     document.querySelectorAll('.raw-html-block').forEach(block => {
         const copyBtn = document.createElement('button');
-        copyBtn.className = 'btn btn-outline btn-sm';
-        copyBtn.textContent = 'COPY';
+        copyBtn.innerHTML = `{{ button(variant='outline', text='COPY') }}`;
         copyBtn.onclick = function() {
             const content = block.querySelector('.html-content').textContent;
             navigator.clipboard.writeText(content).then(() => {
-                copyBtn.textContent = '✓ COPIED';
-                copyBtn.classList.add('text-success');
+                copyBtn.innerHTML = `{{ button(variant='outline', text='✓ COPIED') }}`;
                 setTimeout(() => {
-                    copyBtn.textContent = 'COPY';
-                    copyBtn.classList.remove('text-success');
+                    copyBtn.innerHTML = `{{ button(variant='outline', text='COPY') }}`;
                 }, 2000);
             });
         };
@@ -104,15 +100,14 @@ document.addEventListener('DOMContentLoaded', function() {
     document.querySelectorAll('.html-content').forEach(content => {
         if (content.scrollHeight > 300) {
             const expandBtn = document.createElement('button');
-            expandBtn.className = 'btn btn-secondary btn-sm mt-2';
-            expandBtn.textContent = 'EXPAND CONTENT';
+            expandBtn.innerHTML = `{{ button(variant='secondary', text='EXPAND CONTENT') }}`;
             expandBtn.onclick = function() {
                 if (content.classList.contains('expanded')) {
                     content.classList.remove('expanded');
-                    expandBtn.textContent = 'EXPAND CONTENT';
+                    expandBtn.innerHTML = `{{ button(variant='secondary', text='EXPAND CONTENT') }}`;
                 } else {
                     content.classList.add('expanded');
-                    expandBtn.textContent = 'COLLAPSE CONTENT';
+                    expandBtn.innerHTML = `{{ button(variant='secondary', text='COLLAPSE CONTENT') }}`;
                 }
             };
             content.parentNode.appendChild(expandBtn);

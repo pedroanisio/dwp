@@ -1,188 +1,154 @@
 {% extends "base.html" %}
+{% from "components/button.html" import button %}
 
 {% block title %}EXECUTION RESULTS - {{ plugin.name|upper }}{% endblock %}
 
 {% block content %}
-<div class="container">
+<div class="container mx-auto">
     <!-- Breadcrumb Navigation -->
-    <div class="breadcrumb mt-3">
-        <ol>
-            <li><a href="/">NEURAL MATRIX</a></li>
-            <li><a href="/plugin/{{ plugin.id }}">{{ plugin.name|upper }}</a></li>
-            <li>EXECUTION RESULTS</li>
-        </ol>
+    <div class="my-4">
+        <nav class="flex" aria-label="Breadcrumb">
+            <ol class="inline-flex items-center space-x-1 md:space-x-3">
+                <li class="inline-flex items-center">
+                    <a href="/" class="inline-flex items-center text-sm font-medium text-muted-foreground hover:text-primary">
+                        <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"></path></svg>
+                        NEURAL MATRIX
+                    </a>
+                </li>
+                <li>
+                    <div class="flex items-center">
+                        <svg class="w-6 h-6 text-muted-foreground" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path></svg>
+                        <a href="/plugin/{{ plugin.id }}" class="ml-1 text-sm font-medium text-muted-foreground hover:text-primary md:ml-2">{{ plugin.name|upper }}</a>
+                    </div>
+                </li>
+                <li aria-current="page">
+                    <div class="flex items-center">
+                        <svg class="w-6 h-6 text-muted-foreground" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path></svg>
+                        <span class="ml-1 text-sm font-medium text-foreground md:ml-2">EXECUTION RESULTS</span>
+                    </div>
+                </li>
+            </ol>
+        </nav>
     </div>
 
     <!-- Header Section -->
-    <div class="hero">
-        <div class="text-center">
-            <h1 class="glitch" data-text="EXECUTION RESULTS">EXECUTION RESULTS</h1>
-            <div class="mt-4">
-                <a href="/plugin/{{ plugin.id }}" class="btn btn-primary">
-                    RE-EXECUTE MODULE
-                </a>
-                <a href="/" class="btn btn-secondary">
-                    RETURN TO MATRIX
-                </a>
-            </div>
+    <div class="py-12 text-center">
+        <h1 class="text-4xl font-bold">EXECUTION RESULTS</h1>
+        <div class="mt-4 flex space-x-2 justify-center">
+            <a href="/plugin/{{ plugin.id }}">
+                {{ button(variant='primary', text='RE-EXECUTE MODULE') }}
+            </a>
+            <a href="/">
+                {{ button(variant='secondary', text='RETURN TO MATRIX') }}
+            </a>
         </div>
     </div>
 
     <!-- Execution Status Section -->
-    <div class="row mb-5">
-        <div class="col-12">
-            {% if result.success %}
-                <div class="alert alert-success">
-                    <h3>⚡ EXECUTION SUCCESSFUL</h3>
-                    <p>Neural module processed data successfully. Operation completed without errors.</p>
-                    {% if result.execution_time %}
-                        <div class="mt-2">
-                            <strong>Processing Time:</strong> 
-                            <code>{{ "%.3f"|format(result.execution_time) }}s</code>
-                        </div>
-                    {% endif %}
-                </div>
-            {% else %}
-                <div class="alert alert-secondary">
-                    <h3>⚠️ EXECUTION FAILED</h3>
-                    <p>The neural module encountered a critical error during processing.</p>
-                    <div class="mt-3">
-                        <strong class="text-primary">Error Details:</strong>
-                        <div class="mt-2">
-                            <code id="error-text" class="d-block p-3">{{ result.error }}</code>
-                        </div>
-                        <button class="btn btn-outline mt-2" onclick="copyToClipboard()" id="copyBtn">
-                            COPY ERROR LOG
-                        </button>
+    <div class="my-8">
+        {% if result.success %}
+            <div class="p-4 text-sm text-green-700 bg-green-100 rounded-lg" role="alert">
+                <h3 class="text-lg font-bold">⚡ EXECUTION SUCCESSFUL</h3>
+                <p>Neural module processed data successfully. Operation completed without errors.</p>
+                {% if result.execution_time %}
+                    <div class="mt-2">
+                        <strong>Processing Time:</strong> 
+                        <code>{{ "%.3f"|format(result.execution_time) }}s</code>
                     </div>
+                {% endif %}
+            </div>
+        {% else %}
+            <div class="p-4 text-sm text-red-700 bg-red-100 rounded-lg" role="alert">
+                <h3 class="text-lg font-bold">⚠️ EXECUTION FAILED</h3>
+                <p>The neural module encountered a critical error during processing.</p>
+                <div class="mt-3">
+                    <strong class="text-primary">Error Details:</strong>
+                    <div class="mt-2 p-2 bg-input rounded-md">
+                        <code id="error-text">{{ result.error }}</code>
+                    </div>
+                    {{ button(variant='outline', text='COPY ERROR LOG', id='copyBtn', class='mt-2') }}
                 </div>
-            {% endif %}
-        </div>
+            </div>
+        {% endif %}
     </div>
 
     {% if result.success and result.data %}
-    <div class="row">
+    <div class="flex flex-wrap -mx-4">
         <!-- Results Display -->
-        <div class="col-12 col-lg-8">
-            <div class="card">
-                <div class="card-header">
-                    <h3 class="card-title">{{ plugin.name|upper }} OUTPUT</h3>
-                    <small class="text-secondary">Neural Processing Results</small>
+        <div class="w-full lg:w-2/3 px-4">
+            <div class="bg-card text-card-foreground rounded-lg shadow-md">
+                <div class="p-4 border-b border-border">
+                    <h3 class="text-xl font-bold">{{ plugin.name|upper }} OUTPUT</h3>
+                    <p class="text-sm text-muted-foreground">Neural Processing Results</p>
                 </div>
-                <div class="card-body">
+                <div class="p-4">
                     {% if result.data.custom_template is defined %}
-                        {# The plugin has provided a custom template to render its output #}
                         {% include result.data.custom_template %}
-                    
                     {% else %}
-                        {# Enhanced display for key-value data #}
-                        <div class="table-responsive">
-                            <table class="table">
-                                <thead>
-                                    <tr>
-                                        <th>DATA FIELD</th>
-                                        <th>OUTPUT VALUE</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {% for key, value in result.data.items() %}
-                                    <tr>
-                                        <th>{{ key.replace('_', ' ')|upper }}</th>
-                                        <td>
-                                            {% if value is mapping %}
-                                                <div class="accordion mb-2">
-                                                    <div class="accordion-header">
-                                                        <button type="button" class="accordion-button" onclick="toggleData('{{ key }}')">
-                                                            VIEW OBJECT DATA
-                                                        </button>
-                                                    </div>
-                                                    <div id="data-{{ key }}" class="accordion-body hidden">
-                                                        <pre><code>{{ value | tojsonpretty }}</code></pre>
-                                                    </div>
-                                                </div>
-                                            {% elif value is sequence and value is not string %}
-                                                {% if value|length > 10 %}
-                                                    <div class="accordion mb-2">
-                                                        <div class="accordion-header">
-                                                            <button type="button" class="accordion-button" onclick="toggleData('{{ key }}')">
-                                                                VIEW {{ value|length }} ITEMS
-                                                            </button>
-                                                        </div>
-                                                        <div id="data-{{ key }}" class="accordion-body hidden">
-                                                            <ul class="list-group">
-                                                                {% for item in value %}
-                                                                    <li class="list-group-item">{{ item }}</li>
-                                                                {% endfor %}
-                                                            </ul>
-                                                        </div>
-                                                    </div>
-                                                {% else %}
-                                                    <ul class="list-group">
-                                                        {% for item in value %}
-                                                            <li class="list-group-item">{{ item }}</li>
-                                                        {% endfor %}
-                                                    </ul>
-                                                {% endif %}
-                                            {% elif value is number %}
-                                                <span class="text-primary">{{ value }}</span>
-                                            {% elif value|string|length > 100 %}
-                                                <div class="accordion mb-2">
-                                                    <div class="accordion-header">
-                                                        <button type="button" class="accordion-button" onclick="toggleData('{{ key }}')">
-                                                            VIEW LONG TEXT ({{ value|string|length }} chars)
-                                                        </button>
-                                                    </div>
-                                                    <div id="data-{{ key }}" class="accordion-body hidden">
-                                                        <div>{{ value }}</div>
-                                                    </div>
+                        <table class="w-full text-sm text-left text-foreground">
+                            <thead class="text-xs text-muted-foreground uppercase bg-muted">
+                                <tr>
+                                    <th scope="col" class="px-6 py-3">DATA FIELD</th>
+                                    <th scope="col" class="px-6 py-3">OUTPUT VALUE</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for key, value in result.data.items() %}
+                                <tr class="bg-card border-b border-border">
+                                    <th scope="row" class="px-6 py-4 font-medium text-foreground whitespace-nowrap">{{ key.replace('_', ' ')|upper }}</th>
+                                    <td class="px-6 py-4">
+                                        {% if value is mapping %}
+                                            <button type="button" class="text-primary hover:underline" onclick="toggleData('{{ key }}')">VIEW OBJECT DATA</button>
+                                            <div id="data-{{ key }}" class="hidden mt-2 p-2 bg-input rounded-lg"><pre><code>{{ value | tojsonpretty }}</code></pre></div>
+                                        {% elif value is sequence and value is not string %}
+                                            {% if value|length > 10 %}
+                                                <button type="button" class="text-primary hover:underline" onclick="toggleData('{{ key }}')">VIEW {{ value|length }} ITEMS</button>
+                                                <div id="data-{{ key }}" class="hidden mt-2 p-2 bg-input rounded-lg">
+                                                    <ul class="list-disc list-inside">{% for item in value %}<li>{{ item }}</li>{% endfor %}</ul>
                                                 </div>
                                             {% else %}
-                                                {{ value }}
+                                                <ul class="list-disc list-inside">{% for item in value %}<li>{{ item }}</li>{% endfor %}</ul>
                                             {% endif %}
-                                        </td>
-                                    </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
-                        </div>
+                                        {% elif value is number %}
+                                            <span class="text-primary">{{ value }}</span>
+                                        {% elif value|string|length > 100 %}
+                                            <button type="button" class="text-primary hover:underline" onclick="toggleData('{{ key }}')">VIEW LONG TEXT ({{ value|string|length }} chars)</button>
+                                            <div id="data-{{ key }}" class="hidden mt-2 p-2 bg-input rounded-lg"><div>{{ value }}</div></div>
+                                        {% else %}
+                                            {{ value }}
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
                     {% endif %}
                 </div>
             </div>
         </div>
         
         <!-- Sidebar Information -->
-        <div class="col-12 col-lg-4">
+        <div class="w-full lg:w-1/3 px-4">
             <!-- Input Summary -->
-            <div class="card mb-4">
-                <div class="card-header">
-                    <h5 class="card-title">INPUT PARAMETERS</h5>
+            <div class="mb-4 bg-card text-card-foreground rounded-lg shadow-md">
+                <div class="p-4 border-b border-border">
+                    <h5 class="text-xl font-bold">INPUT PARAMETERS</h5>
                 </div>
-                <div class="card-body">
+                <div class="p-4 space-y-4">
                     {% if input_data.input_file %}
-                        <div class="mb-3">
-                            <dt>File Upload:</dt>
-                            <dd>
-                                <code>{{ input_data.input_file.filename }}</code>
-                            </dd>
+                        <div>
+                            <dt class="font-bold">File Upload:</dt>
+                            <dd><code>{{ input_data.input_file.filename }}</code></dd>
                         </div>
                     {% endif %}
-
                     {% for key, value in input_data.items() %}
                         {% if key != 'input_file' %}
-                            <div class="mb-3">
-                                <dt>{{ key.replace('_', ' ')|upper }}:</dt>
+                            <div>
+                                <dt class="font-bold">{{ key.replace('_', ' ')|upper }}:</dt>
                                 <dd>
                                     {% if value|string|length > 50 %}
-                                        <div class="accordion">
-                                            <div class="accordion-header">
-                                                <button type="button" class="accordion-button" onclick="toggleData('input-{{ key }}')">
-                                                    VIEW INPUT
-                                                </button>
-                                            </div>
-                                            <div id="data-input-{{ key }}" class="accordion-body hidden">
-                                                <div>{{ value }}</div>
-                                            </div>
-                                        </div>
+                                        <button type="button" class="text-primary hover:underline" onclick="toggleData('input-{{ key }}')">VIEW INPUT</button>
+                                        <div id="data-input-{{ key }}" class="hidden mt-2 p-2 bg-input rounded-lg"><div>{{ value }}</div></div>
                                     {% else %}
                                         <code>{{ value }}</code>
                                     {% endif %}
@@ -190,64 +156,42 @@
                             </div>
                         {% endif %}
                     {% endfor %}
-                    
                     {% if not input_data or input_data|length == 0 %}
-                        <p class="text-secondary">No input parameters provided.</p>
+                        <p class="text-muted-foreground">No input parameters provided.</p>
                     {% endif %}
                 </div>
             </div>
             
             <!-- Execution Stats -->
-            <div class="card mb-4">
-                <div class="card-header">
-                    <h5 class="card-title">EXECUTION STATS</h5>
+            <div class="mb-4 bg-card text-card-foreground rounded-lg shadow-md">
+                <div class="p-4 border-b border-border">
+                    <h5 class="text-xl font-bold">EXECUTION STATS</h5>
                 </div>
-                <div class="card-body">
-                    <dl>
-                        <dt>Module ID:</dt>
-                        <dd><code>{{ plugin.id }}</code></dd>
-                        
-                        <dt>Status:</dt>
+                <div class="p-4">
+                    <dl class="grid grid-cols-2 gap-2">
+                        <dt class="font-bold">Module ID:</dt> <dd><code>{{ plugin.id }}</code></dd>
+                        <dt class="font-bold">Status:</dt>
                         <dd>
-                            {% if result.success %}
-                                <span class="text-success">✓ SUCCESS</span>
-                            {% else %}
-                                <span class="text-accent">✗ FAILED</span>
-                            {% endif %}
+                            {% if result.success %}<span class="text-green-500">✓ SUCCESS</span>
+                            {% else %}<span class="text-red-500">✗ FAILED</span>{% endif %}
                         </dd>
-                        
-                        {% if result.execution_time %}
-                        <dt>Processing Time:</dt>
-                        <dd><code>{{ "%.3f"|format(result.execution_time) }}s</code></dd>
-                        {% endif %}
-                        
-                        <dt>Output Fields:</dt>
-                        <dd>{{ result.data|length if result.data else 0 }} field(s)</dd>
-                        
-                        <dt>Timestamp:</dt>
-                        <dd id="execution-timestamp"></dd>
+                        {% if result.execution_time %}<dt class="font-bold">Processing Time:</dt> <dd><code>{{ "%.3f"|format(result.execution_time) }}s</code></dd>{% endif %}
+                        <dt class="font-bold">Output Fields:</dt> <dd>{{ result.data|length if result.data else 0 }} field(s)</dd>
+                        <dt class="font-bold">Timestamp:</dt> <dd id="execution-timestamp"></dd>
                     </dl>
                 </div>
             </div>
             
             <!-- Raw JSON Output -->
-            <div class="card">
-                <div class="card-header">
-                    <h5 class="card-title">RAW DATA EXPORT</h5>
+            <div class="bg-card text-card-foreground rounded-lg shadow-md">
+                <div class="p-4 border-b border-border">
+                    <h5 class="text-xl font-bold">RAW DATA EXPORT</h5>
                 </div>
-                <div class="card-body">
-                    <div class="accordion">
-                        <div class="accordion-header">
-                            <button type="button" class="accordion-button" onclick="toggleRawData()">
-                                VIEW JSON OUTPUT
-                            </button>
-                        </div>
-                        <div id="rawCollapse" class="accordion-body hidden">
-                            <pre><code>{{ result.data | tojsonpretty }}</code></pre>
-                            <button class="btn btn-outline mt-2" onclick="copyJsonToClipboard()">
-                                COPY JSON
-                            </button>
-                        </div>
+                <div class="p-4">
+                    <button type="button" class="w-full text-left p-2 bg-muted hover:bg-muted/80 rounded-lg font-bold" onclick="toggleRawData()">VIEW JSON OUTPUT</button>
+                    <div id="rawCollapse" class="hidden mt-2 p-2 bg-input rounded-lg">
+                        <pre class="text-sm"><code>{{ result.data | tojsonpretty }}</code></pre>
+                        {{ button(variant='outline', text='COPY JSON', id='copyJsonBtn', class='mt-2') }}
                     </div>
                 </div>
             </div>
@@ -263,12 +207,22 @@
 function copyToClipboard() {
     const errorText = document.getElementById('error-text').innerText;
     navigator.clipboard.writeText(errorText);
+    const copyBtn = document.getElementById('copyBtn');
+    copyBtn.innerHTML = `{{ button(variant='outline', text='✓ COPIED') }}`;
+    setTimeout(() => {
+        copyBtn.innerHTML = `{{ button(variant='outline', text='COPY ERROR LOG') }}`;
+    }, 2000);
 }
 
 // Copy JSON to clipboard
 function copyJsonToClipboard() {
     const jsonText = document.querySelector('#rawCollapse pre code').innerText;
     navigator.clipboard.writeText(jsonText);
+    const copyJsonBtn = document.getElementById('copyJsonBtn');
+    copyJsonBtn.innerHTML = `{{ button(variant='outline', text='✓ COPIED') }}`;
+    setTimeout(() => {
+        copyJsonBtn.innerHTML = `{{ button(variant='outline', text='COPY JSON') }}`;
+    }, 2000);
 }
 
 // Toggle data displays
