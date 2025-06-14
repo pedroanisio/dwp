@@ -1,4 +1,5 @@
 {# ShadCN-inspired Card Component for Flask/Jinja2 #}
+{% from "components/button.html" import button %}
 {% macro card(class="") %}
 <div class="rounded-lg border bg-card text-card-foreground shadow-sm {{ class }}">
     {{ caller() }}
@@ -37,7 +38,7 @@
 
 {# Enhanced Card for Plugin Display #}
 {% macro plugin_card(plugin, class="") %}
-<div class="rounded-lg border bg-card text-card-foreground shadow-sm hover:shadow-md transition-all duration-200 hover:-translate-y-1 fade-in {{ class }}">
+<div class="h-full flex flex-col rounded-lg border bg-card text-card-foreground shadow-sm hover:shadow-md transition-all duration-200 hover:-translate-y-1 fade-in {{ class }}">
     <div class="flex flex-col space-y-1.5 p-6 border-b border-border">
         <div class="flex items-center justify-between">
             <h3 class="text-xl font-semibold leading-none tracking-tight">{{ plugin.name|upper }}</h3>
@@ -55,7 +56,7 @@
         </div>
         <p class="text-sm text-muted-foreground">Version {{ plugin.version }}</p>
     </div>
-    <div class="p-6 pt-0 space-y-4">
+    <div class="flex-grow p-6 pt-0 space-y-4">
         <p class="text-sm">{{ plugin.description }}</p>
         
         {% if plugin.tags %}

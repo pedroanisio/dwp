@@ -55,6 +55,23 @@
     @apply transition-all duration-200 hover:shadow-lg hover:-translate-y-1;
   }
 
+  /* Card alignment utilities */
+  .card-grid-equal-height {
+    @apply grid items-stretch;
+  }
+  
+  .card-flex-column {
+    @apply h-full flex flex-col;
+  }
+  
+  .card-content-grow {
+    @apply flex-grow;
+  }
+  
+  .card-footer-bottom {
+    @apply mt-auto;
+  }
+
   /* Loading spinner */
   .loading-spinner {
     @apply inline-block w-4 h-4 border-2 border-current border-t-transparent rounded-full;
