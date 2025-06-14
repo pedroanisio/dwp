@@ -130,17 +130,20 @@ class ChainBuilder {
     
     createPluginPaletteItem(plugin) {
         const item = document.createElement('div');
-        item.className = 'plugin-palette-item';
+        item.className = 'p-2 rounded-lg hover:bg-muted cursor-pointer';
         item.dataset.pluginId = plugin.id;
         
         // Plugin icon based on type
         const icon = this.getPluginIcon(plugin);
         
         item.innerHTML = `
-            <div class="plugin-icon">${icon}</div>
-            <div class="plugin-name">${plugin.name}</div>
-            <div class="plugin-description">${plugin.description}</div>
-            <div class="drag-hint">Drag to canvas or click to add</div>
+            <div class="flex items-center">
+                <div class="text-2xl mr-4">${icon}</div>
+                <div>
+                    <div class="font-bold">${plugin.name}</div>
+                    <div class="text-sm text-muted-foreground">${plugin.description}</div>
+                </div>
+            </div>
         `;
         
         // Enhanced drag and drop functionality
@@ -317,36 +320,26 @@ class ChainBuilder {
         const background = new fabric.Rect({
             width: width,
             height: height,
-            fill: '#111111',
-            stroke: '#00f5ff',
+            fill: 'var(--card)',
+            stroke: 'var(--border)',
             strokeWidth: 2,
-            rx: 0,
-            ry: 0,
+            rx: 8,
+            ry: 8,
             originX: 'center',
-            originY: 'center'
+            originY: 'center',
+            shadow: 'rgba(0,0,0,0.1) 0px 4px 12px'
         });
         
         // Node header
         const header = new fabric.Text(plugin.name.toUpperCase(), {
             fontSize: 12,
-            fill: '#00f5ff',
-            fontFamily: 'Roboto Mono',
+            fill: 'var(--foreground)',
+            fontFamily: 'sans-serif',
             fontWeight: 'bold',
             textAlign: 'center',
             originX: 'center',
             originY: 'center',
-            top: -height / 2 + 15
-        });
-        
-        // Plugin type
-        const type = new fabric.Text('PLUGIN', {
-            fontSize: 10,
-            fill: '#b8bcc8',
-            fontFamily: 'Roboto Mono',
-            textAlign: 'center',
-            originX: 'center',
-            originY: 'center',
-            top: -height / 2 + 35
+            top: -height / 2 + 20
         });
         
         // Plugin icon
@@ -360,22 +353,20 @@ class ChainBuilder {
         
         // Status indicator
         const status = new fabric.Rect({
-            width: width - 20,
+            width: width - 40,
             height: 20,
-            fill: '#0a0a0a',
-            stroke: '#3a86ff',
-            strokeWidth: 1,
+            fill: 'var(--secondary)',
             originX: 'center',
             originY: 'center',
             top: height / 2 - 20,
-            rx: 0,
-            ry: 0
+            rx: 4,
+            ry: 4
         });
         
         const statusText = new fabric.Text('READY', {
-            fontSize: 8,
-            fill: '#3a86ff',
-            fontFamily: 'Roboto Mono',
+            fontSize: 10,
+            fill: 'var(--secondary-foreground)',
+            fontFamily: 'sans-serif',
             textAlign: 'center',
             originX: 'center',
             originY: 'center',
@@ -383,7 +374,7 @@ class ChainBuilder {
         });
         
         // Create group
-        const group = new fabric.Group([background, header, type, icon, status, statusText], {
+        const group = new fabric.Group([background, header, icon, status, statusText], {
             left: position.x,
             top: position.y,
             selectable: true,
@@ -422,34 +413,36 @@ class ChainBuilder {
         const plugin = this.availablePlugins.find(p => p.id === nodeData.plugin_id);
         
         panel.innerHTML = `
-            <div class="node-property">
-                <label>Node ID</label>
-                <input type="text" value="${nodeData.id}" readonly>
-            </div>
-            <div class="node-property">
-                <label>Plugin</label>
-                <input type="text" value="${plugin?.name || 'Unknown'}" readonly>
-            </div>
-            <div class="node-property">
-                <label>Label</label>
-                <input type="text" id="node-label" value="${nodeData.label}" placeholder="Custom label">
-            </div>
-            <div class="node-property">
-                <label>Position</label>
+            <div class="space-y-4">
                 <div>
-                    <input type="number" id="node-x" value="${Math.round(nodeData.position.x)}" placeholder="X">
-                    <input type="number" id="node-y" value="${Math.round(nodeData.position.y)}" placeholder="Y">
+                    <label class="block text-sm font-medium text-muted-foreground">Node ID</label>
+                    <input type="text" value="${nodeData.id}" readonly class="mt-1 block w-full rounded-md bg-input border-transparent focus:border-primary focus:bg-background focus:ring-0">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-muted-foreground">Plugin</label>
+                    <input type="text" value="${plugin?.name || 'Unknown'}" readonly class="mt-1 block w-full rounded-md bg-input border-transparent focus:border-primary focus:bg-background focus:ring-0">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-muted-foreground">Label</label>
+                    <input type="text" id="node-label" value="${nodeData.label}" placeholder="Custom label" class="mt-1 block w-full rounded-md bg-input border-transparent focus:border-primary focus:bg-background focus:ring-0">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-muted-foreground">Position</label>
+                    <div class="flex space-x-2">
+                        <input type="number" id="node-x" value="${Math.round(nodeData.position.x)}" placeholder="X" class="mt-1 block w-full rounded-md bg-input border-transparent focus:border-primary focus:bg-background focus:ring-0">
+                        <input type="number" id="node-y" value="${Math.round(nodeData.position.y)}" placeholder="Y" class="mt-1 block w-full rounded-md bg-input border-transparent focus:border-primary focus:bg-background focus:ring-0">
+                    </div>
+                </div>
+                <div class="flex space-x-2">
+                    <button class="w-full" onclick="window.chainBuilder.deleteNode('${nodeData.id}')">
+                        ${this.generateButton('destructive', '🗑️ DELETE')}
+                    </button>
+                    <button class="w-full" onclick="window.chainBuilder.showNodeConnections('${nodeData.id}')">
+                        ${this.generateButton('secondary', '🔗 CONNECTIONS')}
+                    </button>
                 </div>
             </div>
-            <div class="btn-group">
-                <button class="btn btn-small btn-outline" onclick="window.chainBuilder.deleteNode('${nodeData.id}')">
-                    🗑️ DELETE
-                </button>
-                <button class="btn btn-small btn-secondary" onclick="window.chainBuilder.showNodeConnections('${nodeData.id}')">
-                    🔗 CONNECTIONS
-                </button>
-            </div>
-            <div id="node-connections-panel"></div>
+            <div id="node-connections-panel" class="mt-4"></div>
         `;
         
         // Add event handlers for property updates
@@ -477,14 +470,12 @@ class ChainBuilder {
         if (!panel) return;
         
         panel.innerHTML = `
-            <div class="text-center">
-                <div>
-                    <div>🔧</div>
-                    <h4>No Node Selected</h4>
-                    <p>
-                        Click on a node to configure its properties and connections.
-                    </p>
-                </div>
+            <div class="text-center p-4">
+                <div class="text-4xl mb-2">🔧</div>
+                <h4 class="font-bold">No Node Selected</h4>
+                <p class="text-muted-foreground">
+                    Click on a node to configure its properties and connections.
+                </p>
             </div>
         `;
     }
@@ -805,6 +796,20 @@ class ChainBuilder {
             this.updateNodePosition(obj.nodeId, obj);
             console.log(`📍 Node moved: ${obj.nodeId} to (${Math.round(obj.left)}, ${Math.round(obj.top)})`);
         }
+    }
+    
+    generateButton(variant, text) {
+        let classes = 'inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 h-10 px-4 py-2 w-full';
+        if (variant === 'primary') {
+            classes += ' bg-primary text-primary-foreground hover:bg-primary/90';
+        } else if (variant === 'secondary') {
+            classes += ' bg-secondary text-secondary-foreground hover:bg-secondary/80';
+        } else if (variant === 'destructive') {
+            classes += ' bg-destructive text-destructive-foreground hover:bg-destructive/90';
+        } else if (variant === 'outline') {
+            classes += ' border border-input bg-background hover:bg-accent hover:text-accent-foreground';
+        }
+        return `<button class="${classes}">${text}</button>`;
     }
 }
 
