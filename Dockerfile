@@ -15,21 +15,14 @@ WORKDIR /app
 COPY requirements.txt ./
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy Node dependencies
-COPY package.json ./
-COPY package-lock.json* ./
+# Copy the entire app first
+COPY . .
+
+# Install Node dependencies
 RUN npm install
 
-# Copy Tailwind config and source CSS
-COPY app/static/css/src ./app/static/css/src
-COPY tailwind.config.js ./
-COPY postcss.config.js ./
-
-# Build Tailwind CSS to the correct dist directory
+# Build Tailwind CSS with all files available
 RUN npx tailwindcss -i ./app/static/css/src/main.css -o ./app/static/css/dist/main.css --minify
-
-# Copy the rest of the app
-COPY . .
 
 # Expose FastAPI port
 EXPOSE 5000
