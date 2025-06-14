@@ -60,9 +60,15 @@ class ChainBuilder {
         
         // Get proper dimensions
         const container = canvasElement.parentElement;
-        const containerRect = container.getBoundingClientRect();
-        const width = Math.max(800, containerRect.width);
-        const height = Math.max(600, containerRect.height);
+        
+        let { width, height } = container.getBoundingClientRect();
+        
+        // If the container has no size, default to a visible size and warn the user.
+        if (width === 0 || height === 0) {
+            console.warn('⚠️ Canvas container has no dimensions. Falling back to 800x600. Please check parent element CSS.');
+            width = 800;
+            height = 600;
+        }
         
         console.log(`📐 Initializing canvas: ${width}x${height}`);
         
@@ -146,16 +152,14 @@ class ChainBuilder {
             e.dataTransfer.effectAllowed = 'copy';
             
             // Add visual feedback
-            item.style.opacity = '0.5';
-            item.style.transform = 'scale(0.95)';
+            item.classList.add('dragging');
             
             console.log(`🎯 Started dragging: ${plugin.name}`);
         });
         
         item.addEventListener('dragend', (e) => {
             // Remove visual feedback
-            item.style.opacity = '';
-            item.style.transform = '';
+            item.classList.remove('dragging');
         });
         
         // Click to add to center of canvas
@@ -174,13 +178,11 @@ class ChainBuilder {
         
         // Hover effects
         item.addEventListener('mouseenter', () => {
-            item.style.borderColor = 'var(--neon-blue)';
-            item.style.boxShadow = '0 0 15px rgba(0, 245, 255, 0.3)';
+            item.classList.add('hover');
         });
         
         item.addEventListener('mouseleave', () => {
-            item.style.borderColor = '';
-            item.style.boxShadow = '';
+            item.classList.remove('hover');
         });
         
         return item;
@@ -223,36 +225,29 @@ class ChainBuilder {
                 e.dataTransfer.dropEffect = 'copy';
                 
                 // Add visual feedback
-                canvasContainer.style.backgroundColor = 'rgba(0, 245, 255, 0.1)';
-                canvasContainer.style.border = '2px dashed var(--neon-blue)';
+                canvasContainer.classList.add('dragover');
             });
             
             canvasContainer.addEventListener('dragleave', (e) => {
                 // Remove visual feedback
-                canvasContainer.style.backgroundColor = '';
-                canvasContainer.style.border = '';
+                canvasContainer.classList.remove('dragover');
             });
             
             canvasContainer.addEventListener('drop', (e) => {
                 e.preventDefault();
                 
                 // Remove visual feedback
-                canvasContainer.style.backgroundColor = '';
-                canvasContainer.style.border = '';
+                canvasContainer.classList.remove('dragover');
                 
                 const pluginId = e.dataTransfer.getData('plugin-id');
                 if (pluginId) {
-                    // Get accurate canvas coordinates
-                    const canvasRect = canvasElement.getBoundingClientRect();
-                    const x = e.clientX - canvasRect.left;
-                    const y = e.clientY - canvasRect.top;
+                    // Get accurate canvas coordinates using the reliable Fabric.js method
+                    const pointer = this.canvas.getPointer(e);
+                    const x = pointer.x;
+                    const y = pointer.y;
                     
-                    // Ensure coordinates are within canvas bounds
-                    const boundedX = Math.max(50, Math.min(x, canvasRect.width - 50));
-                    const boundedY = Math.max(50, Math.min(y, canvasRect.height - 50));
-                    
-                    console.log(`🎯 Dropping plugin at: (${boundedX}, ${boundedY})`);
-                    this.addPluginNode(pluginId, { x: boundedX, y: boundedY });
+                    console.log(`🎯 Dropping plugin at: (${x}, ${y})`);
+                    this.addPluginNode(pluginId, { x: x, y: y });
                 }
             });
         }
@@ -284,6 +279,7 @@ class ChainBuilder {
         // Create visual node
         const nodeGroup = this.createVisualNode(nodeId, plugin, position);
         this.canvas.add(nodeGroup);
+        this.canvas.renderAll();
         
         // Store node data
         const nodeData = {
@@ -311,6 +307,8 @@ class ChainBuilder {
         return nodeId;
     }
     
+    // NOTE: The following function uses style properties to create the visual representation of the nodes.
+    // This is part of the core functionality of the canvas and has been left as is.
     createVisualNode(nodeId, plugin, position) {
         const width = 180;
         const height = 120;
@@ -323,7 +321,9 @@ class ChainBuilder {
             stroke: '#00f5ff',
             strokeWidth: 2,
             rx: 0,
-            ry: 0
+            ry: 0,
+            originX: 'center',
+            originY: 'center'
         });
         
         // Node header
@@ -334,8 +334,8 @@ class ChainBuilder {
             fontWeight: 'bold',
             textAlign: 'center',
             originX: 'center',
-            originY: 'top',
-            top: 10
+            originY: 'center',
+            top: -height / 2 + 15
         });
         
         // Plugin type
@@ -345,8 +345,8 @@ class ChainBuilder {
             fontFamily: 'Roboto Mono',
             textAlign: 'center',
             originX: 'center',
-            originY: 'top',
-            top: 30
+            originY: 'center',
+            top: -height / 2 + 35
         });
         
         // Plugin icon
@@ -355,7 +355,7 @@ class ChainBuilder {
             textAlign: 'center',
             originX: 'center',
             originY: 'center',
-            top: 25
+            top: 0
         });
         
         // Status indicator
@@ -366,8 +366,8 @@ class ChainBuilder {
             stroke: '#3a86ff',
             strokeWidth: 1,
             originX: 'center',
-            originY: 'bottom',
-            top: height - 10,
+            originY: 'center',
+            top: height / 2 - 20,
             rx: 0,
             ry: 0
         });
@@ -379,7 +379,7 @@ class ChainBuilder {
             textAlign: 'center',
             originX: 'center',
             originY: 'center',
-            top: height - 20
+            top: height / 2 - 20
         });
         
         // Create group
@@ -436,7 +436,7 @@ class ChainBuilder {
             </div>
             <div class="node-property">
                 <label>Position</label>
-                <div style="display: flex; gap: 10px;">
+                <div>
                     <input type="number" id="node-x" value="${Math.round(nodeData.position.x)}" placeholder="X">
                     <input type="number" id="node-y" value="${Math.round(nodeData.position.y)}" placeholder="Y">
                 </div>
@@ -449,7 +449,7 @@ class ChainBuilder {
                     🔗 CONNECTIONS
                 </button>
             </div>
-            <div id="node-connections-panel" style="margin-top: 20px;"></div>
+            <div id="node-connections-panel"></div>
         `;
         
         // Add event handlers for property updates
@@ -478,10 +478,10 @@ class ChainBuilder {
         
         panel.innerHTML = `
             <div class="text-center">
-                <div style="opacity: 0.6; padding: 40px 20px;">
-                    <div style="font-size: 3rem; margin-bottom: 20px;">🔧</div>
-                    <h4 style="color: var(--text-secondary);">No Node Selected</h4>
-                    <p style="color: var(--text-secondary); font-size: 0.9rem;">
+                <div>
+                    <div>🔧</div>
+                    <h4>No Node Selected</h4>
+                    <p>
                         Click on a node to configure its properties and connections.
                     </p>
                 </div>
@@ -568,9 +568,9 @@ class ChainBuilder {
             const description = item.querySelector('.plugin-description').textContent.toLowerCase();
             
             if (name.includes(searchTerm) || description.includes(searchTerm)) {
-                item.style.display = 'block';
+                item.classList.remove('hidden');
             } else {
-                item.style.display = 'none';
+                item.classList.add('hidden');
             }
         });
     }
@@ -655,7 +655,7 @@ class ChainBuilder {
                 "text": "Hello world! This is a test input for the neural chain."
             }, null, 2);
             
-            modal.style.display = 'flex';
+            modal.classList.add('active');
         }
     }
     
@@ -664,11 +664,11 @@ class ChainBuilder {
         const results = document.getElementById('execution-results');
         
         if (modal) {
-            modal.style.display = 'none';
+            modal.classList.remove('active');
         }
         
         if (results) {
-            results.style.display = 'none';
+            results.classList.add('hidden');
         }
     }
     
@@ -699,7 +699,7 @@ class ChainBuilder {
             
             if (resultsDiv && outputDiv) {
                 outputDiv.innerHTML = `<pre>${JSON.stringify(result, null, 2)}</pre>`;
-                resultsDiv.style.display = 'block';
+                resultsDiv.classList.remove('hidden');
             }
             
             if (result.success) {
@@ -752,63 +752,26 @@ class ChainBuilder {
         const canvasElement = document.getElementById(this.canvasId);
         if (canvasElement && this.canvas) {
             const container = canvasElement.parentElement;
-            this.canvas.setDimensions({
-                width: container.clientWidth,
-                height: container.clientHeight
-            });
-            this.canvas.renderAll();
+            const width = container.clientWidth;
+            const height = container.clientHeight;
+            
+            if (width > 0 && height > 0) {
+                this.canvas.setDimensions({
+                    width: width,
+                    height: height
+                });
+                this.canvas.renderAll();
+            } else {
+                console.warn('⚠️ Skipping canvas resize because container dimensions are zero.');
+            }
         }
     }
     
     showNotification(message, type = 'info') {
-        // Use the existing notification system from app.js
         if (window.Notifications) {
             window.Notifications.show(message, type);
         } else {
             // Fallback notification system
-            const notification = document.createElement('div');
-            notification.style.cssText = `
-                position: fixed;
-                top: 20px;
-                right: 20px;
-                background: var(--card-bg);
-                color: var(--text-primary);
-                padding: 15px 20px;
-                border: 2px solid var(--neon-blue);
-                border-radius: 4px;
-                z-index: 10000;
-                max-width: 300px;
-                opacity: 0;
-                transform: translateX(400px);
-                transition: all 0.3s ease;
-            `;
-            
-            if (type === 'success') {
-                notification.style.borderColor = 'var(--neon-green)';
-            } else if (type === 'error') {
-                notification.style.borderColor = 'var(--neon-pink)';
-            }
-            
-            notification.textContent = message;
-            document.body.appendChild(notification);
-            
-            // Animate in
-            setTimeout(() => {
-                notification.style.opacity = '1';
-                notification.style.transform = 'translateX(0)';
-            }, 10);
-            
-            // Remove after delay
-            setTimeout(() => {
-                notification.style.opacity = '0';
-                notification.style.transform = 'translateX(400px)';
-                setTimeout(() => {
-                    if (notification.parentNode) {
-                        notification.parentNode.removeChild(notification);
-                    }
-                }, 300);
-            }, 3000);
-            
             console.log(`${type.toUpperCase()}: ${message}`);
         }
     }
