@@ -85,9 +85,23 @@
                     <div class="space-y-3">
                         <strong>Error Details:</strong>
                         <div class="p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md">
-                            <code id="error-text" class="text-sm text-red-800 dark:text-red-400">{{ result.error }}</code>
+                            <code id="error-text" class="text-sm text-red-800 dark:text-red-400 whitespace-pre-wrap">{{ result.error }}</code>
                         </div>
                         {{ button(variant='outline', text='COPY ERROR LOG', id='copyBtn') }}
+                        
+                        <!-- Enhanced Error Diagnostics for Pandoc -->
+                        {% if 'pandoc' in plugin.id.lower() and 'exit code 97' in result.error %}
+                        <div class="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-md">
+                            <h4 class="font-semibold text-blue-800 mb-2">🔧 Troubleshooting Suggestions</h4>
+                            <ul class="text-sm text-blue-700 space-y-1">
+                                <li>• Check if the EPUB file is corrupted by opening it in an EPUB reader</li>
+                                <li>• Try converting to a simpler format first (e.g., markdown or plain text)</li>
+                                <li>• Some EPUB files have DRM protection that prevents conversion</li>
+                                <li>• Large or complex EPUB files may exceed conversion capabilities</li>
+                                <li>• Consider using a different output format (docx, html, txt)</li>
+                            </ul>
+                        </div>
+                        {% endif %}
                     </div>
                 {% endcall %}
             {% endcall %}
@@ -164,6 +178,64 @@
         
         <!-- Sidebar Information -->
         <div class="space-y-6">
+            <!-- Enhanced Conversion Details for Pandoc -->
+            {% if result.data.conversion_details %}
+            {% call card(class="slide-up") %}
+                {% call card_header() %}
+                    <h3 class="text-lg font-semibold">CONVERSION DETAILS</h3>
+                {% endcall %}
+                {% call card_content() %}
+                    <div class="space-y-3 text-sm">
+                        {% if result.data.conversion_details.pandoc_version %}
+                        <div class="flex justify-between">
+                            <dt class="font-medium text-muted-foreground">Pandoc Version</dt>
+                            <dd class="font-mono text-xs">{{ result.data.conversion_details.pandoc_version }}</dd>
+                        </div>
+                        {% endif %}
+                        
+                        {% if result.data.conversion_details.input_file %}
+                        <div class="p-3 bg-muted/50 rounded-lg">
+                            <h4 class="font-medium mb-2">Input File</h4>
+                            <div class="space-y-1 text-xs">
+                                <div class="flex justify-between">
+                                    <span>Size:</span>
+                                    <span>{{ result.data.conversion_details.input_file.size_mb }} MB</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span>Format:</span>
+                                    <span>{{ result.data.conversion_details.input_file.file_extension }}</span>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+                        
+                        {% if result.data.conversion_details.output_file %}
+                        <div class="p-3 bg-muted/50 rounded-lg">
+                            <h4 class="font-medium mb-2">Output File</h4>
+                            <div class="space-y-1 text-xs">
+                                <div class="flex justify-between">
+                                    <span>Size:</span>
+                                    <span>{{ result.data.conversion_details.output_file.size_mb }} MB</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span>Name:</span>
+                                    <span class="font-mono">{{ result.data.conversion_details.output_file.filename }}</span>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+                        
+                        {% if result.data.conversion_details.command_executed %}
+                        <div>
+                            <h4 class="font-medium text-muted-foreground mb-2">Command Executed</h4>
+                            <code class="text-xs bg-muted px-2 py-1 rounded block break-all">{{ result.data.conversion_details.command_executed }}</code>
+                        </div>
+                        {% endif %}
+                    </div>
+                {% endcall %}
+            {% endcall %}
+            {% endif %}
+
             <!-- Input Summary -->
             {% call card(class="slide-up") %}
                 {% call card_header() %}
