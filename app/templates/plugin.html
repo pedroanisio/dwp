@@ -312,6 +312,31 @@
 document.addEventListener('DOMContentLoaded', function() {
     const form = document.getElementById('pluginForm');
     const submitBtn = form?.querySelector('button[type="submit"]');
+    let processingToastId = null;
+    
+    // Function to reset button state
+    function resetButtonState() {
+        if (submitBtn) {
+            const submitText = submitBtn.querySelector('.submit-text');
+            const loadingText = submitBtn.querySelector('.loading-text');
+            
+            if (submitText && loadingText) {
+                loadingText.classList.add('hidden');
+                submitText.classList.remove('hidden');
+            }
+            
+            submitBtn.disabled = false;
+        }
+        
+        // Remove processing toast if it exists
+        if (processingToastId) {
+            const toast = document.getElementById(processingToastId);
+            if (toast) {
+                toast.remove();
+            }
+            processingToastId = null;
+        }
+    }
     
     // Enhanced form submission with loading states
     if (form && submitBtn) {
@@ -327,8 +352,19 @@ document.addEventListener('DOMContentLoaded', function() {
             
             submitBtn.disabled = true;
             
-            // Show processing toast
-            showToast('Processing module execution...', 'info');
+            // Show processing toast with unique ID
+            processingToastId = 'processing-toast-' + Date.now();
+            showToast('Processing module execution...', 'info', 0, processingToastId);
+            
+            // Set up timeout fallback to reset button state
+            // This handles cases where file downloads don't trigger page navigation
+            setTimeout(() => {
+                // Check if we're still on the same page (likely a download)
+                if (window.location.pathname.includes('/plugin/')) {
+                    resetButtonState();
+                    showToast('Processing complete. Check your downloads.', 'success');
+                }
+            }, 3000); // 3 second timeout
         });
     }
 
@@ -345,28 +381,32 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Reset button state on page load
+    // Reset button state on page load/show
     window.addEventListener('pageshow', function(event) {
-        if (submitBtn) {
-            const submitText = submitBtn.querySelector('.submit-text');
-            const loadingText = submitBtn.querySelector('.loading-text');
-            
-            if (submitText && loadingText) {
-                submitText.classList.remove('hidden');
-                loadingText.classList.add('hidden');
-            }
-            
-            submitBtn.disabled = false;
-        }
+        resetButtonState();
+    });
+    
+    // Additional event listeners for more reliable state reset
+    window.addEventListener('focus', function() {
+        // Reset state when window regains focus (useful for download scenarios)
+        setTimeout(resetButtonState, 500);
+    });
+    
+    // Listen for beforeunload to clean up if navigating away
+    window.addEventListener('beforeunload', function() {
+        resetButtonState();
     });
 });
 
 // Toast notification system
-function showToast(message, type = 'info', duration = 5000) {
+function showToast(message, type = 'info', duration = 5000, id = null) {
     const container = document.getElementById('toast-container');
     if (!container) return;
     
     const toast = document.createElement('div');
+    if (id) {
+        toast.id = id;
+    }
     toast.className = `
         flex items-center p-4 mb-4 text-sm rounded-lg shadow-lg transform transition-all duration-300 translate-x-full opacity-0
         ${type === 'success' ? 'text-green-800 bg-green-50 border border-green-200' : ''}

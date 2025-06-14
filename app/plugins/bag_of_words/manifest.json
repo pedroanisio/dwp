@@ -1,0 +1,108 @@
+{
+  "id": "bag_of_words",
+  "name": "Bag of Words",
+  "version": "1.0.0",
+  "description": "Analyzes text input and creates a bag of words representation with frequency filtering. Shows only words that appear at least n times based on the cutoff parameter.",
+  "author": "Plugin System Demo",
+  "inputs": [
+    {
+      "name": "text",
+      "label": "Text to Analyze",
+      "field_type": "textarea",
+      "required": true,
+      "placeholder": "Enter your text here for bag of words analysis...",
+      "validation": {
+        "min_length": 1,
+        "max_length": 100000
+      }
+    },
+    {
+      "name": "cutoff",
+      "label": "Frequency Cutoff",
+      "field_type": "number",
+      "required": false,
+      "default_value": 0,
+      "placeholder": "0",
+      "validation": {
+        "min": 0,
+        "max": 1000
+      },
+      "help_text": "Only show words that appear at least this many times (0 = show all words)"
+    }
+  ],
+  "output": {
+    "name": "bagOfWords",
+    "description": "Bag of words representation with frequency filtering",
+    "schema": {
+      "type": "object",
+      "properties": {
+        "total_words": {
+          "type": "integer",
+          "description": "Total number of words in the text"
+        },
+        "unique_words": {
+          "type": "integer",
+          "description": "Number of unique words in the text"
+        },
+        "filtered_words": {
+          "type": "integer",
+          "description": "Number of words that meet the cutoff threshold"
+        },
+        "cutoff_threshold": {
+          "type": "integer",
+          "description": "The cutoff threshold that was applied"
+        },
+        "word_frequencies": {
+          "type": "object",
+          "description": "Word frequencies that meet the cutoff threshold",
+          "additionalProperties": {
+            "type": "integer"
+          }
+        },
+        "word_list": {
+          "type": "array",
+          "description": "List of words sorted by frequency (descending)",
+          "items": {
+            "type": "object",
+            "properties": {
+              "word": {
+                "type": "string"
+              },
+              "frequency": {
+                "type": "integer"
+              }
+            }
+          }
+        },
+        "frequency_histogram": {
+          "type": "object",
+          "description": "Histogram data showing distribution of word frequencies",
+          "properties": {
+            "bins": {
+              "type": "array",
+              "description": "Frequency bins (e.g., [1, 2, 3, 4, 5+])",
+              "items": {
+                "type": "string"
+              }
+            },
+            "counts": {
+              "type": "array",
+              "description": "Number of words in each frequency bin",
+              "items": {
+                "type": "integer"
+              }
+            },
+            "labels": {
+              "type": "array",
+              "description": "Human-readable labels for histogram bins",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "tags": ["text", "analysis", "nlp", "bag-of-words", "frequency"]
+}

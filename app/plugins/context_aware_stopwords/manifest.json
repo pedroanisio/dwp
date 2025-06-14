@@ -1,0 +1,136 @@
+{
+  "id": "context_aware_stopwords",
+  "name": "Context-Aware Stopword Removal",
+  "version": "1.0.0",
+  "description": "Advanced stopword removal using context-aware techniques including POS tagging and semantic analysis to preserve important words based on their grammatical role and context.",
+  "author": "Plugin System Demo",
+  "inputs": [
+    {
+      "name": "text",
+      "label": "Text to Process",
+      "field_type": "textarea",
+      "required": true,
+      "placeholder": "Enter your text here for context-aware stopword removal...",
+      "validation": {
+        "min_length": 1,
+        "max_length": 100000
+      }
+    },
+    {
+      "name": "method",
+      "label": "Removal Method",
+      "field_type": "select",
+      "required": false,
+      "default_value": "context_aware",
+      "options": [
+        "standard",
+        "context_aware",
+        "pos_based"
+      ],
+      "help_text": "Standard: basic stopword list; Context-aware: preserves words based on context; POS-based: uses part-of-speech tagging"
+    },
+    {
+      "name": "preserve_important",
+      "label": "Preserve Important Words",
+      "field_type": "checkbox",
+      "required": false,
+      "default_value": true,
+      "help_text": "When enabled, preserves words that might be stopwords but are important in context (e.g., 'will' as a noun vs. auxiliary verb)"
+    },
+    {
+      "name": "custom_stopwords",
+      "label": "Additional Stopwords",
+      "field_type": "text",
+      "required": false,
+      "placeholder": "word1, word2, word3",
+      "help_text": "Comma-separated list of additional words to remove (optional)"
+    }
+  ],
+  "output": {
+    "name": "contextAwareStopwords",
+    "description": "Text with context-aware stopword removal and analysis",
+    "schema": {
+      "type": "object",
+      "properties": {
+        "original_text": {
+          "type": "string",
+          "description": "The original input text"
+        },
+        "processed_text": {
+          "type": "string",
+          "description": "Text after stopword removal"
+        },
+        "method_used": {
+          "type": "string",
+          "description": "The stopword removal method that was applied"
+        },
+        "words_removed": {
+          "type": "array",
+          "description": "List of words that were removed as stopwords",
+          "items": {
+            "type": "object",
+            "properties": {
+              "word": {
+                "type": "string"
+              },
+              "pos_tag": {
+                "type": "string"
+              },
+              "reason": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "words_preserved": {
+          "type": "array",
+          "description": "List of potential stopwords that were preserved due to context",
+          "items": {
+            "type": "object",
+            "properties": {
+              "word": {
+                "type": "string"
+              },
+              "pos_tag": {
+                "type": "string"
+              },
+              "reason": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "statistics": {
+          "type": "object",
+          "description": "Processing statistics",
+          "properties": {
+            "original_word_count": {
+              "type": "integer"
+            },
+            "processed_word_count": {
+              "type": "integer"
+            },
+            "words_removed_count": {
+              "type": "integer"
+            },
+            "words_preserved_count": {
+              "type": "integer"
+            },
+            "stopword_removal_rate": {
+              "type": "number"
+            }
+          }
+        }
+      }
+    }
+  },
+  "dependencies": {
+    "python": [
+      {
+        "name": "nltk",
+        "help": "Required for POS tagging and tokenization"
+      }
+    ]
+  },
+  "tags": ["text", "nlp", "stopwords", "context-aware", "pos-tagging", "preprocessing"]
+}
