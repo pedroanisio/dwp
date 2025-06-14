@@ -5,6 +5,8 @@ from fastapi.responses import HTMLResponse, JSONResponse, FileResponse
 from typing import Dict, Any
 import os
 import json
+import time
+from pathlib import Path
 
 from .core.plugin_manager import PluginManager
 from .core.chain_manager import ChainManager
@@ -33,6 +35,29 @@ def tojsonpretty(value):
 templates.env.filters['tojsonpretty'] = tojsonpretty
 
 app.mount("/static", StaticFiles(directory="app/static"), name="static")
+
+
+def cleanup_downloads_directory(max_age_hours: int = 24):
+    """Clean up old files from downloads directory"""
+    downloads_dir = Path("/app/data/downloads")
+    if not downloads_dir.exists():
+        return {"cleaned": 0, "error": "Downloads directory does not exist"}
+    
+    try:
+        current_time = time.time()
+        max_age_seconds = max_age_hours * 3600
+        cleaned_count = 0
+        
+        for file_path in downloads_dir.iterdir():
+            if file_path.is_file():
+                file_age = current_time - file_path.stat().st_mtime
+                if file_age > max_age_seconds:
+                    file_path.unlink()
+                    cleaned_count += 1
+        
+        return {"cleaned": cleaned_count, "max_age_hours": max_age_hours}
+    except Exception as e:
+        return {"cleaned": 0, "error": str(e)}
 
 
 @app.get('/favicon.ico', include_in_schema=False)
@@ -128,6 +153,9 @@ async def execute_plugin_web(request: Request, plugin_id: str, input_file: Uploa
         result = plugin_manager.execute_plugin(plugin_input)
 
         if result.success and result.file_data:
+            # Clean up old downloads before serving new file
+            cleanup_downloads_directory(max_age_hours=1)  # Clean files older than 1 hour
+            
             return FileResponse(
                 path=result.file_data["file_path"],
                 filename=result.file_data["file_name"],
@@ -174,6 +202,13 @@ async def refresh_plugins():
     plugin_manager.refresh_plugins()
     plugins = plugin_manager.get_all_plugins()
     return {"success": True, "message": "Plugins refreshed", "count": len(plugins)}
+
+
+@app.post("/api/cleanup-downloads")
+async def cleanup_downloads(max_age_hours: int = 24):
+    """Clean up old files from downloads directory"""
+    result = cleanup_downloads_directory(max_age_hours)
+    return {"success": True, "cleanup_result": result}
 
 
 @app.get("/api/plugin-compliance")

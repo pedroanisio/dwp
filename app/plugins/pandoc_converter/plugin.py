@@ -5,6 +5,7 @@ from typing import Dict, Any, Type
 import os
 import shutil
 import logging
+import uuid
 from pydantic import BaseModel, Field
 from ...models.plugin import BasePlugin, BasePluginResponse
 
@@ -25,6 +26,30 @@ class Plugin(BasePlugin):
     def get_response_model(cls) -> Type[BasePluginResponse]:
         """Return the Pydantic model for this plugin's response"""
         return PandocConverterResponse
+    
+    def _ensure_downloads_directory(self) -> Path:
+        """Ensure downloads directory exists and return its path"""
+        downloads_dir = Path("/app/data/downloads")
+        downloads_dir.mkdir(parents=True, exist_ok=True)
+        return downloads_dir
+    
+    def _move_to_downloads(self, temp_file_path: Path, original_filename: str) -> Path:
+        """Move file from temp directory to permanent downloads directory"""
+        downloads_dir = self._ensure_downloads_directory()
+        
+        # Create unique filename to avoid conflicts
+        unique_id = str(uuid.uuid4())[:8]
+        file_stem = temp_file_path.stem
+        file_suffix = temp_file_path.suffix
+        safe_filename = f"{file_stem}_{unique_id}{file_suffix}"
+        
+        permanent_path = downloads_dir / safe_filename
+        
+        # Move the file
+        shutil.move(str(temp_file_path), str(permanent_path))
+        logger.info(f"Moved output file to permanent location: {permanent_path}")
+        
+        return permanent_path
     
     def _validate_input_file(self, filename: str, content: bytes) -> Dict[str, Any]:
         """Validate input file and return diagnostics"""
@@ -204,6 +229,9 @@ class Plugin(BasePlugin):
             # Get output file size for diagnostics
             output_size = output_path.stat().st_size
             
+            # Move file to permanent downloads directory BEFORE cleanup
+            permanent_file_path = self._move_to_downloads(output_path, output_filename)
+            
             # Prepare conversion details
             conversion_details = {
                 "pandoc_version": pandoc_version,
@@ -216,13 +244,14 @@ class Plugin(BasePlugin):
                 },
                 "conversion_successful": True,
                 "temp_directory": temp_dir,
+                "permanent_location": str(permanent_file_path),
                 "data_files_check": data_files_check
             }
             
             logger.info(f"Conversion successful: {conversion_details}")
             
             return {
-                "file_path": str(output_path),
+                "file_path": str(permanent_file_path),
                 "file_name": output_filename,
                 "conversion_details": conversion_details
             }

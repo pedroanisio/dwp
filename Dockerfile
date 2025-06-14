@@ -81,7 +81,7 @@ RUN npm install
 RUN npx tailwindcss -i ./app/static/css/src/main.css -o ./app/static/css/dist/main.css --minify
 
 # Create necessary directories for plugin data
-RUN mkdir -p /app/data/chains /app/data/templates
+RUN mkdir -p /app/data/chains /app/data/templates /app/data/downloads
 
 # Expose FastAPI port
 EXPOSE 5000
