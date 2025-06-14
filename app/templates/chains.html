@@ -1,0 +1,605 @@
+{% extends "base.html" %}
+
+{% block title %}Neural Chains{% endblock %}
+
+{% block content %}
+<div class="container">
+    <header class="page-header">
+        <h1 class="neon-text">💻 NEURAL CHAINS</h1>
+        <p class="text-secondary">Manage your plugin processing chains</p>
+    </header>
+
+    <div class="toolbar">
+        <div class="btn-group">
+            <a href="/chain-builder" class="btn btn-primary">
+                ➕ CREATE NEW CHAIN
+            </a>
+            <button id="refresh-chains" class="btn btn-secondary">
+                🔄 REFRESH
+            </button>
+            <button id="import-chain" class="btn btn-outline">
+                📥 IMPORT
+            </button>
+        </div>
+        
+        <div class="search-group">
+            <input type="text" id="chain-search" placeholder="🔍 Search chains..." class="search-input">
+        </div>
+    </div>
+
+    <div class="chains-grid" id="chains-grid">
+        <div class="loading-state" id="loading-state">
+            <div class="spinner"></div>
+            <p>Loading neural chains...</p>
+        </div>
+        
+        <div class="empty-state" id="empty-state" style="display: none;">
+            <div class="empty-icon">🔗</div>
+            <h3>No Chains Found</h3>
+            <p>Create your first neural processing chain to get started.</p>
+            <a href="/chain-builder" class="btn btn-primary">CREATE FIRST CHAIN</a>
+        </div>
+        
+        <div class="chains-list" id="chains-list" style="display: none;">
+            <!-- Chain cards will be populated here -->
+        </div>
+    </div>
+</div>
+
+<div class="modal" id="delete-chain-modal" style="display: none;">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>🗑️ DELETE CHAIN</h3>
+            <button class="modal-close">&times;</button>
+        </div>
+        
+        <div class="modal-body">
+            <p>Are you sure you want to delete this chain? This action cannot be undone.</p>
+            <div class="chain-info" id="delete-chain-info">
+                <!-- Chain info will be populated here -->
+            </div>
+        </div>
+        
+        <div class="modal-footer">
+            <button id="confirm-delete" class="btn btn-danger">DELETE</button>
+            <button id="cancel-delete" class="btn btn-secondary">CANCEL</button>
+        </div>
+    </div>
+</div>
+
+<div class="modal" id="chain-details-modal" style="display: none;">
+    <div class="modal-content modal-large">
+        <div class="modal-header">
+            <h3 id="chain-details-title">🔗 CHAIN DETAILS</h3>
+            <button class="modal-close">&times;</button>
+        </div>
+        
+        <div class="modal-body">
+            <div id="chain-details-content">
+                <!-- Chain details will be populated here -->
+            </div>
+        </div>
+        
+        <div class="modal-footer">
+            <button id="edit-chain" class="btn btn-primary">EDIT</button>
+            <button id="execute-chain" class="btn btn-secondary">EXECUTE</button>
+            <button class="btn btn-outline modal-close">CLOSE</button>
+        </div>
+    </div>
+</div>
+
+<style>
+.chains-grid {
+    margin-top: 2rem;
+}
+
+.loading-state, .empty-state {
+    text-align: center;
+    padding: 4rem 2rem;
+}
+
+.loading-state .spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid var(--bg-secondary);
+    border-top: 3px solid var(--primary);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 1rem;
+}
+
+.empty-state .empty-icon {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+    opacity: 0.5;
+}
+
+.chains-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 1.5rem;
+}
+
+.chain-card {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: 0.5rem;
+    padding: 1.5rem;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.chain-card:hover {
+    border-color: var(--primary);
+    box-shadow: 0 4px 20px rgba(0, 245, 255, 0.1);
+    transform: translateY(-2px);
+}
+
+.chain-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--primary), var(--secondary));
+}
+
+.chain-header {
+    display: flex;
+    justify-content: between;
+    align-items: flex-start;
+    margin-bottom: 1rem;
+}
+
+.chain-title {
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: var(--text-primary);
+    margin: 0;
+    flex: 1;
+}
+
+.chain-status {
+    padding: 0.25rem 0.75rem;
+    border-radius: 1rem;
+    font-size: 0.8rem;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+.chain-status.valid {
+    background: rgba(0, 255, 0, 0.1);
+    color: #00ff00;
+    border: 1px solid rgba(0, 255, 0, 0.3);
+}
+
+.chain-status.invalid {
+    background: rgba(255, 0, 0, 0.1);
+    color: #ff4757;
+    border: 1px solid rgba(255, 0, 0, 0.3);
+}
+
+.chain-status.unknown {
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--text-secondary);
+    border: 1px solid var(--border);
+}
+
+.chain-description {
+    color: var(--text-secondary);
+    margin-bottom: 1rem;
+    line-height: 1.5;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.chain-meta {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-bottom: 1rem;
+    font-size: 0.9rem;
+}
+
+.chain-meta-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--text-secondary);
+}
+
+.chain-meta-value {
+    color: var(--text-primary);
+    font-weight: bold;
+}
+
+.chain-actions {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 1rem;
+}
+
+.btn-small {
+    padding: 0.5rem 1rem;
+    font-size: 0.85rem;
+}
+
+.search-group {
+    position: relative;
+}
+
+.search-input {
+    width: 300px;
+    padding: 0.75rem 1rem;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: 0.5rem;
+    color: var(--text-primary);
+}
+
+.search-input:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 2px rgba(0, 245, 255, 0.1);
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+@media (max-width: 768px) {
+    .chains-list {
+        grid-template-columns: 1fr;
+    }
+    
+    .toolbar {
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    .search-input {
+        width: 100%;
+    }
+}
+</style>
+
+<script>
+class ChainsManager {
+    constructor() {
+        this.chains = [];
+        this.selectedChainId = null;
+        this.init();
+    }
+    
+    async init() {
+        console.log('🔗 Initializing Chains Manager...');
+        this.setupEventHandlers();
+        await this.loadChains();
+    }
+    
+    setupEventHandlers() {
+        document.getElementById('refresh-chains')?.addEventListener('click', () => this.loadChains());
+        document.getElementById('chain-search')?.addEventListener('input', (e) => this.filterChains(e.target.value));
+        document.getElementById('import-chain')?.addEventListener('click', () => this.showImportDialog());
+        
+        // Modal handlers
+        document.querySelectorAll('.modal-close').forEach(btn => {
+            btn.addEventListener('click', () => this.closeModals());
+        });
+        
+        document.getElementById('confirm-delete')?.addEventListener('click', () => this.confirmDeleteChain());
+        document.getElementById('cancel-delete')?.addEventListener('click', () => this.closeModals());
+        
+        document.getElementById('edit-chain')?.addEventListener('click', () => this.editSelectedChain());
+        document.getElementById('execute-chain')?.addEventListener('click', () => this.executeSelectedChain());
+    }
+    
+    async loadChains() {
+        try {
+            this.showLoadingState();
+            
+            const response = await fetch('/api/chains');
+            const data = await response.json();
+            
+            if (data.success) {
+                this.chains = data.chains || [];
+                this.renderChains();
+            } else {
+                throw new Error('Failed to load chains');
+            }
+        } catch (error) {
+            console.error('Error loading chains:', error);
+            this.showEmptyState();
+        }
+    }
+    
+    renderChains() {
+        const loadingState = document.getElementById('loading-state');
+        const emptyState = document.getElementById('empty-state');
+        const chainsList = document.getElementById('chains-list');
+        
+        loadingState.style.display = 'none';
+        
+        if (this.chains.length === 0) {
+            emptyState.style.display = 'block';
+            chainsList.style.display = 'none';
+            return;
+        }
+        
+        emptyState.style.display = 'none';
+        chainsList.style.display = 'grid';
+        
+        chainsList.innerHTML = '';
+        
+        this.chains.forEach(chain => {
+            const card = this.createChainCard(chain);
+            chainsList.appendChild(card);
+        });
+        
+        console.log(`📋 Rendered ${this.chains.length} chains`);
+    }
+    
+    createChainCard(chain) {
+        const card = document.createElement('div');
+        card.className = 'chain-card';
+        card.dataset.chainId = chain.id;
+        
+        const statusClass = this.getChainStatusClass(chain);
+        const statusText = this.getChainStatusText(chain);
+        
+        card.innerHTML = `
+            <div class="chain-header">
+                <h3 class="chain-title">${this.escapeHtml(chain.name)}</h3>
+                <span class="chain-status ${statusClass}">${statusText}</span>
+            </div>
+            
+            <p class="chain-description">${this.escapeHtml(chain.description || 'No description provided.')}</p>
+            
+            <div class="chain-meta">
+                <div class="chain-meta-item">
+                    <span>🔗</span>
+                    <span>Nodes: <span class="chain-meta-value">${chain.node_count || 0}</span></span>
+                </div>
+                <div class="chain-meta-item">
+                    <span>⚡</span>
+                    <span>Connections: <span class="chain-meta-value">${chain.connection_count || 0}</span></span>
+                </div>
+                <div class="chain-meta-item">
+                    <span>📅</span>
+                    <span>Created: <span class="chain-meta-value">${this.formatDate(chain.created_at)}</span></span>
+                </div>
+                <div class="chain-meta-item">
+                    <span>🔄</span>
+                    <span>Modified: <span class="chain-meta-value">${this.formatDate(chain.updated_at)}</span></span>
+                </div>
+            </div>
+            
+            <div class="chain-actions">
+                <button class="btn btn-small btn-primary" onclick="window.chainsManager.viewChain('${chain.id}')">
+                    👁️ VIEW
+                </button>
+                <button class="btn btn-small btn-secondary" onclick="window.chainsManager.editChain('${chain.id}')">
+                    ✏️ EDIT
+                </button>
+                <button class="btn btn-small btn-success" onclick="window.chainsManager.executeChain('${chain.id}')">
+                    ▶️ RUN
+                </button>
+                <button class="btn btn-small btn-outline" onclick="window.chainsManager.showDeleteDialog('${chain.id}')">
+                    🗑️ DELETE
+                </button>
+            </div>
+        `;
+        
+        // Add click handler for card
+        card.addEventListener('click', (e) => {
+            if (!e.target.closest('.chain-actions')) {
+                this.viewChain(chain.id);
+            }
+        });
+        
+        return card;
+    }
+    
+    getChainStatusClass(chain) {
+        if (chain.is_valid === true) return 'valid';
+        if (chain.is_valid === false) return 'invalid';
+        return 'unknown';
+    }
+    
+    getChainStatusText(chain) {
+        if (chain.is_valid === true) return 'VALID';
+        if (chain.is_valid === false) return 'INVALID';
+        return 'UNKNOWN';
+    }
+    
+    formatDate(dateString) {
+        if (!dateString) return 'Unknown';
+        const date = new Date(dateString);
+        return date.toLocaleDateString();
+    }
+    
+    escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+    
+    filterChains(query) {
+        const cards = document.querySelectorAll('.chain-card');
+        const searchTerm = query.toLowerCase();
+        
+        cards.forEach(card => {
+            const title = card.querySelector('.chain-title').textContent.toLowerCase();
+            const description = card.querySelector('.chain-description').textContent.toLowerCase();
+            
+            if (title.includes(searchTerm) || description.includes(searchTerm)) {
+                card.style.display = 'block';
+            } else {
+                card.style.display = 'none';
+            }
+        });
+    }
+    
+    showLoadingState() {
+        document.getElementById('loading-state').style.display = 'block';
+        document.getElementById('empty-state').style.display = 'none';
+        document.getElementById('chains-list').style.display = 'none';
+    }
+    
+    showEmptyState() {
+        document.getElementById('loading-state').style.display = 'none';
+        document.getElementById('empty-state').style.display = 'block';
+        document.getElementById('chains-list').style.display = 'none';
+    }
+    
+    viewChain(chainId) {
+        const chain = this.chains.find(c => c.id === chainId);
+        if (!chain) return;
+        
+        this.selectedChainId = chainId;
+        
+        const modal = document.getElementById('chain-details-modal');
+        const title = document.getElementById('chain-details-title');
+        const content = document.getElementById('chain-details-content');
+        
+        title.textContent = `🔗 ${chain.name}`;
+        
+        content.innerHTML = `
+            <div class="chain-details">
+                <div class="detail-section">
+                    <h4>Basic Information</h4>
+                    <div class="detail-grid">
+                        <div class="detail-item">
+                            <label>Name:</label>
+                            <span>${this.escapeHtml(chain.name)}</span>
+                        </div>
+                        <div class="detail-item">
+                            <label>Description:</label>
+                            <span>${this.escapeHtml(chain.description || 'No description')}</span>
+                        </div>
+                        <div class="detail-item">
+                            <label>Status:</label>
+                            <span class="chain-status ${this.getChainStatusClass(chain)}">${this.getChainStatusText(chain)}</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="detail-section">
+                    <h4>Structure</h4>
+                    <div class="detail-grid">
+                        <div class="detail-item">
+                            <label>Nodes:</label>
+                            <span>${chain.node_count || 0}</span>
+                        </div>
+                        <div class="detail-item">
+                            <label>Connections:</label>
+                            <span>${chain.connection_count || 0}</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="detail-section">
+                    <h4>Timeline</h4>
+                    <div class="detail-grid">
+                        <div class="detail-item">
+                            <label>Created:</label>
+                            <span>${this.formatDate(chain.created_at)}</span>
+                        </div>
+                        <div class="detail-item">
+                            <label>Last Modified:</label>
+                            <span>${this.formatDate(chain.updated_at)}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        modal.style.display = 'flex';
+    }
+    
+    editChain(chainId) {
+        window.location.href = `/chain-builder?chain=${chainId}`;
+    }
+    
+    async executeChain(chainId) {
+        // This would open an execution dialog
+        console.log(`Executing chain: ${chainId}`);
+        alert('Chain execution dialog would open here');
+    }
+    
+    showDeleteDialog(chainId) {
+        const chain = this.chains.find(c => c.id === chainId);
+        if (!chain) return;
+        
+        this.selectedChainId = chainId;
+        
+        const modal = document.getElementById('delete-chain-modal');
+        const info = document.getElementById('delete-chain-info');
+        
+        info.innerHTML = `
+            <div class="chain-delete-info">
+                <h4>${this.escapeHtml(chain.name)}</h4>
+                <p>${this.escapeHtml(chain.description || 'No description')}</p>
+                <div class="chain-stats">
+                    <span>🔗 ${chain.node_count || 0} nodes</span>
+                    <span>⚡ ${chain.connection_count || 0} connections</span>
+                </div>
+            </div>
+        `;
+        
+        modal.style.display = 'flex';
+    }
+    
+    async confirmDeleteChain() {
+        if (!this.selectedChainId) return;
+        
+        try {
+            const response = await fetch(`/api/chains/${this.selectedChainId}`, {
+                method: 'DELETE'
+            });
+            
+            const result = await response.json();
+            
+            if (result.success) {
+                console.log(`✅ Deleted chain: ${this.selectedChainId}`);
+                this.closeModals();
+                await this.loadChains();
+            } else {
+                throw new Error('Failed to delete chain');
+            }
+        } catch (error) {
+            console.error('Error deleting chain:', error);
+            alert('Failed to delete chain');
+        }
+    }
+    
+    editSelectedChain() {
+        if (this.selectedChainId) {
+            this.editChain(this.selectedChainId);
+        }
+    }
+    
+    executeSelectedChain() {
+        if (this.selectedChainId) {
+            this.executeChain(this.selectedChainId);
+        }
+    }
+    
+    closeModals() {
+        document.querySelectorAll('.modal').forEach(modal => {
+            modal.style.display = 'none';
+        });
+        this.selectedChainId = null;
+    }
+}
+
+// Initialize when page loads
+document.addEventListener('DOMContentLoaded', () => {
+    window.chainsManager = new ChainsManager();
+});
+</script>
+{% endblock %} 

@@ -7,18 +7,21 @@ import os
 import json
 
 from .core.plugin_manager import PluginManager
+from .core.chain_manager import ChainManager
 from .models.plugin import PluginInput
 from .models.response import PluginListResponse, PluginExecutionResponse
+from .models.chain import ChainDefinition, ChainExecutionResult
 
 # Initialize FastAPI app
 app = FastAPI(
-    title="Plugin System Web Application",
-    description="A FastAPI + Pydantic web application with dynamic plugin system",
-    version="1.0.0"
+    title="Neural Plugin System with Chain Builder",
+    description="A FastAPI + Pydantic web application with dynamic plugin system and visual chain builder",
+    version="2.0.0"
 )
 
-# Initialize plugin manager
+# Initialize managers
 plugin_manager = PluginManager()
+chain_manager = ChainManager(plugin_manager)
 
 # Setup templates and static files
 templates = Jinja2Templates(directory="app/templates")
@@ -233,6 +236,201 @@ class Plugin(BasePlugin):
             """
         }
     }
+
+
+# ========== CHAIN MANAGEMENT ENDPOINTS ==========
+
+@app.get("/chain-builder", response_class=HTMLResponse)
+async def chain_builder(request: Request):
+    """Visual chain builder interface"""
+    return templates.TemplateResponse("chain_builder.html", {
+        "request": request
+    })
+
+@app.get("/chains", response_class=HTMLResponse)
+async def chains_list(request: Request):
+    """List all chains interface"""
+    chains = chain_manager.list_chains()
+    return templates.TemplateResponse("chains.html", {
+        "request": request,
+        "chains": chains
+    })
+
+@app.post("/api/chains")
+async def create_chain(chain_data: Dict[str, Any]):
+    """Create a new plugin chain"""
+    try:
+        if "definition" in chain_data:
+            # Save a complete chain definition
+            chain = ChainDefinition(**chain_data["definition"])
+            success = chain_manager.save_chain(chain)
+            if success:
+                return {"success": True, "chain_id": chain.id}
+            else:
+                raise HTTPException(status_code=500, detail="Failed to save chain")
+        else:
+            # Create a new empty chain
+            chain = chain_manager.create_chain(
+                name=chain_data.get("name", "Untitled Chain"),
+                description=chain_data.get("description", ""),
+                author=chain_data.get("author")
+            )
+            return {"success": True, "chain": chain.dict()}
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+@app.get("/api/chains")
+async def list_chains(tags: str = None, template_only: bool = False):
+    """List all available chains"""
+    tag_list = tags.split(",") if tags else None
+    chains = chain_manager.list_chains(tags=tag_list, template_only=template_only)
+    return {
+        "success": True, 
+        "chains": [chain.dict() for chain in chains]
+    }
+
+@app.get("/api/chains/search")
+async def search_chains(q: str = "", tags: str = None):
+    """Search chains by query and tags"""
+    tag_list = tags.split(",") if tags else None
+    results = chain_manager.search_chains(query=q, tags=tag_list)
+    return {"success": True, "results": results}
+
+@app.get("/api/chains/{chain_id}")
+async def get_chain(chain_id: str):
+    """Get a specific chain definition"""
+    chain = chain_manager.load_chain(chain_id)
+    if not chain:
+        raise HTTPException(status_code=404, detail="Chain not found")
+    return {"success": True, "chain": chain.dict()}
+
+@app.put("/api/chains/{chain_id}")
+async def update_chain(chain_id: str, chain_data: Dict[str, Any]):
+    """Update a chain definition"""
+    try:
+        chain = ChainDefinition(**chain_data)
+        chain.id = chain_id  # Ensure ID matches URL
+        success = chain_manager.save_chain(chain)
+        if success:
+            return {"success": True, "chain": chain.dict()}
+        else:
+            raise HTTPException(status_code=500, detail="Failed to update chain")
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+@app.delete("/api/chains/{chain_id}")
+async def delete_chain(chain_id: str):
+    """Delete a chain"""
+    success = chain_manager.delete_chain(chain_id)
+    if success:
+        return {"success": True, "message": "Chain deleted"}
+    else:
+        raise HTTPException(status_code=404, detail="Chain not found")
+
+@app.post("/api/chains/{chain_id}/duplicate")
+async def duplicate_chain(chain_id: str, data: Dict[str, Any]):
+    """Duplicate an existing chain"""
+    new_name = data.get("name")
+    duplicate = chain_manager.duplicate_chain(chain_id, new_name)
+    if duplicate:
+        return {"success": True, "chain": duplicate.dict()}
+    else:
+        raise HTTPException(status_code=404, detail="Chain not found")
+
+@app.post("/api/chains/validate")
+async def validate_chain(chain_data: Dict[str, Any]):
+    """Validate a chain definition"""
+    try:
+        chain = ChainDefinition(**chain_data)
+        validation = chain_manager.validate_chain(chain)
+        return {"success": True, "validation": validation.dict()}
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+@app.post("/api/chains/{chain_id}/execute")
+async def execute_chain(chain_id: str, input_data: Dict[str, Any]):
+    """Execute a plugin chain"""
+    try:
+        result = await chain_manager.execute_chain(chain_id, input_data)
+        return result.dict()
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/api/chains/{chain_id}/history")
+async def get_execution_history(chain_id: str, limit: int = 50):
+    """Get execution history for a chain"""
+    history = chain_manager.get_execution_history(chain_id, limit)
+    return {
+        "success": True, 
+        "history": [result.dict() for result in history]
+    }
+
+@app.get("/api/chains/{chain_id}/analytics")
+async def get_chain_analytics(chain_id: str):
+    """Get analytics for a specific chain"""
+    analytics = chain_manager.get_chain_analytics(chain_id)
+    if analytics:
+        return {"success": True, "analytics": analytics.dict()}
+    else:
+        return {"success": True, "analytics": None}
+
+@app.get("/api/system/analytics")
+async def get_system_analytics():
+    """Get system-wide analytics"""
+    analytics = chain_manager.get_system_analytics()
+    return {"success": True, "analytics": analytics}
+
+@app.get("/api/plugins/{plugin_id}/schema")
+async def get_plugin_schema(plugin_id: str):
+    """Get plugin input/output schema for chain building"""
+    schema = chain_manager.get_plugin_schema(plugin_id)
+    if not schema:
+        raise HTTPException(status_code=404, detail="Plugin not found")
+    return {"success": True, "schema": schema}
+
+@app.get("/api/chains/{chain_id}/connections/{source_node_id}")
+async def get_compatible_connections(chain_id: str, source_node_id: str):
+    """Get possible connections from a source node"""
+    chain = chain_manager.load_chain(chain_id)
+    if not chain:
+        raise HTTPException(status_code=404, detail="Chain not found")
+    
+    compatible = chain_manager.get_compatible_connections(chain, source_node_id)
+    return {"success": True, "compatible_connections": compatible}
+
+# ========== TEMPLATE MANAGEMENT ==========
+
+@app.get("/api/templates")
+async def list_templates(category: str = None):
+    """List all available templates"""
+    templates = chain_manager.list_templates(category=category)
+    return {
+        "success": True, 
+        "templates": [template.dict() for template in templates]
+    }
+
+@app.get("/api/templates/{template_id}")
+async def get_template(template_id: str):
+    """Get a specific template"""
+    template = chain_manager.load_template(template_id)
+    if not template:
+        raise HTTPException(status_code=404, detail="Template not found")
+    return {"success": True, "template": template.dict()}
+
+@app.post("/api/templates/{template_id}/create-chain")
+async def create_chain_from_template(template_id: str, data: Dict[str, Any]):
+    """Create a new chain from a template"""
+    chain = chain_manager.create_chain_from_template(
+        template_id, 
+        data.get("name", "Untitled Chain"),
+        data.get("author")
+    )
+    if chain:
+        return {"success": True, "chain": chain.dict()}
+    else:
+        raise HTTPException(status_code=404, detail="Template not found")
 
 
 if __name__ == "__main__":
