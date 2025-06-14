@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1
 
 # =============================================================================
-# Stage 1: Build Pandoc from source using cabal (more reliable than stack)
+# Stage 1: Build Pandoc from source using cabal with proper data files
 # =============================================================================
 FROM haskell:9.4-slim as pandoc-builder
 
@@ -21,11 +21,22 @@ RUN apt-get update && apt-get install -y \
 # Update cabal package list
 RUN cabal update
 
-# Install pandoc-cli directly using cabal (much faster and more reliable)
+# Install pandoc-cli using cabal
 RUN cabal install pandoc-cli --install-method=copy --installdir=/usr/local/bin
 
-# Verify pandoc was built correctly
-RUN pandoc --version
+# Download and install pandoc data files
+RUN mkdir -p /usr/local/share/pandoc && \
+    cd /tmp && \
+    curl -sL https://github.com/jgm/pandoc/archive/refs/tags/3.7.0.2.tar.gz | tar xz && \
+    cp -r pandoc-3.7.0.2/data/* /usr/local/share/pandoc/ && \
+    rm -rf /tmp/pandoc-3.7.0.2
+
+# Create the cabal store directory structure and link data files
+RUN mkdir -p /root/.local/state/cabal/store/ghc-9.4.8/pandoc-3.7.0.2-065ad85b97bf30952315d8b22ac449d77023c049fd550b60cfb99f14d4f0a926/share && \
+    ln -s /usr/local/share/pandoc /root/.local/state/cabal/store/ghc-9.4.8/pandoc-3.7.0.2-065ad85b97bf30952315d8b22ac449d77023c049fd550b60cfb99f14d4f0a926/share/data
+
+# Verify pandoc works with data files
+RUN pandoc --version && pandoc --print-default-data-file abbreviations > /dev/null
 
 # =============================================================================
 # Stage 2: Main application image
@@ -45,11 +56,13 @@ RUN apt-get update && \
     apt-get install -y nodejs && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# Copy the built pandoc binary from the builder stage
+# Copy the built pandoc binary and data files from the builder stage
 COPY --from=pandoc-builder /usr/local/bin/pandoc /usr/local/bin/pandoc
+COPY --from=pandoc-builder /usr/local/share/pandoc /usr/local/share/pandoc
+COPY --from=pandoc-builder /root/.local/state/cabal /root/.local/state/cabal
 
 # Verify pandoc works in the final image
-RUN pandoc --version
+RUN pandoc --version && pandoc --print-default-data-file abbreviations > /dev/null
 
 # Set workdir
 WORKDIR /app
@@ -75,11 +88,11 @@ EXPOSE 5000
 
 # Set environment variables for FastAPI/Uvicorn
 ENV PYTHONPATH=/app
-ENV PANDOC_VERSION=3.1.8-custom
+ENV PANDOC_VERSION=3.7.0.2-with-datafiles
 
-# Health check to ensure pandoc is working
+# Health check to ensure pandoc is working with data files
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-    CMD pandoc --version && curl -f http://localhost:5000/api/plugins || exit 1
+    CMD pandoc --version && pandoc --print-default-data-file abbreviations > /dev/null && curl -f http://localhost:5000/api/plugins || exit 1
 
 # Run FastAPI with Uvicorn
 CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "5000"]

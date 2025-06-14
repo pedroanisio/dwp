@@ -59,6 +59,36 @@ class Plugin(BasePlugin):
         except Exception:
             return "unknown"
     
+    def _check_pandoc_data_files(self) -> Dict[str, Any]:
+        """Check if pandoc data files are accessible"""
+        data_check = {
+            "data_files_accessible": False,
+            "missing_files": [],
+            "error_message": None
+        }
+        
+        try:
+            # Test access to common data files
+            test_files = ["abbreviations", "default.csl"]
+            for file_name in test_files:
+                result = subprocess.run(
+                    ["pandoc", "--print-default-data-file", file_name],
+                    capture_output=True,
+                    text=True,
+                    timeout=5
+                )
+                if result.returncode != 0:
+                    data_check["missing_files"].append(file_name)
+                    if "Could not find data file" in result.stderr:
+                        data_check["error_message"] = result.stderr.strip()
+            
+            data_check["data_files_accessible"] = len(data_check["missing_files"]) == 0
+            return data_check
+            
+        except Exception as e:
+            data_check["error_message"] = f"Error checking data files: {e}"
+            return data_check
+    
     def execute(self, data: Dict[str, Any]) -> Dict[str, Any]:
         input_file_info = data.get("input_file")
         output_format = data.get("output_format")
@@ -73,6 +103,19 @@ class Plugin(BasePlugin):
             # Create temporary directory
             temp_dir = tempfile.mkdtemp()
             logger.info(f"Created temporary directory: {temp_dir}")
+            
+            # Check pandoc data files first
+            data_files_check = self._check_pandoc_data_files()
+            if not data_files_check["data_files_accessible"]:
+                error_msg = "Pandoc data files are not accessible. This indicates an incomplete pandoc installation."
+                if data_files_check["error_message"]:
+                    error_msg += f"\n\nDetailed Error: {data_files_check['error_message']}"
+                error_msg += f"\n\nMissing files: {', '.join(data_files_check['missing_files'])}"
+                error_msg += "\n\n🔧 Solutions:"
+                error_msg += "\n  • Reinstall pandoc with: apt-get install pandoc"
+                error_msg += "\n  • Or rebuild Docker container with proper data files"
+                error_msg += "\n  • Check if pandoc data directory exists and is accessible"
+                raise RuntimeError(error_msg)
             
             # Validate and analyze input file
             input_filename = input_file_info["filename"]
@@ -121,7 +164,8 @@ class Plugin(BasePlugin):
                     "stderr": result.stderr,
                     "pandoc_version": pandoc_version,
                     "input_file": file_diagnostics,
-                    "output_format": output_format
+                    "output_format": output_format,
+                    "data_files_check": data_files_check
                 }
                 
                 # Create user-friendly error message
@@ -133,13 +177,20 @@ class Plugin(BasePlugin):
                 if result.stdout:
                     error_msg += f"\n\nPandoc Output:\n{result.stdout}"
                 
-                # Add specific guidance based on exit code
+                # Add specific guidance based on exit code and error content
                 if result.returncode == 97:
-                    error_msg += "\n\n💡 Exit code 97 usually indicates:"
-                    error_msg += "\n  • Input file format issues or corruption"
-                    error_msg += "\n  • Unsupported conversion combination"
-                    error_msg += "\n  • Complex document structure that pandoc can't handle"
-                    error_msg += f"\n  • Try converting {file_diagnostics['file_extension']} to a simpler format first (e.g., markdown)"
+                    if "Could not find data file" in result.stderr:
+                        error_msg += "\n\n💡 Exit code 97 with 'Could not find data file' indicates:"
+                        error_msg += "\n  • Incomplete pandoc installation missing data files"
+                        error_msg += "\n  • Data files not accessible in expected location"
+                        error_msg += "\n  • Container may need to be rebuilt with proper pandoc setup"
+                        error_msg += "\n\n🔧 Quick fix: Restart the container or reinstall pandoc"
+                    else:
+                        error_msg += "\n\n💡 Exit code 97 usually indicates:"
+                        error_msg += "\n  • Input file format issues or corruption"
+                        error_msg += "\n  • Unsupported conversion combination"
+                        error_msg += "\n  • Complex document structure that pandoc can't handle"
+                        error_msg += f"\n  • Try converting {file_diagnostics['file_extension']} to a simpler format first (e.g., markdown)"
                 
                 # Log detailed error for debugging
                 logger.error(f"Pandoc conversion failed: {error_details}")
@@ -164,7 +215,8 @@ class Plugin(BasePlugin):
                     "size_mb": round(output_size / (1024 * 1024), 2)
                 },
                 "conversion_successful": True,
-                "temp_directory": temp_dir
+                "temp_directory": temp_dir,
+                "data_files_check": data_files_check
             }
             
             logger.info(f"Conversion successful: {conversion_details}")
