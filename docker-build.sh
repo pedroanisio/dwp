@@ -34,18 +34,21 @@ show_usage() {
     echo "Usage: $0 [OPTIONS]"
     echo ""
     echo "Options:"
-    echo "  --prod, -p          Build production image with Pandoc from source"
+    echo "  --prod, -p          Build production image with Pandoc from source (cabal)"
+    echo "  --simple, -s        Build simple image with pre-built Pandoc binary (fastest)"
     echo "  --dev, -d           Build development image with system Pandoc"
     echo "  --both, -b          Build both production and development images"
     echo "  --run-prod, -rp     Build and run production container"
+    echo "  --run-simple, -rs   Build and run simple container (recommended)"
     echo "  --run-dev, -rd      Build and run development container"
     echo "  --clean, -c         Clean up Docker images and containers"
     echo "  --help, -h          Show this help message"
     echo ""
     echo "Examples:"
-    echo "  $0 --prod           # Build production image with custom Pandoc"
+    echo "  $0 --simple         # Build simple image with pre-built Pandoc (fastest)"
+    echo "  $0 --prod           # Build production image with custom Pandoc (slow)"
     echo "  $0 --dev            # Build development image with system Pandoc"
-    echo "  $0 --run-prod       # Build and run production container"
+    echo "  $0 --run-simple     # Build and run simple container (recommended)"
     echo "  $0 --clean          # Clean up Docker resources"
 }
 
@@ -68,6 +71,25 @@ build_production() {
     print_success "Production image built successfully!"
     print_info "Pandoc version in production image:"
     docker run --rm neural-plugin-system:prod pandoc --version
+}
+
+# Function to build simple image (with pre-built Pandoc binary)
+build_simple() {
+    print_info "Building simple image with pre-built Pandoc binary..."
+    print_info "This is the fastest build option (2-3 minutes)"
+    
+    export DOCKER_BUILDKIT=1
+    
+    docker build \
+        --tag neural-plugin-system:simple \
+        --file Dockerfile.simple \
+        --cache-from neural-plugin-system:simple \
+        --build-arg BUILDKIT_INLINE_CACHE=1 \
+        .
+    
+    print_success "Simple image built successfully!"
+    print_info "Pandoc version in simple image:"
+    docker run --rm neural-plugin-system:simple pandoc --version | head -1
 }
 
 # Function to build development image (with system Pandoc)
@@ -101,16 +123,29 @@ run_production() {
     print_info "Check container logs: docker-compose logs -f web"
 }
 
+# Function to run simple container
+run_simple() {
+    print_info "Building and running simple container..."
+    build_simple
+    
+    print_info "Starting simple container on port 8001..."
+    docker-compose --profile simple up -d web-simple
+    
+    print_success "Simple container is running!"
+    print_info "Access the application at: http://localhost:8001"
+    print_info "Check container logs: docker-compose logs -f web-simple"
+}
+
 # Function to run development container
 run_development() {
     print_info "Building and running development container..."
     build_development
     
-    print_info "Starting development container on port 8001..."
+    print_info "Starting development container on port 8002..."
     docker-compose --profile dev up -d web-dev
     
     print_success "Development container is running!"
-    print_info "Access the application at: http://localhost:8001"
+    print_info "Access the application at: http://localhost:8002"
     print_info "Check container logs: docker-compose logs -f web-dev"
 }
 
@@ -120,10 +155,12 @@ cleanup() {
     
     # Stop and remove containers
     docker-compose down || true
+    docker-compose --profile simple down || true
     docker-compose --profile dev down || true
     
     # Remove images
     docker rmi neural-plugin-system:prod 2>/dev/null || true
+    docker rmi neural-plugin-system:simple 2>/dev/null || true
     docker rmi neural-plugin-system:dev 2>/dev/null || true
     
     # Remove dangling images
@@ -172,15 +209,22 @@ main() {
         --prod|-p)
             build_production
             ;;
+        --simple|-s)
+            build_simple
+            ;;
         --dev|-d)
             build_development
             ;;
         --both|-b)
+            build_simple
             build_development
             build_production
             ;;
         --run-prod|-rp)
             run_production
+            ;;
+        --run-simple|-rs)
+            run_simple
             ;;
         --run-dev|-rd)
             run_development

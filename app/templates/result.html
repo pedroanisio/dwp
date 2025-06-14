@@ -1,200 +1,264 @@
 {% extends "base.html" %}
 {% from "components/button.html" import button %}
+{% from "components/card.html" import card, card_header, card_content, card_footer %}
+{% from "components/alert.html" import alert, alert_title, alert_description, status_badge %}
 
 {% block title %}EXECUTION RESULTS - {{ plugin.name|upper }}{% endblock %}
 
 {% block content %}
-<div class="container mx-auto">
+<div class="container mx-auto px-4 py-6">
     <!-- Breadcrumb Navigation -->
-    <div class="my-4">
-        <nav class="flex" aria-label="Breadcrumb">
-            <ol class="inline-flex items-center space-x-1 md:space-x-3">
-                <li class="inline-flex items-center">
-                    <a href="/" class="inline-flex items-center text-sm font-medium text-muted-foreground hover:text-primary">
-                        <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"></path></svg>
-                         MATRIX
-                    </a>
-                </li>
-                <li>
-                    <div class="flex items-center">
-                        <svg class="w-6 h-6 text-muted-foreground" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path></svg>
-                        <a href="/plugin/{{ plugin.id }}" class="ml-1 text-sm font-medium text-muted-foreground hover:text-primary md:ml-2">{{ plugin.name|upper }}</a>
-                    </div>
-                </li>
-                <li aria-current="page">
-                    <div class="flex items-center">
-                        <svg class="w-6 h-6 text-muted-foreground" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path></svg>
-                        <span class="ml-1 text-sm font-medium text-foreground md:ml-2">EXECUTION RESULTS</span>
-                    </div>
-                </li>
-            </ol>
-        </nav>
-    </div>
+    <nav class="flex mb-8" aria-label="Breadcrumb">
+        <ol class="inline-flex items-center space-x-1 md:space-x-3">
+            <li class="inline-flex items-center">
+                <a href="/" class="inline-flex items-center text-sm font-medium text-muted-foreground hover:text-primary transition-colors">
+                    <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"></path>
+                    </svg>
+                    MATRIX
+                </a>
+            </li>
+            <li>
+                <div class="flex items-center">
+                    <svg class="w-6 h-6 text-muted-foreground" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                        <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
+                    </svg>
+                    <a href="/plugin/{{ plugin.id }}" class="ml-1 text-sm font-medium text-muted-foreground hover:text-primary transition-colors md:ml-2">{{ plugin.name|upper }}</a>
+                </div>
+            </li>
+            <li aria-current="page">
+                <div class="flex items-center">
+                    <svg class="w-6 h-6 text-muted-foreground" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                        <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
+                    </svg>
+                    <span class="ml-1 text-sm font-medium text-foreground md:ml-2">EXECUTION RESULTS</span>
+                </div>
+            </li>
+        </ol>
+    </nav>
 
     <!-- Header Section -->
-    <div class="py-12 text-center">
-        <h1 class="text-4xl font-bold">EXECUTION RESULTS</h1>
-        <div class="mt-4 flex space-x-2 justify-center">
+    <div class="text-center py-12 mb-8">
+        <div class="flex items-center justify-center mb-4">
+            <h1 class="text-4xl font-bold mr-4">EXECUTION RESULTS</h1>
+            {% if result.success %}
+                {{ status_badge('success') }}
+            {% else %}
+                {{ status_badge('error') }}
+            {% endif %}
+        </div>
+        <p class="text-lg text-muted-foreground mb-6">{{ plugin.name|upper }} Processing Results</p>
+        <div class="flex flex-col sm:flex-row gap-4 justify-center">
             <a href="/plugin/{{ plugin.id }}">
-                {{ button(variant='primary', text='RE-EXECUTE MODULE') }}
+                {{ button(variant='default', text='RE-EXECUTE MODULE', class='px-6 py-3') }}
             </a>
             <a href="/">
-                {{ button(variant='secondary', text='RETURN TO MATRIX') }}
+                {{ button(variant='outline', text='RETURN TO MATRIX', class='px-6 py-3') }}
             </a>
         </div>
     </div>
 
     <!-- Execution Status Section -->
-    <div class="my-8">
+    <div class="mb-8">
         {% if result.success %}
-            <div class="p-4 text-sm text-green-700 bg-green-100 rounded-lg" role="alert">
-                <h3 class="text-lg font-bold">⚡ EXECUTION SUCCESSFUL</h3>
-                <p> module processed data successfully. Operation completed without errors.</p>
-                {% if result.execution_time %}
-                    <div class="mt-2">
+            {% call alert(variant="success", class="fade-in") %}
+                {% call alert_title() %}
+                    ⚡ EXECUTION SUCCESSFUL
+                {% endcall %}
+                {% call alert_description() %}
+                    <p class="mb-3">Module processed data successfully. Operation completed without errors.</p>
+                    {% if result.execution_time %}
+                    <div class="flex items-center space-x-2">
                         <strong>Processing Time:</strong> 
-                        <code>{{ "%.3f"|format(result.execution_time) }}s</code>
+                        <code class="px-2 py-1 bg-green-200 text-green-800 rounded text-sm">{{ "%.3f"|format(result.execution_time) }}s</code>
                     </div>
-                {% endif %}
-            </div>
+                    {% endif %}
+                {% endcall %}
+            {% endcall %}
         {% else %}
-            <div class="p-4 text-sm text-red-700 bg-red-100 rounded-lg" role="alert">
-                <h3 class="text-lg font-bold">⚠️ EXECUTION FAILED</h3>
-                <p>The  module encountered a critical error during processing.</p>
-                <div class="mt-3">
-                    <strong class="text-primary">Error Details:</strong>
-                    <div class="mt-2 p-2 bg-input rounded-md">
-                        <code id="error-text">{{ result.error }}</code>
+            {% call alert(variant="destructive", class="fade-in") %}
+                {% call alert_title() %}
+                    ⚠️ EXECUTION FAILED
+                {% endcall %}
+                {% call alert_description() %}
+                    <p class="mb-4">The module encountered a critical error during processing.</p>
+                    <div class="space-y-3">
+                        <strong>Error Details:</strong>
+                        <div class="p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md">
+                            <code id="error-text" class="text-sm text-red-800 dark:text-red-400">{{ result.error }}</code>
+                        </div>
+                        {{ button(variant='outline', text='COPY ERROR LOG', id='copyBtn') }}
                     </div>
-                    {{ button(variant='outline', text='COPY ERROR LOG', id='copyBtn', class='mt-2') }}
-                </div>
-            </div>
+                {% endcall %}
+            {% endcall %}
         {% endif %}
     </div>
 
     {% if result.success and result.data %}
-    <div class="flex flex-wrap -mx-4">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <!-- Results Display -->
-        <div class="w-full lg:w-2/3 px-4">
-            <div class="bg-card text-card-foreground rounded-lg shadow-md">
-                <div class="p-4 border-b border-border">
-                    <h3 class="text-xl font-bold">{{ plugin.name|upper }} OUTPUT</h3>
-                    <p class="text-sm text-muted-foreground"> Processing Results</p>
-                </div>
-                <div class="p-4">
+        <div class="lg:col-span-2">
+            {% call card(class="fade-in") %}
+                {% call card_header() %}
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h3 class="text-2xl font-semibold">{{ plugin.name|upper }} OUTPUT</h3>
+                            <p class="text-muted-foreground">Processing Results</p>
+                        </div>
+                        <div class="text-sm text-muted-foreground">
+                            {{ result.data|length }} field(s)
+                        </div>
+                    </div>
+                {% endcall %}
+                {% call card_content() %}
                     {% if result.data.custom_template is defined %}
                         {% include result.data.custom_template %}
                     {% else %}
-                        <table class="w-full text-sm text-left text-foreground">
-                            <thead class="text-xs text-muted-foreground uppercase bg-muted">
-                                <tr>
-                                    <th scope="col" class="px-6 py-3">DATA FIELD</th>
-                                    <th scope="col" class="px-6 py-3">OUTPUT VALUE</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for key, value in result.data.items() %}
-                                <tr class="bg-card border-b border-border">
-                                    <th scope="row" class="px-6 py-4 font-medium text-foreground whitespace-nowrap">{{ key.replace('_', ' ')|upper }}</th>
-                                    <td class="px-6 py-4">
-                                        {% if value is mapping %}
-                                            <button type="button" class="text-primary hover:underline" onclick="toggleData('{{ key }}')">VIEW OBJECT DATA</button>
-                                            <div id="data-{{ key }}" class="hidden mt-2 p-2 bg-input rounded-lg"><pre><code>{{ value | tojsonpretty }}</code></pre></div>
-                                        {% elif value is sequence and value is not string %}
-                                            {% if value|length > 10 %}
-                                                <button type="button" class="text-primary hover:underline" onclick="toggleData('{{ key }}')">VIEW {{ value|length }} ITEMS</button>
-                                                <div id="data-{{ key }}" class="hidden mt-2 p-2 bg-input rounded-lg">
-                                                    <ul class="list-disc list-inside">{% for item in value %}<li>{{ item }}</li>{% endfor %}</ul>
+                        <div class="overflow-hidden">
+                            <table class="w-full text-sm">
+                                <thead>
+                                    <tr class="border-b border-border">
+                                        <th class="text-left py-3 px-4 font-medium text-muted-foreground">DATA FIELD</th>
+                                        <th class="text-left py-3 px-4 font-medium text-muted-foreground">OUTPUT VALUE</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for key, value in result.data.items() %}
+                                    <tr class="border-b border-border hover:bg-muted/50 transition-colors">
+                                        <td class="py-4 px-4 font-medium">{{ key.replace('_', ' ')|upper }}</td>
+                                        <td class="py-4 px-4">
+                                            {% if value is mapping %}
+                                                {{ button(variant='ghost', text='VIEW OBJECT DATA', id='toggle-' + key, class='text-xs') }}
+                                                <div id="data-{{ key }}" class="hidden mt-2 p-3 bg-muted rounded-lg">
+                                                    <pre class="text-xs overflow-x-auto"><code>{{ value | tojsonpretty }}</code></pre>
+                                                </div>
+                                            {% elif value is sequence and value is not string %}
+                                                {% if value|length > 10 %}
+                                                    {{ button(variant='ghost', text='VIEW ' + value|length|string + ' ITEMS', id='toggle-' + key, class='text-xs') }}
+                                                    <div id="data-{{ key }}" class="hidden mt-2 p-3 bg-muted rounded-lg">
+                                                        <ul class="list-disc list-inside space-y-1 text-sm">{% for item in value %}<li>{{ item }}</li>{% endfor %}</ul>
+                                                    </div>
+                                                {% else %}
+                                                    <ul class="list-disc list-inside space-y-1 text-sm">{% for item in value %}<li>{{ item }}</li>{% endfor %}</ul>
+                                                {% endif %}
+                                            {% elif value is number %}
+                                                <span class="font-mono text-primary">{{ value }}</span>
+                                            {% elif value|string|length > 100 %}
+                                                {{ button(variant='ghost', text='VIEW LONG TEXT (' + value|string|length|string + ' chars)', id='toggle-' + key, class='text-xs') }}
+                                                <div id="data-{{ key }}" class="hidden mt-2 p-3 bg-muted rounded-lg">
+                                                    <div class="text-sm">{{ value }}</div>
                                                 </div>
                                             {% else %}
-                                                <ul class="list-disc list-inside">{% for item in value %}<li>{{ item }}</li>{% endfor %}</ul>
+                                                <span class="font-mono text-sm">{{ value }}</span>
                                             {% endif %}
-                                        {% elif value is number %}
-                                            <span class="text-primary">{{ value }}</span>
-                                        {% elif value|string|length > 100 %}
-                                            <button type="button" class="text-primary hover:underline" onclick="toggleData('{{ key }}')">VIEW LONG TEXT ({{ value|string|length }} chars)</button>
-                                            <div id="data-{{ key }}" class="hidden mt-2 p-2 bg-input rounded-lg"><div>{{ value }}</div></div>
-                                        {% else %}
-                                            {{ value }}
-                                        {% endif %}
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
                     {% endif %}
-                </div>
-            </div>
+                {% endcall %}
+            {% endcall %}
         </div>
         
         <!-- Sidebar Information -->
-        <div class="w-full lg:w-1/3 px-4">
+        <div class="space-y-6">
             <!-- Input Summary -->
-            <div class="mb-4 bg-card text-card-foreground rounded-lg shadow-md">
-                <div class="p-4 border-b border-border">
-                    <h5 class="text-xl font-bold">INPUT PARAMETERS</h5>
-                </div>
-                <div class="p-4 space-y-4">
-                    {% if input_data.input_file %}
-                        <div>
-                            <dt class="font-bold">File Upload:</dt>
-                            <dd><code>{{ input_data.input_file.filename }}</code></dd>
+            {% call card(class="slide-up") %}
+                {% call card_header() %}
+                    <h3 class="text-lg font-semibold">INPUT PARAMETERS</h3>
+                {% endcall %}
+                {% call card_content() %}
+                    <div class="space-y-4">
+                        {% if input_data.input_file %}
+                        <div class="p-3 bg-muted/50 rounded-lg">
+                            <dt class="font-medium text-muted-foreground text-sm">File Upload</dt>
+                            <dd class="font-mono text-sm mt-1">{{ input_data.input_file.filename }}</dd>
                         </div>
-                    {% endif %}
-                    {% for key, value in input_data.items() %}
-                        {% if key != 'input_file' %}
-                            <div>
-                                <dt class="font-bold">{{ key.replace('_', ' ')|upper }}:</dt>
-                                <dd>
+                        {% endif %}
+                        {% for key, value in input_data.items() %}
+                            {% if key != 'input_file' %}
+                            <div class="p-3 bg-muted/50 rounded-lg">
+                                <dt class="font-medium text-muted-foreground text-sm">{{ key.replace('_', ' ')|upper }}</dt>
+                                <dd class="mt-1">
                                     {% if value|string|length > 50 %}
-                                        <button type="button" class="text-primary hover:underline" onclick="toggleData('input-{{ key }}')">VIEW INPUT</button>
-                                        <div id="data-input-{{ key }}" class="hidden mt-2 p-2 bg-input rounded-lg"><div>{{ value }}</div></div>
+                                        {{ button(variant='ghost', text='VIEW INPUT', id='toggle-input-' + key, class='text-xs') }}
+                                        <div id="data-input-{{ key }}" class="hidden mt-2 p-2 bg-muted rounded">
+                                            <div class="text-sm">{{ value }}</div>
+                                        </div>
                                     {% else %}
-                                        <code>{{ value }}</code>
+                                        <code class="text-sm">{{ value }}</code>
                                     {% endif %}
                                 </dd>
                             </div>
+                            {% endif %}
+                        {% endfor %}
+                        {% if not input_data or input_data|length == 0 %}
+                            <p class="text-sm text-muted-foreground text-center py-4">No input parameters provided.</p>
                         {% endif %}
-                    {% endfor %}
-                    {% if not input_data or input_data|length == 0 %}
-                        <p class="text-muted-foreground">No input parameters provided.</p>
-                    {% endif %}
-                </div>
-            </div>
+                    </div>
+                {% endcall %}
+            {% endcall %}
             
             <!-- Execution Stats -->
-            <div class="mb-4 bg-card text-card-foreground rounded-lg shadow-md">
-                <div class="p-4 border-b border-border">
-                    <h5 class="text-xl font-bold">EXECUTION STATS</h5>
-                </div>
-                <div class="p-4">
-                    <dl class="grid grid-cols-2 gap-2">
-                        <dt class="font-bold">Module ID:</dt> <dd><code>{{ plugin.id }}</code></dd>
-                        <dt class="font-bold">Status:</dt>
-                        <dd>
-                            {% if result.success %}<span class="text-green-500">✓ SUCCESS</span>
-                            {% else %}<span class="text-red-500">✗ FAILED</span>{% endif %}
-                        </dd>
-                        {% if result.execution_time %}<dt class="font-bold">Processing Time:</dt> <dd><code>{{ "%.3f"|format(result.execution_time) }}s</code></dd>{% endif %}
-                        <dt class="font-bold">Output Fields:</dt> <dd>{{ result.data|length if result.data else 0 }} field(s)</dd>
-                        <dt class="font-bold">Timestamp:</dt> <dd id="execution-timestamp"></dd>
+            {% call card(class="slide-up") %}
+                {% call card_header() %}
+                    <h3 class="text-lg font-semibold">EXECUTION STATS</h3>
+                {% endcall %}
+                {% call card_content() %}
+                    <dl class="space-y-3 text-sm">
+                        <div class="flex justify-between">
+                            <dt class="font-medium text-muted-foreground">Module ID</dt>
+                            <dd class="font-mono text-xs bg-muted px-2 py-1 rounded">{{ plugin.id }}</dd>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <dt class="font-medium text-muted-foreground">Status</dt>
+                            <dd>
+                                {% if result.success %}
+                                    {{ status_badge('success', class='text-xs') }}
+                                {% else %}
+                                    {{ status_badge('error', class='text-xs') }}
+                                {% endif %}
+                            </dd>
+                        </div>
+                        {% if result.execution_time %}
+                        <div class="flex justify-between">
+                            <dt class="font-medium text-muted-foreground">Processing Time</dt>
+                            <dd class="font-mono">{{ "%.3f"|format(result.execution_time) }}s</dd>
+                        </div>
+                        {% endif %}
+                        <div class="flex justify-between">
+                            <dt class="font-medium text-muted-foreground">Output Fields</dt>
+                            <dd>{{ result.data|length if result.data else 0 }} field(s)</dd>
+                        </div>
+                        <div class="flex justify-between">
+                            <dt class="font-medium text-muted-foreground">Timestamp</dt>
+                            <dd class="font-mono text-xs" id="execution-timestamp">--:--:--</dd>
+                        </div>
                     </dl>
-                </div>
-            </div>
+                {% endcall %}
+            {% endcall %}
             
             <!-- Raw JSON Output -->
-            <div class="bg-card text-card-foreground rounded-lg shadow-md">
-                <div class="p-4 border-b border-border">
-                    <h5 class="text-xl font-bold">RAW DATA EXPORT</h5>
-                </div>
-                <div class="p-4">
-                    <button type="button" class="w-full text-left p-2 bg-muted hover:bg-muted/80 rounded-lg font-bold" onclick="toggleRawData()">VIEW JSON OUTPUT</button>
-                    <div id="rawCollapse" class="hidden mt-2 p-2 bg-input rounded-lg">
-                        <pre class="text-sm"><code>{{ result.data | tojsonpretty }}</code></pre>
-                        {{ button(variant='outline', text='COPY JSON', id='copyJsonBtn', class='mt-2') }}
+            {% call card(class="slide-up") %}
+                {% call card_header() %}
+                    <h3 class="text-lg font-semibold">RAW DATA EXPORT</h3>
+                {% endcall %}
+                {% call card_content() %}
+                    <div class="space-y-4">
+                        {{ button(variant='outline', text='VIEW JSON OUTPUT', id='rawToggle', class='w-full') }}
+                        <div id="rawCollapse" class="hidden">
+                            <div class="p-4 bg-muted rounded-lg">
+                                <pre class="text-xs overflow-x-auto"><code>{{ result.data | tojsonpretty }}</code></pre>
+                            </div>
+                            <div class="mt-3">
+                                {{ button(variant='outline', text='COPY JSON', id='copyJsonBtn', class='w-full') }}
+                            </div>
+                        </div>
                     </div>
-                </div>
-            </div>
+                {% endcall %}
+            {% endcall %}
         </div>
     </div>
     {% endif %}
@@ -203,70 +267,78 @@
 
 {% block extra_scripts %}
 <script>
-// Copy error to clipboard
-function copyToClipboard() {
-    const errorText = document.getElementById('error-text').innerText;
-    navigator.clipboard.writeText(errorText);
-    const copyBtn = document.getElementById('copyBtn');
-    copyBtn.innerHTML = `{{ button(variant='outline', text='✓ COPIED') }}`;
-    setTimeout(() => {
-        copyBtn.innerHTML = `{{ button(variant='outline', text='COPY ERROR LOG') }}`;
-    }, 2000);
-}
-
-// Copy JSON to clipboard
-function copyJsonToClipboard() {
-    const jsonText = document.querySelector('#rawCollapse pre code').innerText;
-    navigator.clipboard.writeText(jsonText);
-    const copyJsonBtn = document.getElementById('copyJsonBtn');
-    copyJsonBtn.innerHTML = `{{ button(variant='outline', text='✓ COPIED') }}`;
-    setTimeout(() => {
-        copyJsonBtn.innerHTML = `{{ button(variant='outline', text='COPY JSON') }}`;
-    }, 2000);
-}
-
-// Toggle data displays
-function toggleData(key) {
-    const element = document.getElementById('data-' + key);
-    element.classList.toggle('hidden');
-    const button = event.target;
-    if (element.classList.contains('hidden')) {
-        button.textContent = button.textContent.replace('HIDE', 'VIEW');
-    } else {
-        button.textContent = button.textContent.replace('VIEW', 'HIDE');
-    }
-}
-
-// Toggle raw data display
-function toggleRawData() {
-    const element = document.getElementById('rawCollapse');
-    element.classList.toggle('hidden');
-    const button = event.target;
-    if (element.classList.contains('hidden')) {
-        button.textContent = 'VIEW JSON OUTPUT';
-    } else {
-        button.textContent = 'HIDE JSON OUTPUT';
-    }
-}
-
-// Set execution timestamp
-function setTimestamp() {
-    const now = new Date();
-    const timestamp = now.getFullYear() + '.' + 
-                     String(now.getMonth() + 1).padStart(2, '0') + '.' + 
-                     String(now.getDate()).padStart(2, '0') + '.' + 
-                     String(now.getHours()).padStart(2, '0') + ':' + 
-                     String(now.getMinutes()).padStart(2, '0') + ':' + 
-                     String(now.getSeconds()).padStart(2, '0');
-    const timestampElement = document.getElementById('execution-timestamp');
-    if (timestampElement) {
-        timestampElement.textContent = timestamp;
-    }
-}
-
-// Initialize
 document.addEventListener('DOMContentLoaded', function() {
+    // Set execution timestamp
+    function setTimestamp() {
+        const now = new Date();
+        const timestamp = now.getFullYear() + '.' + 
+                         String(now.getMonth() + 1).padStart(2, '0') + '.' + 
+                         String(now.getDate()).padStart(2, '0') + '.' + 
+                         String(now.getHours()).padStart(2, '0') + ':' + 
+                         String(now.getMinutes()).padStart(2, '0') + ':' + 
+                         String(now.getSeconds()).padStart(2, '0');
+        const timestampElement = document.getElementById('execution-timestamp');
+        if (timestampElement) {
+            timestampElement.textContent = timestamp;
+        }
+    }
+    
     setTimestamp();
+
+    // Copy error to clipboard
+    const copyBtn = document.getElementById('copyBtn');
+    if (copyBtn) {
+        copyBtn.addEventListener('click', function() {
+            const errorText = document.getElementById('error-text').innerText;
+            navigator.clipboard.writeText(errorText).then(function() {
+                copyBtn.textContent = '✓ COPIED';
+                showToast('Error log copied to clipboard', 'success');
+                setTimeout(() => {
+                    copyBtn.textContent = 'COPY ERROR LOG';
+                }, 2000);
+            });
+        });
+    }
+
+    // Copy JSON to clipboard
+    const copyJsonBtn = document.getElementById('copyJsonBtn');
+    if (copyJsonBtn) {
+        copyJsonBtn.addEventListener('click', function() {
+            const jsonText = document.querySelector('#rawCollapse pre code').innerText;
+            navigator.clipboard.writeText(jsonText).then(function() {
+                copyJsonBtn.textContent = '✓ COPIED';
+                showToast('JSON data copied to clipboard', 'success');
+                setTimeout(() => {
+                    copyJsonBtn.textContent = 'COPY JSON';
+                }, 2000);
+            });
+        });
+    }
+
+    // Toggle raw data display
+    const rawToggle = document.getElementById('rawToggle');
+    const rawCollapse = document.getElementById('rawCollapse');
+    if (rawToggle && rawCollapse) {
+        rawToggle.addEventListener('click', function() {
+            rawCollapse.classList.toggle('hidden');
+            this.textContent = rawCollapse.classList.contains('hidden') 
+                ? 'VIEW JSON OUTPUT' 
+                : 'HIDE JSON OUTPUT';
+        });
+    }
+
+    // Toggle data displays for table rows
+    document.querySelectorAll('[id^="toggle-"]').forEach(button => {
+        button.addEventListener('click', function() {
+            const key = this.id.replace('toggle-', '').replace('input-', '');
+            const element = document.getElementById('data-' + key) || document.getElementById('data-input-' + key);
+            if (element) {
+                element.classList.toggle('hidden');
+                const isHidden = element.classList.contains('hidden');
+                this.textContent = this.textContent.replace(isHidden ? 'HIDE' : 'VIEW', isHidden ? 'VIEW' : 'HIDE');
+            }
+        });
+    });
 });
 </script>
 {% endblock %} 

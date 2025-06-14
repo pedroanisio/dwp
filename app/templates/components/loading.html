@@ -1,0 +1,74 @@
+{# Loading Components #}
+{% macro loading_spinner(size="md", class="") %}
+<div class="
+    inline-block border-2 border-current border-t-transparent rounded-full animate-spin
+    {% if size == 'sm' %}
+        h-4 w-4
+    {% elif size == 'lg' %}
+        h-8 w-8
+    {% else %}
+        h-6 w-6
+    {% endif %}
+    {{ class }}
+"></div>
+{% endmacro %}
+
+{% macro loading_overlay(message="Loading...", class="") %}
+<div class="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm {{ class }}">
+    <div class="flex flex-col items-center space-y-4 p-8 bg-card rounded-lg border shadow-lg">
+        {{ loading_spinner(size="lg", class="text-primary") }}
+        <p class="text-sm font-medium text-muted-foreground">{{ message }}</p>
+    </div>
+</div>
+{% endmacro %}
+
+{% macro loading_button(text, loading_text="Loading...", variant="default", class="", disabled=False) %}
+<button 
+    type="submit" 
+    {% if disabled %}disabled{% endif %}
+    class="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50
+    {% if variant == 'default' %}
+        bg-primary text-primary-foreground hover:bg-primary/90
+    {% elif variant == 'destructive' %}
+        bg-destructive text-destructive-foreground hover:bg-destructive/90
+    {% elif variant == 'outline' %}
+        border border-input bg-background hover:bg-accent hover:text-accent-foreground
+    {% elif variant == 'secondary' %}
+        bg-secondary text-secondary-foreground hover:bg-secondary/80
+    {% elif variant == 'ghost' %}
+        hover:bg-accent hover:text-accent-foreground
+    {% endif %}
+    h-10 px-4 py-2 transition-all duration-200 {{ class }}"
+    data-loading-text="{{ loading_text }}"
+    data-original-text="{{ text }}"
+>
+    <span class="button-text">{{ text }}</span>
+    <span class="loading-content hidden">
+        {{ loading_spinner(size="sm", class="mr-2") }}
+        {{ loading_text }}
+    </span>
+</button>
+{% endmacro %}
+
+{% macro skeleton(class="") %}
+<div class="animate-pulse bg-muted rounded {{ class }}"></div>
+{% endmacro %}
+
+{% macro skeleton_card(class="") %}
+<div class="rounded-lg border bg-card p-6 space-y-4 {{ class }}">
+    {{ skeleton(class="h-4 w-3/4 mb-2") }}
+    {{ skeleton(class="h-3 w-1/2 mb-4") }}
+    {{ skeleton(class="h-20 w-full mb-4") }}
+    <div class="flex space-x-2">
+        {{ skeleton(class="h-8 w-20") }}
+        {{ skeleton(class="h-8 w-24") }}
+    </div>
+</div>
+{% endmacro %}
+
+{# Progress Bar Component #}
+{% macro progress_bar(value=0, max=100, class="") %}
+<div class="w-full bg-secondary rounded-full h-2 {{ class }}">
+    <div class="bg-primary h-2 rounded-full transition-all duration-300" data-progress="{{ value }}" data-max="{{ max }}"></div>
+</div>
+{% endmacro %} 

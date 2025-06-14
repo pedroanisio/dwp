@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1
 
 # =============================================================================
-# Stage 1: Build Pandoc from source (this is the "hack" stage)
+# Stage 1: Build Pandoc from source using cabal (more reliable than stack)
 # =============================================================================
 FROM haskell:9.4-slim as pandoc-builder
 
@@ -18,31 +18,11 @@ RUN apt-get update && apt-get install -y \
     ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
-# Set up Stack with optimized settings for Docker
-RUN stack config set system-ghc --global true
-RUN stack config set install-ghc --global false
+# Update cabal package list
+RUN cabal update
 
-# HACK: Pre-install common dependencies to leverage Docker layer caching
-# This speeds up subsequent builds significantly
-RUN stack setup --resolver lts-21.17
-
-# Clone Pandoc repository (using specific stable version)
-WORKDIR /pandoc-build
-RUN git clone --depth 1 --branch 3.1.8 https://github.com/jgm/pandoc.git .
-
-# HACK: Modify stack.yaml for faster builds in Docker environment
-RUN echo "docker:" >> stack.yaml && \
-    echo "  enable: false" >> stack.yaml && \
-    echo "ghc-options:" >> stack.yaml && \
-    echo "  \"\$everything\": -O1" >> stack.yaml
-
-# HACK: Use system resolver and optimize for container builds
-RUN stack build --resolver lts-21.17 \
-    --ghc-options="-j4 +RTS -A64m -n2m -RTS" \
-    --fast \
-    --copy-bins \
-    --local-bin-path /usr/local/bin/ \
-    pandoc
+# Install pandoc-cli directly using cabal (much faster and more reliable)
+RUN cabal install pandoc-cli --install-method=copy --installdir=/usr/local/bin
 
 # Verify pandoc was built correctly
 RUN pandoc --version
@@ -65,7 +45,7 @@ RUN apt-get update && \
     apt-get install -y nodejs && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# HACK: Copy the built pandoc binary from the builder stage
+# Copy the built pandoc binary from the builder stage
 COPY --from=pandoc-builder /usr/local/bin/pandoc /usr/local/bin/pandoc
 
 # Verify pandoc works in the final image
@@ -102,4 +82,4 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
     CMD pandoc --version && curl -f http://localhost:5000/api/plugins || exit 1
 
 # Run FastAPI with Uvicorn
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "5000"] 
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "5000"]

@@ -1,4 +1,5 @@
 services:
+  # Production build with Pandoc from source (cabal method)
   web:
     build: 
       context: .
@@ -29,13 +30,30 @@ services:
     # Restart policy
     restart: unless-stopped
 
-  # Optional: Add a development service that skips Pandoc build
+  # Fast build with pre-built Pandoc binary (recommended for development)
+  web-simple:
+    build: 
+      context: .
+      dockerfile: Dockerfile.simple
+    ports:
+      - "8001:5000"
+    volumes:
+      - .:/app
+      - pandoc_data:/app/data
+    environment:
+      - PYTHONPATH=/app
+      - FASTAPI_ENV=development
+    profiles:
+      - simple
+    restart: unless-stopped
+
+  # Development build with system Pandoc (fastest)
   web-dev:
     build: 
       context: .
       dockerfile: Dockerfile.dev
     ports:
-      - "8001:5000"
+      - "8002:5000"
     volumes:
       - .:/app
       - pandoc_data:/app/data
