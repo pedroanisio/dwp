@@ -1,0 +1,44 @@
+{# Stats Card Component #}
+{% macro stats_card(value, label, variant="default", class="") %}
+<div class="rounded-lg border bg-card text-card-foreground shadow-sm p-6 text-center {{ class }}">
+    <div class="text-3xl font-bold tracking-tight
+        {% if variant == 'success' %}
+            text-green-600
+        {% elif variant == 'error' or variant == 'destructive' %}
+            text-red-600
+        {% elif variant == 'warning' %}
+            text-yellow-600
+        {% elif variant == 'primary' %}
+            text-primary
+        {% else %}
+            text-foreground
+        {% endif %}
+    ">
+        {{ value }}
+    </div>
+    <p class="text-sm font-medium text-muted-foreground mt-2">{{ label }}</p>
+</div>
+{% endmacro %}
+
+{# Enhanced Stats Grid #}
+{% macro stats_grid(plugins) %}
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+    {{ stats_card(
+        value=plugins|length,
+        label="ACTIVE MODULES",
+        variant="primary"
+    ) }}
+    
+    {{ stats_card(
+        value=plugins|selectattr('dependency_status.all_met')|list|length,
+        label="OPERATIONAL",
+        variant="success"
+    ) }}
+    
+    {{ stats_card(
+        value=plugins|rejectattr('dependency_status.all_met')|list|length,
+        label="ERRORS DETECTED",
+        variant="error"
+    ) }}
+</div>
+{% endmacro %} 

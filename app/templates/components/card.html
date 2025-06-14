@@ -1,0 +1,120 @@
+{# ShadCN-inspired Card Component for Flask/Jinja2 #}
+{% macro card(class="") %}
+<div class="rounded-lg border bg-card text-card-foreground shadow-sm {{ class }}">
+    {{ caller() }}
+</div>
+{% endmacro %}
+
+{% macro card_header(class="") %}
+<div class="flex flex-col space-y-1.5 p-6 {{ class }}">
+    {{ caller() }}
+</div>
+{% endmacro %}
+
+{% macro card_title(class="") %}
+<h3 class="text-2xl font-semibold leading-none tracking-tight {{ class }}">
+    {{ caller() }}
+</h3>
+{% endmacro %}
+
+{% macro card_description(class="") %}
+<p class="text-sm text-muted-foreground {{ class }}">
+    {{ caller() }}
+</p>
+{% endmacro %}
+
+{% macro card_content(class="") %}
+<div class="p-6 pt-0 {{ class }}">
+    {{ caller() }}
+</div>
+{% endmacro %}
+
+{% macro card_footer(class="") %}
+<div class="flex items-center p-6 pt-0 {{ class }}">
+    {{ caller() }}
+</div>
+{% endmacro %}
+
+{# Enhanced Card for Plugin Display #}
+{% macro plugin_card(plugin, class="") %}
+<div class="rounded-lg border bg-card text-card-foreground shadow-sm hover:shadow-md transition-all duration-200 hover:-translate-y-1 fade-in {{ class }}">
+    <div class="flex flex-col space-y-1.5 p-6 border-b border-border">
+        <div class="flex items-center justify-between">
+            <h3 class="text-xl font-semibold leading-none tracking-tight">{{ plugin.name|upper }}</h3>
+            {% if plugin.dependency_status and plugin.dependency_status.all_met %}
+                <span class="inline-flex items-center rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-800 pulse-success">
+                    <div class="h-1.5 w-1.5 bg-green-400 rounded-full mr-1"></div>
+                    OPERATIONAL
+                </span>
+            {% else %}
+                <span class="inline-flex items-center rounded-full bg-red-100 px-2.5 py-0.5 text-xs font-medium text-red-800 pulse-error">
+                    <div class="h-1.5 w-1.5 bg-red-400 rounded-full mr-1"></div>
+                    ERROR
+                </span>
+            {% endif %}
+        </div>
+        <p class="text-sm text-muted-foreground">Version {{ plugin.version }}</p>
+    </div>
+    <div class="p-6 pt-0 space-y-4">
+        <p class="text-sm">{{ plugin.description }}</p>
+        
+        {% if plugin.tags %}
+        <div class="flex flex-wrap gap-1">
+            {% for tag in plugin.tags %}
+                <span class="inline-flex items-center rounded-md bg-secondary px-2 py-1 text-xs font-medium text-secondary-foreground transition-colors hover:bg-secondary/80">
+                    {{ tag|upper }}
+                </span>
+            {% endfor %}
+        </div>
+        {% endif %}
+        
+        <div class="grid grid-cols-2 gap-4 text-sm">
+            <div>
+                <dt class="font-medium text-muted-foreground">Plugin ID</dt>
+                <dd class="font-mono text-xs bg-muted px-2 py-1 rounded">{{ plugin.id }}</dd>
+            </div>
+            <div>
+                <dt class="font-medium text-muted-foreground">Input Fields</dt>
+                <dd>{{ plugin.inputs|length }} field(s)</dd>
+            </div>
+            <div>
+                <dt class="font-medium text-muted-foreground">Output Format</dt>
+                <dd>{{ plugin.output.name }}</dd>
+            </div>
+            {% if plugin.author %}
+            <div>
+                <dt class="font-medium text-muted-foreground">Author</dt>
+                <dd>{{ plugin.author }}</dd>
+            </div>
+            {% endif %}
+        </div>
+        
+        {% if plugin.dependency_status and plugin.dependency_status.details %}
+        <div>
+            <dt class="font-medium text-muted-foreground mb-2">Dependencies</dt>
+            <div class="space-y-1">
+                {% for dep in plugin.dependency_status.details %}
+                <div class="flex items-center justify-between text-xs">
+                    <span>{{ dep.name }}</span>
+                    {% if dep.met %}
+                        <span class="text-green-600 font-medium">✓ INSTALLED</span>
+                    {% else %}
+                        <span class="text-red-600 font-medium">✗ MISSING</span>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+    <div class="flex items-center p-6 pt-0">
+        {% if plugin.dependency_status and plugin.dependency_status.all_met %}
+            <a href="/plugin/{{ plugin.id }}" class="w-full">
+                {{ button(variant='default', text='EXECUTE MODULE', class='w-full transition-all duration-200') }}
+            </a>
+        {% else %}
+            {{ button(variant='secondary', text='DEPENDENCIES REQUIRED', class='w-full cursor-not-allowed opacity-50') }}
+        {% endif %}
+    </div>
+</div>
+{% endmacro %} 

@@ -1,142 +1,87 @@
 {% extends "base.html" %}
 {% from "components/button.html" import button %}
+{% from "components/card.html" import plugin_card %}
+{% from "components/alert.html" import alert, alert_title, alert_description %}
+{% from "components/stats.html" import stats_grid %}
 
 {% block title %} PLUGIN MATRIX - HOME{% endblock %}
 
 {% block hero %}
-<section class="text-center py-12">
-    <div class="container mx-auto">
-        <h1 class="text-4xl font-bold">DYNAMIC  PLUGIN MATRIX</h1>
-        <p class="text-lg mt-2">FastAPI + Pydantic  interface architecture. Real-time plugin discovery and execution in the digital frontier.</p>
-        <div class="mt-4 flex space-x-2 justify-center">
-            <a href="#plugins">{{ button(variant='default', text='ACCESS PLUGINS') }}</a>
-            <a href="/how-to">{{ button(variant='secondary', text='INTERFACE GUIDE') }}</a>
+<section class="text-center py-16 bg-gradient-to-b from-background to-muted/20">
+    <div class="container mx-auto px-4">
+        <h1 class="text-5xl font-bold tracking-tight mb-4">DYNAMIC PLUGIN MATRIX</h1>
+        <p class="text-xl text-muted-foreground max-w-2xl mx-auto mb-8">
+            FastAPI + Pydantic interface architecture. Real-time plugin discovery and execution in the digital frontier.
+        </p>
+        <div class="flex flex-col sm:flex-row gap-4 justify-center">
+            <a href="#plugins">{{ button(variant='default', text='ACCESS PLUGINS', class='px-8 py-3 text-base') }}</a>
+            <a href="/how-to">{{ button(variant='outline', text='INTERFACE GUIDE', class='px-8 py-3 text-base') }}</a>
         </div>
     </div>
 </section>
 {% endblock %}
 
 {% block content %}
-<div class="container mx-auto">
-    <section id="plugins" class="mt-5 mb-5">
-        <h2 class="text-center mb-4 text-2xl font-bold">AVAILABLE  MODULES</h2>
+<div class="container mx-auto px-4 py-8">
+    <!-- System Stats Section -->
+    <section class="mb-12">
+        <h2 class="text-3xl font-bold text-center mb-8">SYSTEM OVERVIEW</h2>
+        {{ stats_grid(plugins) }}
+    </section>
+
+    <section id="plugins" class="scroll-mt-20">
+        <div class="text-center mb-8">
+            <h2 class="text-3xl font-bold mb-2">AVAILABLE MODULES</h2>
+            <p class="text-muted-foreground">Discover and execute powerful plugin modules</p>
+        </div>
         
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {% if plugins %}
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {% for plugin in plugins %}
-            <div class="bg-card text-card-foreground rounded-lg shadow-lg">
-                <div class="p-4 border-b border-border">
-                    <h5 class="text-xl font-bold">{{ plugin.name|upper }}</h5>
-                    <small class="text-muted-foreground">Version {{ plugin.version }}</small>
-                </div>
-                <div class="p-4">
-                    <p>{{ plugin.description }}</p>
-                    
-                    {% if plugin.tags %}
-                    <div class="my-3">
-                        {% for tag in plugin.tags %}
-                            <span class="inline-block bg-secondary text-secondary-foreground text-xs font-semibold mr-2 px-2.5 py-0.5 rounded-full">{{ tag|upper }}</span>
-                        {% endfor %}
-                    </div>
-                    {% endif %}
-                    
-                    <!-- Plugin Status Indicator -->
-                    <div class="mb-3">
-                        <strong class="text-primary">System Status:</strong>
-                        {% if plugin.dependency_status and plugin.dependency_status.all_met %}
-                            <span class="text-green-500">OPERATIONAL</span>
-                        {% else %}
-                            <span class="text-destructive">DEPENDENCY ERROR</span>
-                        {% endif %}
-                    </div>
-                    
-                    <!-- Plugin Info Grid -->
-                    <dl class="mb-3">
-                        <dt class="font-bold">Plugin ID:</dt>
-                        <dd><code>{{ plugin.id }}</code></dd>
-                        
-                        <dt class="font-bold">Input Fields:</dt>
-                        <dd>{{ plugin.inputs|length }} field(s)</dd>
-                        
-                        <dt class="font-bold">Output Format:</dt>
-                        <dd>{{ plugin.output.name }}</dd>
-                        
-                        {% if plugin.author %}
-                        <dt class="font-bold">Author:</dt>
-                        <dd>{{ plugin.author }}</dd>
-                        {% endif %}
-                    </dl>
-                    
-                    <!-- Dependencies Status -->
-                    {% if plugin.dependency_status and plugin.dependency_status.details %}
-                    <div class="mb-3">
-                        <strong class="text-primary">Dependencies:</strong>
-                        {% for dep in plugin.dependency_status.details %}
-                            <div class="text-muted-foreground">
-                                {{ dep.name }}: 
-                                {% if dep.met %}
-                                    <span class="text-green-500">✓ INSTALLED</span>
-                                {% else %}
-                                    <span class="text-destructive">✗ MISSING</span>
-                                {% endif %}
-                            </div>
-                        {% endfor %}
-                    </div>
-                    {% endif %}
-                    
-                    <div class="text-center">
-                        {% if plugin.dependency_status and plugin.dependency_status.all_met %}
-                            <a href="/plugin/{{ plugin.id }}">
-                                {{ button(variant='default', text='EXECUTE MODULE') }}
-                            </a>
-                        {% else %}
-                            {{ button(variant='default', text='DEPENDENCIES REQUIRED') }}
-                        {% endif %}
-                    </div>
-                </div>
-            </div>
+                {{ plugin_card(plugin) }}
             {% endfor %}
         </div>
-        
-        {% if not plugins %}
-        <div class="text-center p-5">
-            <div class="bg-card text-card-foreground rounded-lg shadow-lg p-4">
-                <h3 class="text-destructive">NO  MODULES DETECTED</h3>
-                <p class="text-muted-foreground">System scan complete. No plugins found in  matrix.</p>
-                <p class="text-muted-foreground">Check plugin directory: <code>app/plugins/</code></p>
-                <a href="/how-to">
-                    {{ button(variant='outline', text='LEARN TO BUILD MODULES') }}
-                </a>
-            </div>
+        {% else %}
+        <div class="max-w-md mx-auto">
+            {% call alert(variant="warning", class="text-center") %}
+                {% call alert_title() %}
+                    NO MODULES DETECTED
+                {% endcall %}
+                {% call alert_description() %}
+                    <p class="mb-4">System scan complete. No plugins found in matrix.</p>
+                    <p class="mb-4 text-xs font-mono">Check plugin directory: app/plugins/</p>
+                    <a href="/how-to" class="inline-block">
+                        {{ button(variant='outline', text='LEARN TO BUILD MODULES') }}
+                    </a>
+                {% endcall %}
+            {% endcall %}
         </div>
         {% endif %}
-    </section>
-    
-    <!-- System Stats Section -->
-    <section class="mt-5 mb-5">
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div class="bg-card text-card-foreground rounded-lg shadow-lg text-center p-4">
-                <h3 class="text-2xl font-bold text-primary">{{ plugins|length }}</h3>
-                <p class="text-muted-foreground">ACTIVE MODULES</p>
-            </div>
-            <div class="bg-card text-card-foreground rounded-lg shadow-lg text-center p-4">
-                <h3 class="text-2xl font-bold text-green-500">{{ plugins|selectattr('dependency_status.all_met')|list|length }}</h3>
-                <p class="text-muted-foreground">OPERATIONAL</p>
-            </div>
-            <div class="bg-card text-card-foreground rounded-lg shadow-lg text-center p-4">
-                <h3 class="text-2xl font-bold text-destructive">{{ plugins|rejectattr('dependency_status.all_met')|list|length }}</h3>
-                <p class="text-muted-foreground">ERRORS DETECTED</p>
-            </div>
-        </div>
     </section>
 </div>
 {% endblock %}
 
 {% block extra_scripts %}
 <script>
-// Smooth scroll for "ACCESS PLUGINS" button
+// Enhanced smooth scroll for "ACCESS PLUGINS" button
 document.querySelector('a[href="#plugins"]').addEventListener('click', function(e) {
     e.preventDefault();
-    document.querySelector('#plugins').scrollIntoView();
+    const target = document.querySelector('#plugins');
+    target.scrollIntoView({ 
+        behavior: 'smooth', 
+        block: 'start' 
+    });
+});
+
+// Add loading state to plugin cards on click
+document.querySelectorAll('a[href^="/plugin/"]').forEach(link => {
+    link.addEventListener('click', function(e) {
+        const button = this.querySelector('button');
+        if (button && !button.classList.contains('cursor-not-allowed')) {
+            button.textContent = 'LOADING...';
+            button.classList.add('opacity-75');
+        }
+    });
 });
 </script>
 {% endblock %} 

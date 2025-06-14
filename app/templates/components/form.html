@@ -1,0 +1,119 @@
+{# ShadCN-inspired Form Components #}
+{% macro form_field(label, name, type="text", placeholder="", value="", required=False, class="") %}
+<div class="space-y-2 {{ class }}">
+    {{ form_label(label, name, required) }}
+    {{ form_input(name, type, placeholder, value, required) }}
+</div>
+{% endmacro %}
+
+{% macro form_label(text, for_input, required=False, class="") %}
+<label for="{{ for_input }}" class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 {{ class }}">
+    {{ text }}
+    {% if required %}
+        <span class="text-destructive">*</span>
+    {% endif %}
+</label>
+{% endmacro %}
+
+{% macro form_input(name, type="text", placeholder="", value="", required=False, class="") %}
+<input 
+    type="{{ type }}" 
+    name="{{ name }}" 
+    id="{{ name }}"
+    placeholder="{{ placeholder }}"
+    value="{{ value }}"
+    {% if required %}required{% endif %}
+    class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 transition-all duration-200 {{ class }}"
+>
+{% endmacro %}
+
+{% macro form_textarea(name, placeholder="", value="", rows=4, required=False, class="") %}
+<textarea 
+    name="{{ name }}" 
+    id="{{ name }}"
+    placeholder="{{ placeholder }}"
+    rows="{{ rows }}"
+    {% if required %}required{% endif %}
+    class="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 resize-none transition-all duration-200 {{ class }}"
+>{{ value }}</textarea>
+{% endmacro %}
+
+{% macro form_select(name, options, selected="", required=False, class="") %}
+<select 
+    name="{{ name }}" 
+    id="{{ name }}"
+    {% if required %}required{% endif %}
+    class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 transition-all duration-200 {{ class }}"
+>
+    {% for option in options %}
+        <option value="{{ option.value }}" {% if option.value == selected %}selected{% endif %}>
+            {{ option.label }}
+        </option>
+    {% endfor %}
+</select>
+{% endmacro %}
+
+{% macro form_checkbox(name, label, checked=False, class="") %}
+<div class="flex items-center space-x-2 {{ class }}">
+    <input 
+        type="checkbox" 
+        name="{{ name }}" 
+        id="{{ name }}"
+        {% if checked %}checked{% endif %}
+        class="h-4 w-4 rounded border border-primary text-primary focus:ring-2 focus:ring-ring focus:ring-offset-2"
+    >
+    <label for="{{ name }}" class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+        {{ label }}
+    </label>
+</div>
+{% endmacro %}
+
+{% macro form_section(title, description="", class="") %}
+<div class="space-y-6 {{ class }}">
+    <div>
+        <h3 class="text-lg font-medium">{{ title }}</h3>
+        {% if description %}
+        <p class="text-sm text-muted-foreground">{{ description }}</p>
+        {% endif %}
+    </div>
+    <div class="space-y-4">
+        {{ caller() }}
+    </div>
+</div>
+{% endmacro %}
+
+{% macro form_error(message, class="") %}
+<div class="text-sm text-destructive {{ class }}">
+    {{ message }}
+</div>
+{% endmacro %}
+
+{% macro form_help(text, class="") %}
+<div class="text-xs text-muted-foreground {{ class }}">
+    {{ text }}
+</div>
+{% endmacro %}
+
+{# Loading Button with Spinner #}
+{% macro submit_button(text, loading_text="Loading...", variant="default", class="") %}
+<button 
+    type="submit" 
+    class="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50
+    {% if variant == 'default' %}
+        bg-primary text-primary-foreground hover:bg-primary/90
+    {% elif variant == 'destructive' %}
+        bg-destructive text-destructive-foreground hover:bg-destructive/90
+    {% elif variant == 'outline' %}
+        border border-input bg-background hover:bg-accent hover:text-accent-foreground
+    {% elif variant == 'secondary' %}
+        bg-secondary text-secondary-foreground hover:bg-secondary/80
+    {% endif %}
+    h-10 px-4 py-2 transition-all duration-200 {{ class }}"
+>
+    <span class="submit-text">{{ text }}</span>
+    <span class="loading-text hidden">
+        <div class="loading-spinner mr-2"></div>
+        {{ loading_text }}
+    </span>
+</button>
+{% endmacro %} 
