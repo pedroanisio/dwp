@@ -1,11 +1,12 @@
 from pathlib import Path
 import subprocess
 import tempfile
-from typing import Dict, Any, Type
+from typing import Dict, Any, Type, List, Union
 import os
 import shutil
 import logging
 import uuid
+import re
 from pydantic import BaseModel, Field
 from ...models.plugin import BasePlugin, BasePluginResponse
 
@@ -71,6 +72,92 @@ class Plugin(BasePlugin):
             
         return diagnostics
     
+    def _validate_advanced_options(self, advanced_options: Union[str, List[str], None]) -> List[str]:
+        """Validate and parse advanced pandoc options"""
+        if not advanced_options:
+            return []
+        
+        # Convert to list if string
+        if isinstance(advanced_options, str):
+            # Split by spaces, but preserve quoted arguments
+            import shlex
+            try:
+                options_list = shlex.split(advanced_options)
+            except ValueError as e:
+                raise ValueError(f"Invalid advanced_options format: {e}")
+        else:
+            options_list = advanced_options.copy()
+        
+        # Security validation: check for dangerous patterns
+        dangerous_patterns = [
+            r'[;&|`$]',  # Shell metacharacters
+            r'\.\./',     # Directory traversal
+            r'--?[io]$',  # Input/output flags that could override our files
+            r'--input',
+            r'--output',
+        ]
+        
+        validated_options = []
+        for option in options_list:
+            if not isinstance(option, str):
+                raise ValueError(f"All advanced options must be strings, got: {type(option)}")
+            
+            # Check for dangerous patterns
+            for pattern in dangerous_patterns:
+                if re.search(pattern, option):
+                    raise ValueError(f"Advanced option contains potentially dangerous content: '{option}'")
+            
+            # Don't allow overriding critical options
+            if option.startswith(('-o', '--output')):
+                raise ValueError(f"Cannot override output option: '{option}'")
+            
+            validated_options.append(option.strip())
+        
+        return validated_options
+    
+    def _validate_and_process_features(self, features: Union[str, List[str], None]) -> List[str]:
+        """Validate and process pandoc features (e.g., +smart, -raw_html)"""
+        if not features:
+            return []
+        
+        # Convert to list if string
+        if isinstance(features, str):
+            # Split by commas or spaces
+            features_list = [f.strip() for f in re.split(r'[,\s]+', features) if f.strip()]
+        else:
+            features_list = features.copy()
+        
+        validated_features = []
+        for feature in features_list:
+            if not isinstance(feature, str):
+                raise ValueError(f"All features must be strings, got: {type(feature)}")
+            
+            feature = feature.strip()
+            if not feature:
+                continue
+            
+            # Validate feature format
+            if not re.match(r'^[+-]?[a-zA-Z_][a-zA-Z0-9_]*$', feature):
+                raise ValueError(f"Invalid feature format: '{feature}'. Features should be alphanumeric with optional +/- prefix")
+            
+            # Ensure feature has +/- prefix
+            if not feature.startswith(('+', '-')):
+                # Default to enabling the feature
+                feature = '+' + feature
+            
+            validated_features.append(feature)
+        
+        return validated_features
+    
+    def _build_output_format_with_features(self, base_format: str, features: List[str]) -> str:
+        """Build the complete output format string with features"""
+        if not features:
+            return base_format
+        
+        # Combine base format with features
+        format_with_features = base_format + ''.join(features)
+        return format_with_features
+    
     def _get_pandoc_version(self) -> str:
         """Get pandoc version for diagnostics"""
         try:
@@ -118,6 +205,8 @@ class Plugin(BasePlugin):
         input_file_info = data.get("input_file")
         output_format = data.get("output_format")
         self_contained = data.get("self_contained", False)
+        advanced_options = data.get("advanced_options")  # New parameter for advanced pandoc options
+        features = data.get("features")  # New parameter for pandoc features
 
         if not input_file_info or not output_format:
             raise ValueError("Missing input file or output format")
@@ -142,6 +231,12 @@ class Plugin(BasePlugin):
                 error_msg += "\n  • Check if pandoc data directory exists and is accessible"
                 raise RuntimeError(error_msg)
             
+            # Validate and parse advanced options
+            validated_advanced_options = self._validate_advanced_options(advanced_options)
+            
+            # Validate and process features
+            validated_features = self._validate_and_process_features(features)
+            
             # Validate and analyze input file
             input_filename = input_file_info["filename"]
             input_file_content = input_file_info["content"]
@@ -154,12 +249,31 @@ class Plugin(BasePlugin):
             with open(input_path, "wb") as f:
                 f.write(input_file_content)
 
-            # Prepare output file path
+            # Prepare output file path (use base format for filename)
             output_filename = f"{input_path.stem}.{output_format}"
             output_path = Path(temp_dir) / output_filename
             
-            # Build pandoc command
-            command = ["pandoc", str(input_path), "-o", str(output_path)]
+            # Build complete format string with features for pandoc command
+            complete_output_format = self._build_output_format_with_features(output_format, validated_features)
+            
+            # Build pandoc command with advanced options
+            command = ["pandoc"]
+            
+            # Add advanced options first (before input file)
+            if validated_advanced_options:
+                command.extend(validated_advanced_options)
+                logger.info(f"Added advanced options: {validated_advanced_options}")
+            
+            # Add input file
+            command.append(str(input_path))
+            
+            # Add output format with features
+            command.extend(["-t", complete_output_format])
+            
+            # Add output file
+            command.extend(["-o", str(output_path)])
+            
+            # Add self-contained flag if requested
             if self_contained:
                 command.append("--self-contained")
             
@@ -169,6 +283,8 @@ class Plugin(BasePlugin):
             # Log command being executed
             logger.info(f"Executing pandoc command: {' '.join(command)}")
             logger.info(f"Pandoc version: {pandoc_version}")
+            if validated_features:
+                logger.info(f"Using output format with features: {complete_output_format}")
             
             # Execute pandoc with detailed error capture
             result = subprocess.run(
@@ -190,6 +306,9 @@ class Plugin(BasePlugin):
                     "pandoc_version": pandoc_version,
                     "input_file": file_diagnostics,
                     "output_format": output_format,
+                    "complete_output_format": complete_output_format,
+                    "advanced_options": validated_advanced_options,
+                    "features": validated_features,
                     "data_files_check": data_files_check
                 }
                 
@@ -217,6 +336,18 @@ class Plugin(BasePlugin):
                         error_msg += "\n  • Complex document structure that pandoc can't handle"
                         error_msg += f"\n  • Try converting {file_diagnostics['file_extension']} to a simpler format first (e.g., markdown)"
                 
+                if validated_advanced_options:
+                    error_msg += f"\n\n⚙️ Advanced options used: {' '.join(validated_advanced_options)}"
+                    error_msg += "\n  • Double-check the advanced options syntax"
+                    error_msg += "\n  • Some options may conflict with the conversion"
+                    error_msg += "\n  • Try running without advanced options first"
+                
+                if validated_features:
+                    error_msg += f"\n\n🔧 Features used: {' '.join(validated_features)}"
+                    error_msg += "\n  • Double-check the features syntax"
+                    error_msg += "\n  • Some features may conflict with the conversion"
+                    error_msg += "\n  • Try running without features first"
+                
                 # Log detailed error for debugging
                 logger.error(f"Pandoc conversion failed: {error_details}")
                 
@@ -237,11 +368,15 @@ class Plugin(BasePlugin):
                 "pandoc_version": pandoc_version,
                 "command_executed": " ".join(command),
                 "input_file": file_diagnostics,
+                "output_format": output_format,
+                "complete_output_format": complete_output_format,
                 "output_file": {
                     "filename": output_filename,
                     "size_bytes": output_size,
                     "size_mb": round(output_size / (1024 * 1024), 2)
                 },
+                "advanced_options_used": validated_advanced_options,
+                "features_used": validated_features,
                 "conversion_successful": True,
                 "temp_directory": temp_dir,
                 "permanent_location": str(permanent_file_path),

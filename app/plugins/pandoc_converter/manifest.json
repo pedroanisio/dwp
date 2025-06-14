@@ -22,9 +22,9 @@
       "field_type": "select",
       "required": true,
       "options": [
-        "asciidoc", "pdf", "html5", "docbook5", "epub", "markdown", "markdown_mmd", "markdown_strict", "json"
+        "plain", "asciidoc", "pdf", "html5", "docbook5", "epub", "markdown", "markdown_mmd", "markdown_strict", "json"
       ],
-      "default_value": "pdf"
+      "default_value": "plain"
     },
     {
       "name": "self_contained",
@@ -33,6 +33,22 @@
       "required": false,
       "default_value": false,
       "help": "For HTML output, this embeds all assets like images and CSS into a single portable file."
+    },
+    {
+      "name": "advanced_options",
+      "label": "Advanced Options",
+      "field_type": "textarea",
+      "required": false,
+      "placeholder": "--verbose --columns=72 --toc --reference-links",
+      "help": "Additional pandoc command-line options. Enter space-separated options like '--verbose --columns=72 --toc=true --toc-depth=3'. Use quotes for values with spaces. Security validated to prevent injection attacks."
+    },
+    {
+      "name": "features",
+      "label": "Format Features",
+      "field_type": "textarea",
+      "required": false,
+      "placeholder": "smart, -raw_html, +pipe_tables",
+      "help": "Enable or disable pandoc format features. Use '+feature' to enable or '-feature' to disable. Examples: 'smart' (smart quotes), 'pipe_tables' (pipe tables), 'raw_html' (raw HTML). Multiple features can be separated by commas or spaces. If no +/- prefix is given, '+' (enable) is assumed."
     }
   ],
   "output": {
@@ -46,6 +62,10 @@
         },
         "file_name": {
           "type": "string"
+        },
+        "conversion_details": {
+          "type": "object",
+          "description": "Details about the conversion process including advanced options and features used"
         }
       }
     }
