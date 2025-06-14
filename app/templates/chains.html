@@ -1,12 +1,12 @@
 {% extends "base.html" %}
 {% from "components/button.html" import button %}
 
-{% block title %}Neural Chains{% endblock %}
+{% block title %} Chains{% endblock %}
 
 {% block content %}
 <div class="container mx-auto">
     <header class="py-8 text-center">
-        <h1 class="text-4xl font-bold">💻 NEURAL CHAINS</h1>
+        <h1 class="text-4xl font-bold">💻  CHAINS</h1>
         <p class="text-muted-foreground">Manage your plugin processing chains</p>
     </header>
 
@@ -29,13 +29,13 @@
             <div class="spinner-border animate-spin inline-block w-8 h-8 border-4 rounded-full" role="status">
                 <span class="visually-hidden">Loading...</span>
             </div>
-            <p class="ml-2">Loading neural chains...</p>
+            <p class="ml-2">Loading  chains...</p>
         </div>
         
         <div id="empty-state" class="hidden text-center p-8 bg-card text-card-foreground rounded-lg shadow-md">
             <div class="text-4xl">🔗</div>
             <h3 class="text-2xl font-bold mt-4">No Chains Found</h3>
-            <p class="text-muted-foreground">Create your first neural processing chain to get started.</p>
+            <p class="text-muted-foreground">Create your first  processing chain to get started.</p>
             <a href="/chain-builder" class="mt-4 inline-block">
                 {{ button(variant='primary', text='CREATE FIRST CHAIN') }}
             </a>

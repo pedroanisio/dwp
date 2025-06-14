@@ -1,13 +1,13 @@
 {% extends "base.html" %}
 {% from "components/button.html" import button %}
 
-{% block title %}NEURAL PLUGIN MATRIX - HOME{% endblock %}
+{% block title %} PLUGIN MATRIX - HOME{% endblock %}
 
 {% block hero %}
 <section class="text-center py-12">
     <div class="container mx-auto">
-        <h1 class="text-4xl font-bold">DYNAMIC NEURAL PLUGIN MATRIX</h1>
-        <p class="text-lg mt-2">FastAPI + Pydantic neural interface architecture. Real-time plugin discovery and execution in the digital frontier.</p>
+        <h1 class="text-4xl font-bold">DYNAMIC  PLUGIN MATRIX</h1>
+        <p class="text-lg mt-2">FastAPI + Pydantic  interface architecture. Real-time plugin discovery and execution in the digital frontier.</p>
         <div class="mt-4 flex space-x-2 justify-center">
             <a href="#plugins">{{ button(variant='default', text='ACCESS PLUGINS') }}</a>
             <a href="/how-to">{{ button(variant='secondary', text='INTERFACE GUIDE') }}</a>
@@ -19,7 +19,7 @@
 {% block content %}
 <div class="container mx-auto">
     <section id="plugins" class="mt-5 mb-5">
-        <h2 class="text-center mb-4 text-2xl font-bold">AVAILABLE NEURAL MODULES</h2>
+        <h2 class="text-center mb-4 text-2xl font-bold">AVAILABLE  MODULES</h2>
         
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {% for plugin in plugins %}
@@ -100,8 +100,8 @@
         {% if not plugins %}
         <div class="text-center p-5">
             <div class="bg-card text-card-foreground rounded-lg shadow-lg p-4">
-                <h3 class="text-destructive">NO NEURAL MODULES DETECTED</h3>
-                <p class="text-muted-foreground">System scan complete. No plugins found in neural matrix.</p>
+                <h3 class="text-destructive">NO  MODULES DETECTED</h3>
+                <p class="text-muted-foreground">System scan complete. No plugins found in  matrix.</p>
                 <p class="text-muted-foreground">Check plugin directory: <code>app/plugins/</code></p>
                 <a href="/how-to">
                     {{ button(variant='outline', text='LEARN TO BUILD MODULES') }}

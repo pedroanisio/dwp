@@ -14,7 +14,7 @@ from .models.chain import ChainDefinition, ChainExecutionResult
 
 # Initialize FastAPI app
 app = FastAPI(
-    title="Neural Plugin System with Chain Builder",
+    title=" Plugin System with Chain Builder",
     description="A FastAPI + Pydantic web application with dynamic plugin system and visual chain builder",
     version="2.0.0"
 )

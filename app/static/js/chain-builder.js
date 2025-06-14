@@ -1,5 +1,5 @@
 /**
- * Neural Chain Builder - Visual Plugin Chain Designer
+ *  Chain Builder - Visual Plugin Chain Designer
  * Powered by Fabric.js and cyberpunk aesthetics
  */
 class ChainBuilder {
@@ -13,8 +13,8 @@ class ChainBuilder {
         this.availablePlugins = [];
         this.chainData = {
             id: null,
-            name: "Neural Processing Chain",
-            description: "Describe your neural processing workflow...",
+            name: "Plugin Processing Chain",
+            description: "Describe your plugin processing workflow...",
             nodes: [],
             connections: []
         };
@@ -23,7 +23,7 @@ class ChainBuilder {
     }
     
     async init() {
-        console.log('🔗 Initializing Neural Chain Builder...');
+        console.log('🔗 Initializing Plugin Chain Builder...');
         
         try {
             // Check if Fabric.js is loaded
@@ -643,7 +643,7 @@ class ChainBuilder {
         if (modal && inputData) {
             // Set default input data
             inputData.value = JSON.stringify({
-                "text": "Hello world! This is a test input for the neural chain."
+                "text": "Hello world! This is a test input for the  chain."
             }, null, 2);
             
             modal.classList.add('active');
@@ -723,8 +723,8 @@ class ChainBuilder {
         
         this.chainData = {
             id: null,
-            name: "Neural Processing Chain",
-            description: "Describe your neural processing workflow...",
+            name: " Processing Chain",
+            description: "Describe your Plugin processing workflow...",
             nodes: [],
             connections: []
         };

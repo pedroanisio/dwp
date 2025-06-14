@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% from "components/button.html" import button %}
 
-{% block title %}NEURAL CHAIN BUILDER{% endblock %}
+{% block title %} CHAIN BUILDER{% endblock %}
 
 {% block extra_head %}
 <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.0/fabric.min.js"></script>
@@ -21,8 +21,8 @@
     <!-- Toolbar -->
     <div class="p-4 bg-card text-card-foreground rounded-lg shadow-md my-4 flex justify-between items-center">
         <div class="flex space-x-4">
-            <input type="text" id="chain-name" placeholder="Chain Name" class="p-2 rounded-md bg-input text-foreground border border-border" value="Neural Processing Chain">
-            <textarea id="chain-description" placeholder="Chain Description" class="p-2 rounded-md bg-input text-foreground border border-border" rows="2">Describe your neural processing workflow...</textarea>
+            <input type="text" id="chain-name" placeholder="Chain Name" class="p-2 rounded-md bg-input text-foreground border border-border" value=" Processing Chain">
+            <textarea id="chain-description" placeholder="Chain Description" class="p-2 rounded-md bg-input text-foreground border border-border" rows="2">Describe your  processing workflow...</textarea>
         </div>
         <div class="flex space-x-2">
             {{ button(variant='primary', text='💾 SAVE CHAIN', id='save-chain') }}
@@ -38,7 +38,7 @@
         <!-- Plugin Palette -->
         <div class="w-1/4 p-4 bg-card text-card-foreground rounded-lg shadow-md">
             <div class="mb-4">
-                <h3 class="text-xl font-bold">Neural Modules</h3>
+                <h3 class="text-xl font-bold"> Modules</h3>
                 <input type="text" id="plugin-search" placeholder="Search modules..." class="w-full p-2 mt-2 rounded-md bg-input text-foreground border border-border">
             </div>
             <div id="plugin-palette" class="overflow-y-auto h-full">
@@ -46,7 +46,7 @@
                     <div class="spinner-border animate-spin inline-block w-8 h-8 border-4 rounded-full" role="status">
                         <span class="visually-hidden">Loading...</span>
                     </div>
-                    <p class="ml-2">Loading neural modules...</p>
+                    <p class="ml-2">Loading  modules...</p>
                 </div>
             </div>
         </div>
@@ -80,7 +80,7 @@
 <div id="execution-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center">
     <div class="bg-card text-card-foreground rounded-lg shadow-lg w-1/2">
         <div class="p-4 border-b border-border flex justify-between items-center">
-            <h3 class="text-xl font-bold">⚡ EXECUTE NEURAL CHAIN</h3>
+            <h3 class="text-xl font-bold">⚡ EXECUTE  CHAIN</h3>
             <button class="modal-close text-2xl">&times;</button>
         </div>
         <div class="p-4">
@@ -105,7 +105,7 @@
 <script src="{{ url_for('static', path='/js/chain-builder.js') }}?v=20241220-1749"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('🔗 Initializing Neural Chain Builder...');
+    console.log('🔗 Initializing  Chain Builder...');
     
     window.chainBuilder = new ChainBuilder('chain-canvas');
     

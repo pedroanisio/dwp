@@ -1,13 +1,13 @@
 {% extends "base.html" %}
 
-{% block title %}NEURAL INTERFACE GUIDE{% endblock %}
+{% block title %} INTERFACE GUIDE{% endblock %}
 
 {% block content %}
 <div class="container mx-auto">
     <!-- Hero Section -->
     <div class="py-12 text-center">
-        <h1 class="text-4xl font-bold">NEURAL INTERFACE GUIDE</h1>
-        <p class="text-muted-foreground">Complete documentation for building and deploying neural plugin modules</p>
+        <h1 class="text-4xl font-bold"> INTERFACE GUIDE</h1>
+        <p class="text-muted-foreground">Complete documentation for building and deploying  plugin modules</p>
     </div>
 
     <div class="flex flex-wrap -mx-4">
@@ -18,10 +18,10 @@
                     <h2 class="text-2xl font-bold">SYSTEM OVERVIEW</h2>
                 </div>
                 <div class="p-4">
-                    <p>This neural interface guide provides complete specifications for creating, testing, and deploying custom plugin modules within the matrix. Each module is an autonomous unit with defined inputs, outputs, and processing capabilities.</p>
+                    <p>This  interface guide provides complete specifications for creating, testing, and deploying custom plugin modules within the matrix. Each module is an autonomous unit with defined inputs, outputs, and processing capabilities.</p>
                     
                     <div class="mt-4 p-4 bg-primary/10 text-primary rounded-lg">
-                        <strong>⚡ NEURAL ARCHITECTURE:</strong> All modules are self-contained within the <code>app/plugins/</code> directory and auto-discovered by the system matrix.
+                        <strong>⚡  ARCHITECTURE:</strong> All modules are self-contained within the <code>app/plugins/</code> directory and auto-discovered by the system matrix.
                     </div>
                 </div>
             </div>
@@ -32,7 +32,7 @@
                     <h2 class="text-2xl font-bold">MODULE ARCHITECTURE</h2>
                 </div>
                 <div class="p-4">
-                    <p>Every neural module requires two core components for system integration:</p>
+                    <p>Every  module requires two core components for system integration:</p>
                     
                     <div class="flex flex-wrap -mx-2 mt-4">
                         <div class="w-full md:w-1/2 px-2">
@@ -44,7 +44,7 @@
                         <div class="w-full md:w-1/2 px-2">
                             <div class="p-4 bg-secondary text-secondary-foreground rounded-lg">
                                 <h4 class="font-bold text-lg">plugin.py</h4>
-                                <p class="mb-0">Contains the core processing logic and execution algorithms for the neural module.</p>
+                                <p class="mb-0">Contains the core processing logic and execution algorithms for the  module.</p>
                             </div>
                         </div>
                     </div>
@@ -68,27 +68,27 @@
                             STEP 1: DEFINE MANIFEST SPECIFICATIONS
                         </button>
                         <div id="step1" class="hidden mt-2 p-4 bg-input rounded-lg">
-                            <p>The <code>manifest.json</code> file serves as the neural interface definition. It specifies all metadata, UI components, validation rules, and system dependencies.</p>
+                            <p>The <code>manifest.json</code> file serves as the  interface definition. It specifies all metadata, UI components, validation rules, and system dependencies.</p>
                             
                             <h5 class="font-bold text-lg mt-4">EXAMPLE MANIFEST:</h5>
                             <pre class="p-2 rounded-md bg-background text-foreground mt-2"><code>{
-  "id": "neural_processor",
-  "name": "Neural Data Processor",
+  "id": "_processor",
+  "name": " Data Processor",
   "version": "2.0.0",
-  "description": "Advanced neural network processing module with real-time analysis.",
-  "author": "Neural Systems Division",
+  "description": "Advanced  network processing module with real-time analysis.",
+  "author": " Systems Division",
   "inputs": [
     {
       "name": "input_data",
       "label": "Data Input Stream",
       "field_type": "textarea",
       "required": true,
-      "placeholder": "Enter neural data for processing...",
+      "placeholder": "Enter  data for processing...",
       "validation": {
         "min_length": 10,
         "max_length": 50000
       },
-      "help": "Raw data input for neural processing algorithms."
+      "help": "Raw data input for  processing algorithms."
     },
     {
       "name": "processing_mode",
@@ -100,15 +100,15 @@
     },
     {
       "name": "enable_optimization",
-      "label": "Enable Neural Optimization",
+      "label": "Enable  Optimization",
       "field_type": "checkbox",
       "required": false,
       "default_value": true
     }
   ],
   "output": {
-    "name": "neural_analysis_result",
-    "description": "Processed neural analysis with enhanced metrics",
+    "name": "_analysis_result",
+    "description": "Processed  analysis with enhanced metrics",
     "schema": {
       "type": "object",
       "properties": {
@@ -119,12 +119,12 @@
       }
     }
   },
-  "tags": ["neural", "processing", "analysis"],
+  "tags": ["", "processing", "analysis"],
   "dependencies": {
     "external": [
       {
         "name": "tensorflow",
-        "help": "TensorFlow is required for neural processing. Install with: pip install tensorflow"
+        "help": "TensorFlow is required for  processing. Install with: pip install tensorflow"
       }
     ]
   }
@@ -147,13 +147,13 @@ import json
 
 class Plugin:
     """
-    Neural Processing Module
+     Processing Module
     Handles data analysis and processing operations
     """
     
     def execute(self, data: Dict[str, Any]) -> Dict[str, Any]:
         """
-        Execute neural processing on input data
+        Execute  processing on input data
         
         Args:
             data: Dictionary containing validated input parameters
@@ -170,7 +170,7 @@ class Plugin:
         
         # Validate inputs
         if not input_data:
-            raise ValueError("Neural data input is required for processing")
+            raise ValueError(" data input is required for processing")
         
         # Process data based on mode
         if processing_mode == "ENHANCED":
@@ -197,7 +197,7 @@ class Plugin:
         }
     
     def _standard_processing(self, data: str) -> Dict[str, Any]:
-        """Standard neural processing algorithm"""
+        """Standard  processing algorithm"""
         # Implement your processing logic here
         return {
             "score": len(data) * 0.1,
@@ -206,7 +206,7 @@ class Plugin:
         }
     
     def _enhanced_processing(self, data: str) -> Dict[str, Any]:
-        """Enhanced neural processing with advanced algorithms"""
+        """Enhanced  processing with advanced algorithms"""
         # Implement enhanced processing
         return {
             "score": len(data) * 0.15,
@@ -215,7 +215,7 @@ class Plugin:
         }
     
     def _deep_analysis(self, data: str) -> Dict[str, Any]:
-        """Deep neural analysis with comprehensive metrics"""
+        """Deep  analysis with comprehensive metrics"""
         # Implement deep analysis
         return {
             "score": len(data) * 0.25,
@@ -224,7 +224,7 @@ class Plugin:
         }
     
     def _optimize_result(self, result: Dict[str, Any]) -> Dict[str, Any]:
-        """Apply neural optimization algorithms"""
+        """Apply  optimization algorithms"""
         result["score"] *= 1.2  # Apply optimization multiplier
         result["confidence"] = min(result["confidence"] * 1.1, 1.0)
         return result
@@ -244,13 +244,13 @@ class Plugin:
                     <h2 class="text-2xl font-bold">TESTING PROTOCOLS</h2>
                 </div>
                 <div class="p-4">
-                    <p>Test your neural module using multiple validation methods to ensure proper system integration.</p>
+                    <p>Test your  module using multiple validation methods to ensure proper system integration.</p>
                     
                     <div class="flex flex-wrap -mx-2 mt-4">
                         <div class="w-full md:w-1/2 px-2">
                             <h4 class="font-bold text-lg">WEB INTERFACE TESTING</h4>
                             <ol class="list-decimal list-inside text-muted-foreground">
-                                <li>Navigate to the <a href="/" class="text-primary hover:underline">Neural Matrix homepage</a></li>
+                                <li>Navigate to the <a href="/" class="text-primary hover:underline"> Matrix homepage</a></li>
                                 <li>Locate your module in the available modules list</li>
                                 <li>Click "EXECUTE MODULE" to access the interface</li>
                                 <li>Input test data and execute to validate functionality</li>
@@ -263,10 +263,10 @@ class Plugin:
                                 <pre class="p-2 rounded-md bg-background text-foreground mt-2"><code>curl http://localhost:8000/api/plugins</code></pre>
                                 
                                 <strong class="mt-3 block">Execute module via API:</strong>
-                                <pre class="p-2 rounded-md bg-background text-foreground mt-2"><code>curl -X POST http://localhost:8000/api/plugin/neural_processor/execute \
+                                <pre class="p-2 rounded-md bg-background text-foreground mt-2"><code>curl -X POST http://localhost:8000/api/plugin/_processor/execute \
   -H "Content-Type: application/json" \
   -d '{
-    "input_data": "Sample neural data for processing",
+    "input_data": "Sample  data for processing",
     "processing_mode": "ENHANCED",
     "enable_optimization": true
   }'</code></pre>

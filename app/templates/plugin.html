@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% from "components/button.html" import button %}
 
-{% block title %}{{ plugin.name|upper }} - NEURAL MODULE{% endblock %}
+{% block title %}{{ plugin.name|upper }} -  MODULE{% endblock %}
 
 {% block content %}
 <div class="container mx-auto">
@@ -12,7 +12,7 @@
                 <li class="inline-flex items-center">
                     <a href="/" class="inline-flex items-center text-sm font-medium text-muted-foreground hover:text-primary">
                         <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"></path></svg>
-                        NEURAL MATRIX
+                         MATRIX
                     </a>
                 </li>
                 <li>
@@ -31,7 +31,7 @@
             <div class="bg-card text-card-foreground rounded-lg shadow-md">
                 <div class="p-4 border-b border-border">
                     <h2 class="text-2xl font-bold">{{ plugin.name|upper }}</h2>
-                    <p class="text-sm text-muted-foreground">Version {{ plugin.version }} | Neural Interface</p>
+                    <p class="text-sm text-muted-foreground">Version {{ plugin.version }} |  Interface</p>
                 </div>
                 <div class="p-4">
                     <p class="mb-4">{{ plugin.description }}</p>
@@ -40,7 +40,7 @@
                     {% if plugin.dependency_status and not plugin.dependency_status.all_met %}
                     <div class="p-4 mb-4 text-sm text-yellow-700 bg-yellow-100 rounded-lg" role="alert">
                         <span class="font-medium">⚠️ DEPENDENCY ERROR</span><br>
-                        This neural module requires external dependencies to function properly.
+                        This  module requires external dependencies to function properly.
                         {% if plugin.dependency_status.details %}
                         <ul class="mt-2 list-disc list-inside">
                             {% for dep in plugin.dependency_status.details %}
