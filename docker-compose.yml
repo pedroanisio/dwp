@@ -1,9 +1,51 @@
 services:
   web:
-    build: .
+    build: 
+      context: .
+      dockerfile: Dockerfile
+      # Use BuildKit for better caching and performance
+      cache_from:
+        - python:3.11-slim
+        - haskell:9.4-slim
     ports:
       - "8000:5000"
     volumes:
+      # Mount app directory for development
       - .:/app
+      # Persist plugin data
+      - pandoc_data:/app/data
     environment:
-      - PYTHONPATH=/app 
+      - PYTHONPATH=/app
+      - PANDOC_VERSION=3.1.8-custom
+      # Enable development mode
+      - FASTAPI_ENV=development
+    # Health check
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/api/plugins"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    # Restart policy
+    restart: unless-stopped
+
+  # Optional: Add a development service that skips Pandoc build
+  web-dev:
+    build: 
+      context: .
+      dockerfile: Dockerfile.dev
+    ports:
+      - "8001:5000"
+    volumes:
+      - .:/app
+      - pandoc_data:/app/data
+    environment:
+      - PYTHONPATH=/app
+      - FASTAPI_ENV=development
+    profiles:
+      - dev
+    restart: unless-stopped
+
+volumes:
+  pandoc_data:
+    driver: local 

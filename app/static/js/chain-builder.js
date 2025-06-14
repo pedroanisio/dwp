@@ -1,6 +1,6 @@
 /**
  *  Chain Builder - Visual Plugin Chain Designer
- * Powered by Fabric.js and cyberpunk aesthetics
+ * Powered by Fabric.js
  */
 class ChainBuilder {
     constructor(canvasId) {
