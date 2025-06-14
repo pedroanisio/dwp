@@ -77,10 +77,6 @@ class ChainBuilder {
             enableRetinaScaling: true
         });
         
-        // Aliasing for fabric v6
-        fabric.Rect = fabric.FabricRect;
-        fabric.Text = fabric.FabricText;
-        
         // Canvas event handlers
         this.canvas.on('object:selected', (e) => this.onObjectSelected(e));
         this.canvas.on('selection:cleared', (e) => this.onSelectionCleared(e));
@@ -331,7 +327,7 @@ class ChainBuilder {
         });
         
         // Node header
-        const header = new fabric.FabricText(plugin.name.toUpperCase(), {
+        const header = new fabric.Text(plugin.name.toUpperCase(), {
             fontSize: 12,
             fill: '#00f5ff',
             fontFamily: 'Roboto Mono',
@@ -343,7 +339,7 @@ class ChainBuilder {
         });
         
         // Plugin type
-        const type = new fabric.FabricText('PLUGIN', {
+        const type = new fabric.Text('PLUGIN', {
             fontSize: 10,
             fill: '#b8bcc8',
             fontFamily: 'Roboto Mono',
@@ -354,7 +350,7 @@ class ChainBuilder {
         });
         
         // Plugin icon
-        const icon = new fabric.FabricText(this.getPluginIcon(plugin), {
+        const icon = new fabric.Text(this.getPluginIcon(plugin), {
             fontSize: 24,
             textAlign: 'center',
             originX: 'center',
@@ -376,7 +372,7 @@ class ChainBuilder {
             ry: 0
         });
         
-        const statusText = new fabric.FabricText('READY', {
+        const statusText = new fabric.Text('READY', {
             fontSize: 8,
             fill: '#3a86ff',
             fontFamily: 'Roboto Mono',
