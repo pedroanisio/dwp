@@ -1,95 +1,96 @@
 {% extends "base.html" %}
+{% from "components/button.html" import button %}
 
 {% block title %}NEURAL PLUGIN MATRIX - HOME{% endblock %}
 
 {% block hero %}
-<section class="hero">
-    <div class="container">
-        <h1>DYNAMIC NEURAL PLUGIN MATRIX</h1>
-        <p>FastAPI + Pydantic neural interface architecture. Real-time plugin discovery and execution in the digital frontier.</p>
-        <div class="mt-4">
-            <a href="#plugins" class="btn btn-primary">ACCESS PLUGINS</a>
-            <a href="/how-to" class="btn btn-secondary">INTERFACE GUIDE</a>
+<section class="text-center py-12">
+    <div class="container mx-auto">
+        <h1 class="text-4xl font-bold">DYNAMIC NEURAL PLUGIN MATRIX</h1>
+        <p class="text-lg mt-2">FastAPI + Pydantic neural interface architecture. Real-time plugin discovery and execution in the digital frontier.</p>
+        <div class="mt-4 flex space-x-2 justify-center">
+            <a href="#plugins">{{ button(variant='default', text='ACCESS PLUGINS') }}</a>
+            <a href="/how-to">{{ button(variant='secondary', text='INTERFACE GUIDE') }}</a>
         </div>
     </div>
 </section>
 {% endblock %}
 
 {% block content %}
-<div class="container">
+<div class="container mx-auto">
     <section id="plugins" class="mt-5 mb-5">
-        <h2 class="text-center mb-4">AVAILABLE NEURAL MODULES</h2>
+        <h2 class="text-center mb-4 text-2xl font-bold">AVAILABLE NEURAL MODULES</h2>
         
-        <div class="row">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {% for plugin in plugins %}
-            <div class="col-12 col-md-6 col-lg-4 mb-4">
-                <div class="card fade-in">
-                    <div class="card-header">
-                        <h5 class="card-title">{{ plugin.name|upper }}</h5>
-                        <small class="text-secondary">Version {{ plugin.version }}</small>
+            <div class="bg-card text-card-foreground rounded-lg shadow-lg">
+                <div class="p-4 border-b border-border">
+                    <h5 class="text-xl font-bold">{{ plugin.name|upper }}</h5>
+                    <small class="text-muted-foreground">Version {{ plugin.version }}</small>
+                </div>
+                <div class="p-4">
+                    <p>{{ plugin.description }}</p>
+                    
+                    {% if plugin.tags %}
+                    <div class="my-3">
+                        {% for tag in plugin.tags %}
+                            <span class="inline-block bg-secondary text-secondary-foreground text-xs font-semibold mr-2 px-2.5 py-0.5 rounded-full">{{ tag|upper }}</span>
+                        {% endfor %}
                     </div>
-                    <div class="card-body">
-                        <p>{{ plugin.description }}</p>
-                        
-                        {% if plugin.tags %}
-                        <div class="mb-3">
-                            {% for tag in plugin.tags %}
-                                <span class="badge">{{ tag|upper }}</span>
-                            {% endfor %}
-                        </div>
+                    {% endif %}
+                    
+                    <!-- Plugin Status Indicator -->
+                    <div class="mb-3">
+                        <strong class="text-primary">System Status:</strong>
+                        {% if plugin.dependency_status and plugin.dependency_status.all_met %}
+                            <span class="text-green-500">OPERATIONAL</span>
+                        {% else %}
+                            <span class="text-destructive">DEPENDENCY ERROR</span>
                         {% endif %}
+                    </div>
+                    
+                    <!-- Plugin Info Grid -->
+                    <dl class="mb-3">
+                        <dt class="font-bold">Plugin ID:</dt>
+                        <dd><code>{{ plugin.id }}</code></dd>
                         
-                        <!-- Plugin Status Indicator -->
-                        <div class="mb-3">
-                            <strong class="text-primary">System Status:</strong>
-                            {% if plugin.dependency_status and plugin.dependency_status.all_met %}
-                                <span class="text-success">OPERATIONAL</span>
-                            {% else %}
-                                <span class="text-accent">DEPENDENCY ERROR</span>
-                            {% endif %}
-                        </div>
+                        <dt class="font-bold">Input Fields:</dt>
+                        <dd>{{ plugin.inputs|length }} field(s)</dd>
                         
-                        <!-- Plugin Info Grid -->
-                        <dl class="mb-3">
-                            <dt>Plugin ID:</dt>
-                            <dd><code>{{ plugin.id }}</code></dd>
-                            
-                            <dt>Input Fields:</dt>
-                            <dd>{{ plugin.inputs|length }} field(s)</dd>
-                            
-                            <dt>Output Format:</dt>
-                            <dd>{{ plugin.output.name }}</dd>
-                            
-                            {% if plugin.author %}
-                            <dt>Author:</dt>
-                            <dd>{{ plugin.author }}</dd>
-                            {% endif %}
-                        </dl>
+                        <dt class="font-bold">Output Format:</dt>
+                        <dd>{{ plugin.output.name }}</dd>
                         
-                        <!-- Dependencies Status -->
-                        {% if plugin.dependency_status and plugin.dependency_status.details %}
-                        <div class="mb-3">
-                            <strong class="text-primary">Dependencies:</strong>
-                            {% for dep in plugin.dependency_status.details %}
-                                <div class="text-secondary">
-                                    {{ dep.name }}: 
-                                    {% if dep.met %}
-                                        <span class="text-success">✓ INSTALLED</span>
-                                    {% else %}
-                                        <span class="text-accent">✗ MISSING</span>
-                                    {% endif %}
-                                </div>
-                            {% endfor %}
-                        </div>
+                        {% if plugin.author %}
+                        <dt class="font-bold">Author:</dt>
+                        <dd>{{ plugin.author }}</dd>
                         {% endif %}
-                        
-                        <div class="text-center">
-                            {% if plugin.dependency_status and plugin.dependency_status.all_met %}
-                                <a href="/plugin/{{ plugin.id }}" class="btn btn-primary">EXECUTE MODULE</a>
-                            {% else %}
-                                <button class="btn btn-primary" disabled>DEPENDENCIES REQUIRED</button>
-                            {% endif %}
-                        </div>
+                    </dl>
+                    
+                    <!-- Dependencies Status -->
+                    {% if plugin.dependency_status and plugin.dependency_status.details %}
+                    <div class="mb-3">
+                        <strong class="text-primary">Dependencies:</strong>
+                        {% for dep in plugin.dependency_status.details %}
+                            <div class="text-muted-foreground">
+                                {{ dep.name }}: 
+                                {% if dep.met %}
+                                    <span class="text-green-500">✓ INSTALLED</span>
+                                {% else %}
+                                    <span class="text-destructive">✗ MISSING</span>
+                                {% endif %}
+                            </div>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                    
+                    <div class="text-center">
+                        {% if plugin.dependency_status and plugin.dependency_status.all_met %}
+                            <a href="/plugin/{{ plugin.id }}">
+                                {{ button(variant='default', text='EXECUTE MODULE') }}
+                            </a>
+                        {% else %}
+                            {{ button(variant='default', text='DEPENDENCIES REQUIRED') }}
+                        {% endif %}
                     </div>
                 </div>
             </div>
@@ -98,13 +99,13 @@
         
         {% if not plugins %}
         <div class="text-center p-5">
-            <div class="card">
-                <div class="card-body">
-                    <h3 class="text-accent">NO NEURAL MODULES DETECTED</h3>
-                    <p class="text-secondary">System scan complete. No plugins found in neural matrix.</p>
-                    <p class="text-secondary">Check plugin directory: <code>app/plugins/</code></p>
-                    <a href="/how-to" class="btn btn-outline">LEARN TO BUILD MODULES</a>
-                </div>
+            <div class="bg-card text-card-foreground rounded-lg shadow-lg p-4">
+                <h3 class="text-destructive">NO NEURAL MODULES DETECTED</h3>
+                <p class="text-muted-foreground">System scan complete. No plugins found in neural matrix.</p>
+                <p class="text-muted-foreground">Check plugin directory: <code>app/plugins/</code></p>
+                <a href="/how-to">
+                    {{ button(variant='outline', text='LEARN TO BUILD MODULES') }}
+                </a>
             </div>
         </div>
         {% endif %}
@@ -112,30 +113,18 @@
     
     <!-- System Stats Section -->
     <section class="mt-5 mb-5">
-        <div class="row">
-            <div class="col-12 col-md-4 mb-3">
-                <div class="card text-center">
-                    <div class="card-body">
-                        <h3 class="text-primary">{{ plugins|length }}</h3>
-                        <p class="text-secondary">ACTIVE MODULES</p>
-                    </div>
-                </div>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="bg-card text-card-foreground rounded-lg shadow-lg text-center p-4">
+                <h3 class="text-2xl font-bold text-primary">{{ plugins|length }}</h3>
+                <p class="text-muted-foreground">ACTIVE MODULES</p>
             </div>
-            <div class="col-12 col-md-4 mb-3">
-                <div class="card text-center">
-                    <div class="card-body">
-                        <h3 class="text-success">{{ plugins|selectattr('dependency_status.all_met')|list|length }}</h3>
-                        <p class="text-secondary">OPERATIONAL</p>
-                    </div>
-                </div>
+            <div class="bg-card text-card-foreground rounded-lg shadow-lg text-center p-4">
+                <h3 class="text-2xl font-bold text-green-500">{{ plugins|selectattr('dependency_status.all_met')|list|length }}</h3>
+                <p class="text-muted-foreground">OPERATIONAL</p>
             </div>
-            <div class="col-12 col-md-4 mb-3">
-                <div class="card text-center">
-                    <div class="card-body">
-                        <h3 class="text-accent">{{ plugins|rejectattr('dependency_status.all_met')|list|length }}</h3>
-                        <p class="text-secondary">ERRORS DETECTED</p>
-                    </div>
-                </div>
+            <div class="bg-card text-card-foreground rounded-lg shadow-lg text-center p-4">
+                <h3 class="text-2xl font-bold text-destructive">{{ plugins|rejectattr('dependency_status.all_met')|list|length }}</h3>
+                <p class="text-muted-foreground">ERRORS DETECTED</p>
             </div>
         </div>
     </section>
@@ -144,31 +133,10 @@
 
 {% block extra_scripts %}
 <script>
-// Intersection Observer for card animations
-const observerCyber = new IntersectionObserver((entries) => {
-    entries.forEach((entry, index) => {
-        if (entry.isIntersecting) {
-            setTimeout(() => {
-                entry.target.style.animation = 'fadeInCyber 1s ease-out both';
-            }, index * 200);
-        }
-    });
-}, {
-    threshold: 0.1,
-    rootMargin: '0px 0px -50px 0px'
-});
-
-// Observe cards for animation
-document.querySelectorAll('.card').forEach(card => {
-    observerCyber.observe(card);
-});
-
 // Smooth scroll for "ACCESS PLUGINS" button
 document.querySelector('a[href="#plugins"]').addEventListener('click', function(e) {
     e.preventDefault();
-    document.querySelector('#plugins').scrollIntoView({
-        behavior: 'smooth'
-    });
+    document.querySelector('#plugins').scrollIntoView();
 });
 </script>
 {% endblock %} 

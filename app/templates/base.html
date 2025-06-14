@@ -5,43 +5,36 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}NEURAL PLUGIN SYSTEM{% endblock %}</title>
     
-    <!-- Cyberpunk Design System CSS -->
-    <link rel="stylesheet" href="{{ url_for('static', path='/css/cyberpunk.css') }}">
-    
-    <!-- Google Fonts for Roboto Mono -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@300;400;500;600;700;900&display=swap" rel="stylesheet">
-    
+    <link rel="stylesheet" href="{{ url_for('static', path='/css/dist/main.css') }}">
     {% block extra_styles %}{% endblock %}
     {% block extra_head %}{% endblock %}
 </head>
-<body>
+<body class="bg-background text-foreground">
     <!-- Cyberpunk Navigation -->
-    <nav>
-        <div>
-            <a href="/" class="glitch" data-text="NEURAL SYSTEMS">
+    <nav class="p-4">
+        <div class="container mx-auto flex justify-between items-center">
+            <a href="/" class="text-2xl font-bold glitch" data-text="NEURAL SYSTEMS">
                 NEURAL SYSTEMS
             </a>
-            <button type="button" style="display: none;">
+            <button type="button" class="md:hidden">
                 <span></span>
             </button>
-            <div id="navbarNav">
-                <ul>
+            <div id="navbarNav" class="hidden md:block">
+                <ul class="flex space-x-4">
                     <li>
-                        <a href="/">HOME</a>
+                        <a href="/" class="hover:underline">HOME</a>
                     </li>
                     <li>
-                        <a href="/chain-builder">CHAIN BUILDER</a>
+                        <a href="/chain-builder" class="hover:underline">CHAIN BUILDER</a>
                     </li>
                     <li>
-                        <a href="/chains">CHAINS</a>
+                        <a href="/chains" class="hover:underline">CHAINS</a>
                     </li>
                     <li>
-                        <a href="/how-to">INTERFACE GUIDE</a>
+                        <a href="/how-to" class="hover:underline">INTERFACE GUIDE</a>
                     </li>
                     <li>
-                        <a href="/docs" target="_blank">API MATRIX</a>
+                        <a href="/docs" target="_blank" class="hover:underline">API MATRIX</a>
                     </li>
                 </ul>
             </div>
@@ -55,11 +48,11 @@
     </main>
 
     <!-- Cyberpunk Footer -->
-    <footer>
-        <div class="container">
+    <footer class="p-4 mt-8">
+        <div class="container mx-auto text-center">
             <p>
                 ⚡ FASTAPI + PYDANTIC NEURAL PLUGIN MATRIX ⚡<br>
-                <small>System Status: <span class="text-success">OPERATIONAL</span> | Timestamp: <span id="timestamp"></span></small>
+                <small>System Status: <span class="text-green-500">OPERATIONAL</span> | Timestamp: <span id="timestamp"></span></small>
             </p>
         </div>
     </footer>
@@ -95,15 +88,6 @@
                 }
             }
         }, 3000);
-        
-        // Header scroll effect
-        window.addEventListener('scroll', () => {
-            const nav = document.querySelector('nav');
-            const scrollPercent = window.scrollY / 100;
-            const glowIntensity = Math.min(scrollPercent * 0.3, 0.3);
-            
-            nav.style.boxShadow = `0 4px 20px rgba(0, 245, 255, ${glowIntensity})`;
-        });
     </script>
     
     {% block extra_scripts %}{% endblock %}

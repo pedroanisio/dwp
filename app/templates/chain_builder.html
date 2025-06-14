@@ -1,62 +1,72 @@
 {% extends "base.html" %}
+{% from "components/button.html" import button %}
 
 {% block title %}NEURAL CHAIN BUILDER{% endblock %}
 
 {% block extra_head %}
-<script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/650/index.min.js" integrity="sha512-p8Tbo2Y3vXU6TMAXvlviib/AQUqaqX9Wotgeed7O1qe7zzmDt7w9I4H2AOLtp8uN6fxbeEhy4zFf/hwA3kCZKg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-<link rel="stylesheet" href="{{ url_for('static', path='/css/chain-builder.css') }}">
-
+<script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.0/fabric.min.js"></script>
+<style>
+    .builder-interface {
+        display: flex;
+        height: 80vh;
+    }
+    .canvas-area {
+        flex-grow: 1;
+    }
+</style>
 {% endblock %}
 
 {% block content %}
-<div class="chain-builder-container">
+<div class="container mx-auto">
     <!-- Toolbar -->
-    <div class="toolbar">
-        <div class="toolbar-section">
-            <input type="text" id="chain-name" placeholder="Chain Name" class="form-control" value="Neural Processing Chain">
-            <textarea id="chain-description" placeholder="Chain Description" class="form-control" rows="2">Describe your neural processing workflow...</textarea>
+    <div class="p-4 bg-card text-card-foreground rounded-lg shadow-md my-4 flex justify-between items-center">
+        <div class="flex space-x-4">
+            <input type="text" id="chain-name" placeholder="Chain Name" class="p-2 rounded-md bg-input text-foreground border border-border" value="Neural Processing Chain">
+            <textarea id="chain-description" placeholder="Chain Description" class="p-2 rounded-md bg-input text-foreground border border-border" rows="2">Describe your neural processing workflow...</textarea>
         </div>
-        <div class="toolbar-section">
-            <button id="save-chain" class="btn btn-primary">💾 SAVE CHAIN</button>
-            <button id="load-chain" class="btn btn-secondary">📂 LOAD CHAIN</button>
-            <button id="validate-chain" class="btn btn-outline">✓ VALIDATE</button>
-            <button id="execute-chain" class="btn btn-secondary">⚡ TEST EXECUTE</button>
-            <button id="clear-canvas" class="btn btn-outline">🗑️ CLEAR</button>
+        <div class="flex space-x-2">
+            {{ button(variant='primary', text='💾 SAVE CHAIN', id='save-chain') }}
+            {{ button(variant='secondary', text='📂 LOAD CHAIN', id='load-chain') }}
+            {{ button(variant='outline', text='✓ VALIDATE', id='validate-chain') }}
+            {{ button(variant='secondary', text='⚡ TEST EXECUTE', id='execute-chain') }}
+            {{ button(variant='outline', text='🗑️ CLEAR', id='clear-canvas') }}
         </div>
     </div>
     
     <!-- Main Builder Interface -->
     <div class="builder-interface">
         <!-- Plugin Palette -->
-        <div class="plugin-palette">
-            <div class="palette-header">
-                <h3>Neural Modules</h3>
-                <input type="text" id="plugin-search" placeholder="Search modules..." class="form-control">
+        <div class="w-1/4 p-4 bg-card text-card-foreground rounded-lg shadow-md">
+            <div class="mb-4">
+                <h3 class="text-xl font-bold">Neural Modules</h3>
+                <input type="text" id="plugin-search" placeholder="Search modules..." class="w-full p-2 mt-2 rounded-md bg-input text-foreground border border-border">
             </div>
-            <div id="plugin-palette" class="palette-items">
-                <div class="loading-indicator active">
-                    <div class="spinner"></div>
-                    <p>Loading neural modules...</p>
+            <div id="plugin-palette" class="overflow-y-auto h-full">
+                <div class="flex justify-center items-center h-full">
+                    <div class="spinner-border animate-spin inline-block w-8 h-8 border-4 rounded-full" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <p class="ml-2">Loading neural modules...</p>
                 </div>
             </div>
         </div>
         
         <!-- Canvas Area -->
         <div class="canvas-area">
-            <canvas id="chain-canvas" class="chain-canvas"></canvas>
+            <canvas id="chain-canvas"></canvas>
         </div>
         
         <!-- Properties Panel -->
-        <div class="properties-panel">
-            <div class="panel-header">
-                <h3>Node Configuration</h3>
+        <div class="w-1/4 p-4 bg-card text-card-foreground rounded-lg shadow-md">
+            <div class="mb-4">
+                <h3 class="text-xl font-bold">Node Configuration</h3>
             </div>
             <div id="node-properties" class="panel-content">
                 <div class="text-center">
-                    <div style="opacity: 0.6; padding: 40px 20px;">
-                        <div style="font-size: 3rem; margin-bottom: 20px;">🔧</div>
-                        <h4 style="color: var(--text-secondary);">No Node Selected</h4>
-                        <p style="color: var(--text-secondary); font-size: 0.9rem;">
+                    <div>
+                        <div class="text-4xl">🔧</div>
+                        <h4 class="text-lg font-bold mt-2">No Node Selected</h4>
+                        <p class="text-muted-foreground">
                             Click on a node to configure its properties and connections.
                         </p>
                     </div>
@@ -67,24 +77,24 @@
 </div>
 
 <!-- Chain Execution Modal -->
-<div id="execution-modal" class="modal" style="display: none;">
-    <div class="modal-content">
-        <div class="modal-header">
-            <h3>⚡ EXECUTE NEURAL CHAIN</h3>
-            <button class="modal-close">&times;</button>
+<div id="execution-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center">
+    <div class="bg-card text-card-foreground rounded-lg shadow-lg w-1/2">
+        <div class="p-4 border-b border-border flex justify-between items-center">
+            <h3 class="text-xl font-bold">⚡ EXECUTE NEURAL CHAIN</h3>
+            <button class="modal-close text-2xl">&times;</button>
         </div>
-        <div class="modal-body">
+        <div class="p-4">
             <div id="execution-inputs">
-                <h4>Input Data</h4>
-                <textarea id="execution-input-data" placeholder='{"text": "Hello world!"}' rows="8"></textarea>
+                <h4 class="text-lg font-bold">Input Data</h4>
+                <textarea id="execution-input-data" placeholder='{"text": "Hello world!"}' rows="8" class="w-full p-2 mt-2 rounded-md bg-input text-foreground border border-border"></textarea>
             </div>
-            <div class="btn-group">
-                <button id="execute-confirm" class="btn btn-primary">⚡ EXECUTE</button>
-                <button id="execute-cancel" class="btn btn-outline">CANCEL</button>
+            <div class="flex space-x-2 mt-4">
+                {{ button(variant='primary', text='⚡ EXECUTE', id='execute-confirm') }}
+                {{ button(variant='outline', text='CANCEL', id='execute-cancel') }}
             </div>
-            <div id="execution-results" style="display: none;">
-                <h4>Execution Results</h4>
-                <div id="execution-output"></div>
+            <div id="execution-results" class="mt-4">
+                <h4 class="text-lg font-bold">Execution Results</h4>
+                <div id="execution-output" class="p-2 mt-2 rounded-md bg-input text-foreground border border-border"></div>
             </div>
         </div>
     </div>
@@ -97,16 +107,12 @@
 document.addEventListener('DOMContentLoaded', function() {
     console.log('🔗 Initializing Neural Chain Builder...');
     
-    // Wait a bit for styles to load
-    setTimeout(() => {
-        window.chainBuilder = new ChainBuilder('chain-canvas');
-        
-        // Add debug information
-        console.log('🛠️  Debug: Fabric.js version:', fabric?.version || 'Not loaded');
-        console.log('🛠️  Debug: Canvas element:', document.getElementById('chain-canvas'));
-        console.log('🛠️  Debug: Canvas container:', document.querySelector('.canvas-area'));
-        
-    }, 200);
+    window.chainBuilder = new ChainBuilder('chain-canvas');
+    
+    // Add debug information
+    console.log('🛠️  Debug: Fabric.js version:', fabric?.version || 'Not loaded');
+    console.log('🛠️  Debug: Canvas element:', document.getElementById('chain-canvas'));
+    console.log('🛠️  Debug: Canvas container:', document.querySelector('.canvas-area'));
 });
 
 // Add global debugging functions

@@ -14,7 +14,7 @@
     </div>
 
     <!-- Header Section -->
-    <div class="hero" style="padding: 60px 0;">
+    <div class="hero">
         <div class="text-center">
             <h1 class="glitch" data-text="EXECUTION RESULTS">EXECUTION RESULTS</h1>
             <div class="mt-4">
@@ -49,7 +49,7 @@
                     <div class="mt-3">
                         <strong class="text-primary">Error Details:</strong>
                         <div class="mt-2">
-                            <code id="error-text" class="d-block p-3" style="background: var(--darker-bg); border: 1px solid var(--border-glow); white-space: pre-wrap;">{{ result.error }}</code>
+                            <code id="error-text" class="d-block p-3">{{ result.error }}</code>
                         </div>
                         <button class="btn btn-outline mt-2" onclick="copyToClipboard()" id="copyBtn">
                             COPY ERROR LOG
@@ -96,7 +96,7 @@
                                                             VIEW OBJECT DATA
                                                         </button>
                                                     </div>
-                                                    <div id="data-{{ key }}" class="accordion-body" style="display: none;">
+                                                    <div id="data-{{ key }}" class="accordion-body hidden">
                                                         <pre><code>{{ value | tojsonpretty }}</code></pre>
                                                     </div>
                                                 </div>
@@ -108,7 +108,7 @@
                                                                 VIEW {{ value|length }} ITEMS
                                                             </button>
                                                         </div>
-                                                        <div id="data-{{ key }}" class="accordion-body" style="display: none;">
+                                                        <div id="data-{{ key }}" class="accordion-body hidden">
                                                             <ul class="list-group">
                                                                 {% for item in value %}
                                                                     <li class="list-group-item">{{ item }}</li>
@@ -132,8 +132,8 @@
                                                             VIEW LONG TEXT ({{ value|string|length }} chars)
                                                         </button>
                                                     </div>
-                                                    <div id="data-{{ key }}" class="accordion-body" style="display: none;">
-                                                        <div style="white-space: pre-wrap; max-height: 300px; overflow-y: auto;">{{ value }}</div>
+                                                    <div id="data-{{ key }}" class="accordion-body hidden">
+                                                        <div>{{ value }}</div>
                                                     </div>
                                                 </div>
                                             {% else %}
@@ -179,8 +179,8 @@
                                                     VIEW INPUT
                                                 </button>
                                             </div>
-                                            <div id="data-input-{{ key }}" class="accordion-body" style="display: none;">
-                                                <div style="white-space: pre-wrap; max-height: 200px; overflow-y: auto;">{{ value }}</div>
+                                            <div id="data-input-{{ key }}" class="accordion-body hidden">
+                                                <div>{{ value }}</div>
                                             </div>
                                         </div>
                                     {% else %}
@@ -242,7 +242,7 @@
                                 VIEW JSON OUTPUT
                             </button>
                         </div>
-                        <div id="rawCollapse" class="accordion-body" style="display: none;">
+                        <div id="rawCollapse" class="accordion-body hidden">
                             <pre><code>{{ result.data | tojsonpretty }}</code></pre>
                             <button class="btn btn-outline mt-2" onclick="copyJsonToClipboard()">
                                 COPY JSON
@@ -262,60 +262,36 @@
 // Copy error to clipboard
 function copyToClipboard() {
     const errorText = document.getElementById('error-text').innerText;
-    navigator.clipboard.writeText(errorText).then(() => {
-        const copyBtn = document.getElementById('copyBtn');
-        const originalText = copyBtn.innerHTML;
-        copyBtn.innerHTML = '✓ COPIED';
-        copyBtn.classList.add('text-success');
-        
-        setTimeout(() => {
-            copyBtn.innerHTML = originalText;
-            copyBtn.classList.remove('text-success');
-        }, 2000);
-    });
+    navigator.clipboard.writeText(errorText);
 }
 
 // Copy JSON to clipboard
 function copyJsonToClipboard() {
     const jsonText = document.querySelector('#rawCollapse pre code').innerText;
-    navigator.clipboard.writeText(jsonText).then(() => {
-        const copyBtn = event.target;
-        const originalText = copyBtn.innerHTML;
-        copyBtn.innerHTML = '✓ COPIED';
-        copyBtn.classList.add('text-success');
-        
-        setTimeout(() => {
-            copyBtn.innerHTML = originalText;
-            copyBtn.classList.remove('text-success');
-        }, 2000);
-    });
+    navigator.clipboard.writeText(jsonText);
 }
 
 // Toggle data displays
 function toggleData(key) {
     const element = document.getElementById('data-' + key);
+    element.classList.toggle('hidden');
     const button = event.target;
-    
-    if (element.style.display === 'none') {
-        element.style.display = 'block';
-        button.textContent = button.textContent.replace('VIEW', 'HIDE');
-    } else {
-        element.style.display = 'none';
+    if (element.classList.contains('hidden')) {
         button.textContent = button.textContent.replace('HIDE', 'VIEW');
+    } else {
+        button.textContent = button.textContent.replace('VIEW', 'HIDE');
     }
 }
 
 // Toggle raw data display
 function toggleRawData() {
     const element = document.getElementById('rawCollapse');
+    element.classList.toggle('hidden');
     const button = event.target;
-    
-    if (element.style.display === 'none') {
-        element.style.display = 'block';
-        button.textContent = 'HIDE JSON OUTPUT';
-    } else {
-        element.style.display = 'none';
+    if (element.classList.contains('hidden')) {
         button.textContent = 'VIEW JSON OUTPUT';
+    } else {
+        button.textContent = 'HIDE JSON OUTPUT';
     }
 }
 
@@ -337,22 +313,6 @@ function setTimestamp() {
 // Initialize
 document.addEventListener('DOMContentLoaded', function() {
     setTimestamp();
-    
-    // Animate cards on load
-    document.querySelectorAll('.card').forEach((card, index) => {
-        card.style.animation = `fadeInCyber 0.6s ease-out ${index * 0.1}s both`;
-    });
-    
-    // Random glitch effect for title
-    setTimeout(() => {
-        const title = document.querySelector('.glitch');
-        if (title) {
-            title.style.animation = 'glitch-1 0.5s ease-in-out';
-            setTimeout(() => {
-                title.style.animation = '';
-            }, 500);
-        }
-    }, 1000);
 });
 </script>
 {% endblock %} 

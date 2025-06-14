@@ -9,7 +9,7 @@
         <div class="card-header">
             <h2 class="card-title text-center">NEURAL DOCUMENT INTERFACE</h2>
             <div class="progress mt-3">
-                <div class="progress-bar" style="width: 100%"></div>
+                <div class="progress-bar"></div>
             </div>
         </div>
     </div>
@@ -77,156 +77,13 @@
     </div>
 </div>
 
-<!-- Enhanced Styling for Document Viewer -->
-<style>
-.doc-viewer-container {
-    max-width: 100%;
-    margin: 0 auto;
-}
-
-.document-content {
-    line-height: 1.8;
-    color: var(--text-secondary);
-}
-
-.paragraph-block:hover {
-    background: rgba(0, 245, 255, 0.08) !important;
-    border-left-color: var(--neon-blue);
-    transition: all 0.3s ease;
-}
-
-.div-block:hover {
-    background: rgba(131, 56, 236, 0.1) !important;
-    box-shadow: 0 0 15px rgba(131, 56, 236, 0.3);
-    transition: all 0.3s ease;
-}
-
-.quote-block:hover {
-    background: rgba(255, 0, 110, 0.15) !important;
-    box-shadow: 0 0 15px rgba(255, 0, 110, 0.3);
-    transition: all 0.3s ease;
-}
-
-.raw-html-block:hover {
-    box-shadow: 0 0 15px rgba(58, 134, 255, 0.4);
-    transition: all 0.3s ease;
-}
-
-.structural-block:hover {
-    background: rgba(0, 245, 255, 0.1) !important;
-    border-style: solid;
-    transition: all 0.3s ease;
-}
-
-.html-content {
-    overflow-x: auto;
-    max-height: 300px;
-}
-
-.html-content pre {
-    background: var(--card-bg);
-    border: 1px solid var(--border-glow);
-    padding: 10px;
-    color: var(--neon-green);
-}
-
-.inline-structural {
-    background: var(--neon-purple) !important;
-    color: var(--dark-bg) !important;
-    margin: 0 2px;
-    padding: 2px 6px;
-    font-size: 0.7em !important;
-}
-
-/* Responsive design */
-@media (max-width: 768px) {
-    .paragraph-block,
-    .div-block,
-    .quote-block,
-    .raw-html-block {
-        padding: 15px !important;
-        margin-bottom: 20px !important;
-    }
-    
-    .document-content h3,
-    .document-content h4,
-    .document-content h5 {
-        font-size: 1.2rem;
-    }
-}
-
-/* Animation for document loading */
-.fade-in {
-    animation: fadeInCyber 1s ease-out;
-}
-
-/* Scanning effect for progress bar */
-.progress-bar::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.6), transparent);
-    animation: scan 2s infinite;
-}
-
-/* Neural glow effects */
-.document-content h2,
-.document-content h3,
-.document-content h4 {
-    position: relative;
-}
-
-.document-content h2::after,
-.document-content h3::after,
-.document-content h4::after {
-    content: '';
-    position: absolute;
-    bottom: -2px;
-    left: 0;
-    width: 0;
-    height: 2px;
-    background: linear-gradient(90deg, var(--neon-blue), var(--neon-pink));
-    transition: width 0.5s ease;
-}
-
-.document-content h2:hover::after,
-.document-content h3:hover::after,
-.document-content h4:hover::after {
-    width: 100%;
-}
-</style>
-
 <!-- Interactive JavaScript for Document Viewer -->
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Add click-to-highlight functionality
-    document.querySelectorAll('.paragraph-block, .div-block, .quote-block').forEach(block => {
-        block.addEventListener('click', function() {
-            // Remove previous highlights
-            document.querySelectorAll('.highlighted').forEach(el => {
-                el.classList.remove('highlighted');
-            });
-            
-            // Add highlight to current block
-            this.classList.add('highlighted');
-            this.style.boxShadow = '0 0 20px var(--neon-blue)';
-            
-            // Remove highlight after 3 seconds
-            setTimeout(() => {
-                this.classList.remove('highlighted');
-                this.style.boxShadow = '';
-            }, 3000);
-        });
-    });
-    
     // Add copy functionality to code blocks
     document.querySelectorAll('.raw-html-block').forEach(block => {
         const copyBtn = document.createElement('button');
         copyBtn.className = 'btn btn-outline btn-sm';
-        copyBtn.style.cssText = 'position: absolute; top: 10px; right: 10px; padding: 5px 10px;';
         copyBtn.textContent = 'COPY';
         copyBtn.onclick = function() {
             const content = block.querySelector('.html-content').textContent;
@@ -240,7 +97,6 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         };
         
-        block.style.position = 'relative';
         block.appendChild(copyBtn);
     });
     
@@ -251,23 +107,16 @@ document.addEventListener('DOMContentLoaded', function() {
             expandBtn.className = 'btn btn-secondary btn-sm mt-2';
             expandBtn.textContent = 'EXPAND CONTENT';
             expandBtn.onclick = function() {
-                if (content.style.maxHeight === 'none') {
-                    content.style.maxHeight = '300px';
+                if (content.classList.contains('expanded')) {
+                    content.classList.remove('expanded');
                     expandBtn.textContent = 'EXPAND CONTENT';
                 } else {
-                    content.style.maxHeight = 'none';
+                    content.classList.add('expanded');
                     expandBtn.textContent = 'COLLAPSE CONTENT';
                 }
             };
             content.parentNode.appendChild(expandBtn);
         }
-    });
-    
-    // Add neural scanning effect to headings
-    document.querySelectorAll('h3, h4, h5').forEach((heading, index) => {
-        setTimeout(() => {
-            heading.style.animation = 'fadeInCyber 0.6s ease-out both';
-        }, index * 200);
     });
 });
 </script> 

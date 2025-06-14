@@ -5,7 +5,7 @@
 {% block content %}
 <div class="container">
     <!-- Hero Section -->
-    <div class="hero" style="padding: 80px 0;">
+    <div class="hero">
         <div class="text-center">
             <h1 class="glitch" data-text="NEURAL INTERFACE GUIDE">NEURAL INTERFACE GUIDE</h1>
             <p class="text-secondary">Complete documentation for building and deploying neural plugin modules</p>
@@ -71,7 +71,7 @@
                                 STEP 1: DEFINE MANIFEST SPECIFICATIONS
                             </button>
                         </div>
-                        <div id="step1" class="accordion-body" style="display: none;">
+                        <div id="step1" class="accordion-body hidden">
                             <p>The <code>manifest.json</code> file serves as the neural interface definition. It specifies all metadata, UI components, validation rules, and system dependencies.</p>
                             
                             <h5 class="text-primary mt-4">EXAMPLE MANIFEST:</h5>
@@ -143,7 +143,7 @@
                                 STEP 2: IMPLEMENT PROCESSING LOGIC
                             </button>
                         </div>
-                        <div id="step2" class="accordion-body" style="display: none;">
+                        <div id="step2" class="accordion-body hidden">
                             <p>The <code>plugin.py</code> file must implement a <code>Plugin</code> class with an <code>execute</code> method. This method processes input data and returns structured output.</p>
                             
                             <h5 class="text-primary mt-4">IMPLEMENTATION TEMPLATE:</h5>
@@ -371,49 +371,27 @@ function toggleStep(stepId) {
     const element = document.getElementById(stepId);
     const button = event.target;
     
-    if (element.style.display === 'none') {
-        element.style.display = 'block';
+    if (element.classList.contains('hidden')) {
+        element.classList.remove('hidden');
         button.textContent = button.textContent.replace('DEFINE', 'HIDE').replace('IMPLEMENT', 'HIDE');
     } else {
-        element.style.display = 'none';
+        element.classList.add('hidden');
         button.textContent = button.textContent.replace('HIDE', 'DEFINE').replace('HIDE', 'IMPLEMENT');
     }
 }
-
-// Initialize page
-document.addEventListener('DOMContentLoaded', function() {
-    // Animate cards on load
-    document.querySelectorAll('.card').forEach((card, index) => {
-        card.style.animation = `fadeInCyber 0.8s ease-out ${index * 0.1}s both`;
-    });
-    
-    // Random glitch effect for title
-    setTimeout(() => {
-        const title = document.querySelector('.glitch');
-        if (title) {
-            title.style.animation = 'glitch-1 0.5s ease-in-out';
-            setTimeout(() => {
-                title.style.animation = '';
-            }, 500);
-        }
-    }, 2000);
-});
 
 // Copy code to clipboard
 document.querySelectorAll('pre code').forEach(codeBlock => {
     codeBlock.addEventListener('click', function() {
         navigator.clipboard.writeText(this.textContent).then(() => {
             // Visual feedback
-            const original = this.style.background;
-            this.style.background = 'rgba(0, 245, 255, 0.2)';
+            codeBlock.classList.add('copied');
             setTimeout(() => {
-                this.style.background = original;
+                codeBlock.classList.remove('copied');
             }, 500);
         });
     });
     
-    // Add hover effect
-    codeBlock.style.cursor = 'pointer';
     codeBlock.title = 'Click to copy';
 });
 </script>
