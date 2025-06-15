@@ -1,0 +1,98 @@
+{
+  "id": "pdf2html",
+  "name": "PDF to HTML Converter",
+  "version": "1.0.0",
+  "description": "Converts PDF documents to HTML format using pdf2htmlEX in Docker, preserving layout, fonts, and vector graphics.",
+  "author": "AI Assistant",
+  "inputs": [
+    {
+      "name": "input_file",
+      "label": "Upload PDF File",
+      "field_type": "file",
+      "required": true,
+      "validation": {
+        "allowed_extensions": ["pdf"]
+      },
+      "help": "Select a PDF file to convert to HTML format"
+    },
+    {
+      "name": "zoom",
+      "label": "Zoom Level",
+      "field_type": "number",
+      "required": false,
+      "default_value": "1.3",
+      "placeholder": "1.3",
+      "help": "Zoom level for better rendering quality (e.g., 1.0 = 100%, 1.3 = 130%)"
+    },
+    {
+      "name": "embed_css",
+      "label": "Embed CSS",
+      "field_type": "checkbox",
+      "required": false,
+      "default_value": true,
+      "help": "Embed CSS styles in the HTML file for better portability"
+    },
+    {
+      "name": "embed_javascript",
+      "label": "Embed JavaScript",
+      "field_type": "checkbox",
+      "required": false,
+      "default_value": true,
+      "help": "Embed JavaScript in the HTML file for interactive features"
+    },
+    {
+      "name": "embed_images",
+      "label": "Embed Images",
+      "field_type": "checkbox",
+      "required": false,
+      "default_value": true,
+      "help": "Embed images directly in the HTML file as base64 data"
+    },
+    {
+      "name": "output_filename",
+      "label": "Output Filename (optional)",
+      "field_type": "text",
+      "required": false,
+      "placeholder": "document.html",
+      "help": "Specify custom output filename. If empty, uses original PDF name with .html extension"
+    }
+  ],
+  "output": {
+    "name": "pdfToHtmlResult",
+    "description": "The converted HTML file with conversion details and statistics.",
+    "schema": {
+      "type": "object",
+      "properties": {
+        "file_path": {
+          "type": "string",
+          "description": "Path to the converted HTML file"
+        },
+        "file_name": {
+          "type": "string",
+          "description": "Name of the converted HTML file"
+        },
+        "conversion_details": {
+          "type": "object",
+          "description": "Details about the conversion process including settings and statistics"
+        },
+        "docker_info": {
+          "type": "object",
+          "description": "Information about the Docker container execution"
+        }
+      }
+    }
+  },
+  "tags": ["file-conversion", "pdf", "html", "docker"],
+  "dependencies": {
+    "external": [
+      {
+        "name": "docker",
+        "help": "Docker is required to run pdf2htmlEX. Install Docker from docker.com and ensure the Docker daemon is running."
+      },
+      {
+        "name": "pdf2htmlEX Docker image",
+        "help": "The pdf2htmlex/pdf2htmlex Docker image will be automatically pulled if not available. Ensure Docker has internet access."
+      }
+    ]
+  }
+} 
