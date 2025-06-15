@@ -6,6 +6,9 @@ from typing import Dict, Any
 import os
 import json
 import time
+import uuid
+import tempfile
+import aiofiles
 from pathlib import Path
 
 from .core.plugin_manager import PluginManager
@@ -35,6 +38,22 @@ def tojsonpretty(value):
 templates.env.filters['tojsonpretty'] = tojsonpretty
 
 app.mount("/static", StaticFiles(directory="app/static"), name="static")
+
+
+async def _stream_upload_to_temp(upload_file: UploadFile) -> str:
+    """Stream uploaded file to temporary location without loading into memory"""
+    temp_file_path = os.path.join(tempfile.gettempdir(), f"{uuid.uuid4()}_{upload_file.filename}")
+    
+    try:
+        async with aiofiles.open(temp_file_path, 'wb') as temp_file:
+            while chunk := await upload_file.read(8192):  # 8KB chunks
+                await temp_file.write(chunk)
+        return temp_file_path
+    except Exception as e:
+        # Clean up partial file if error occurs
+        if os.path.exists(temp_file_path):
+            os.unlink(temp_file_path)
+        raise RuntimeError(f"Failed to stream upload to temporary file: {e}")
 
 
 def cleanup_downloads_directory(max_age_hours: int = 24):
@@ -109,9 +128,12 @@ async def execute_plugin_api(plugin_id: str, request: Request, input_file: Uploa
         data = dict(form_data)
         
         if input_file:
+            # Stream large files to temporary location instead of loading into memory
+            temp_file_path = await _stream_upload_to_temp(input_file)
             data["input_file"] = {
                 "filename": input_file.filename,
-                "content": await input_file.read()
+                "temp_path": temp_file_path,
+                "size": os.path.getsize(temp_file_path)
             }
 
         plugin_input = PluginInput(plugin_id=plugin_id, data=data)
@@ -144,9 +166,12 @@ async def execute_plugin_web(request: Request, plugin_id: str, input_file: Uploa
         data = dict(form_data)
         
         if input_file:
+            # Stream large files to temporary location instead of loading into memory
+            temp_file_path = await _stream_upload_to_temp(input_file)
             data["input_file"] = {
                 "filename": input_file.filename,
-                "content": await input_file.read()
+                "temp_path": temp_file_path,
+                "size": os.path.getsize(temp_file_path)
             }
 
         plugin_input = PluginInput(plugin_id=plugin_id, data=data)
