@@ -15,6 +15,9 @@ This project is a modern, web-based application that features a dynamic plugin s
 - **Dependency Checking**: The system automatically checks for required external dependencies (e.g., command-line tools) and reports their status in the UI.
 - **File-Based I/O**: Plugins can easily handle file uploads and generate downloadable file outputs.
 - **Analytics Dashboard**: Track plugin usage, chain execution statistics, and system performance.
+- **🆕 Container Orchestration**: Docker-based service communication for specialized document processing plugins.
+- **🆕 Service Discovery**: Automatic detection and communication with Docker containers for advanced processing.
+- **🆕 Advanced Document Processing**: Multi-container PDF and document conversion workflows with optimized performance.
 - **Modern Tech Stack**: Built with FastAPI, Pydantic, and a responsive web interface.
 
 ## 🔒 MANDATORY PLUGIN RESPONSE MODEL RULE
@@ -82,26 +85,86 @@ Every plugin must:
 
 ## 📦 Available Plugins
 
-The application includes 6 pre-built plugins demonstrating various capabilities:
+The application includes **10 pre-built plugins** demonstrating various capabilities:
 
 1. **Text Statistics** (`text_stat`): Analyzes text and provides comprehensive statistics including word count, character count, frequency analysis, and linguistic metrics. ✅ **Compliant**
 
-2. **Pandoc Converter** (`pandoc_converter`): Converts documents between formats using the Pandoc command-line tool (Markdown to DOCX, EPUB to HTML, etc.). ✅ **Compliant**
+2. **Pandoc Converter** (`pandoc_converter`): **Enhanced** - Converts documents between formats using Pandoc compiled from source with advanced options support, features validation, and comprehensive error diagnostics. ✅ **Compliant**
 
-3. **JSON to XML Converter** (`json_to_xml`): Converts JSON data structures to XML format with customizable formatting options.
+3. **🆕 PDF to HTML Converter** (`pdf2html`): **Container-based** - Converts PDF documents to HTML using pdf2htmlEX service in Docker container with Docker socket communication. ✅ **Compliant**
 
-4. **XML to JSON Converter** (`xml_to_json`): Converts XML documents to JSON format with structure preservation.
+4. **JSON to XML Converter** (`json_to_xml`): Converts JSON data structures to XML format with customizable formatting options. ✅ **Compliant**
 
-5. **Document Viewer** (`doc_viewer`): Displays and analyzes document content with metadata extraction capabilities.
+5. **XML to JSON Converter** (`xml_to_json`): Converts XML documents to JSON format with structure preservation. ✅ **Compliant**
 
-6. **Web Sentence Analyzer** (`web_sentence_analyzer`): Advanced sentence analysis with web-based natural language processing features.
+6. **Document Viewer** (`doc_viewer`): Displays and analyzes document content with metadata extraction capabilities. ✅ **Compliant**
 
-**Plugin Compliance Status**: Use the compliance checker to verify which plugins follow the response model rule:
+7. **Web Sentence Analyzer** (`web_sentence_analyzer`): Advanced sentence analysis with web-based natural language processing features. ✅ **Compliant**
+
+8. **Bag of Words** (`bag_of_words`): Text processing using bag-of-words model for feature extraction. ✅ **Compliant**
+
+9. **Context-Aware Stopwords** (`context_aware_stopwords`): Intelligent stopword removal based on context analysis. ✅ **Compliant**
+
+10. **Sentence Merger** (`sentence_merger`): Advanced sentence combining with configurable merge strategies. ✅ **Compliant**
+
+**Plugin Compliance Status**: Use the compliance checker to verify all plugins follow the response model rule:
 
 ```bash
 # Check compliance via API
 curl http://localhost:8000/api/plugin-compliance
 ```
+
+## 🐳 Container Orchestration Architecture
+
+### 🏗️ Container-Based Plugin System
+
+The system now supports **advanced container orchestration** for specialized plugins that require dedicated processing environments:
+
+```
+┌─────────────────┐    ┌──────────────────────┐
+│  Main Web App   │    │  pdf2htmlex-service  │
+│  (Neural Plugin │◄──►│  (Conversion Service)│
+│   System)       │    │                      │
+│                 │    │                      │
+│ + Docker CLI    │    │                      │
+│ + Docker Socket │    │                      │
+└─────────────────┘    └──────────────────────┘
+         │                        │
+         │                        │
+         └────────────────────────┘
+              Shared Volume
+              (/app/shared)
+```
+
+### 🔧 Container Communication Features
+
+- **Docker Socket Access**: Main application communicates with Docker daemon for service orchestration
+- **Service Discovery**: Automatic detection of running container services
+- **Container Execution**: Execute commands in specialized containers via `docker exec`
+- **Shared Storage**: File exchange between containers through mounted volumes
+- **Health Monitoring**: Container status monitoring and error handling
+
+### 🛡️ Security Considerations
+
+⚠️ **Important**: The Docker socket mounting provides elevated privileges for container communication:
+
+```yaml
+# docker-compose.yml - Required for container orchestration
+volumes:
+  - /var/run/docker.sock:/var/run/docker.sock  # Docker API access
+```
+
+**Security measures implemented:**
+- Controlled container communication only with designated service containers
+- Input validation and sanitization for container commands
+- Resource limits and timeout controls
+- Isolated execution environments
+
+**Production recommendations:**
+- Monitor Docker socket access logs
+- Use Docker-in-Docker alternatives if higher security is required
+- Implement service mesh for advanced container communication
+- Regular security audits of container interactions
 
 ## 🔗 Chain Builder
 
@@ -113,6 +176,7 @@ The Chain Builder allows you to create complex workflows by connecting multiple 
 - **Template Library**: Pre-built chains for common use cases
 - **Execution History**: Track and analyze chain performance
 - **Real-time Monitoring**: Live execution status and progress tracking
+- **🆕 Container Support**: Seamlessly integrate container-based plugins in chains
 
 ### Creating Chains
 
@@ -124,10 +188,10 @@ The Chain Builder allows you to create complex workflows by connecting multiple 
 
 Access pre-built templates for common workflows:
 
-- Document processing pipelines
-- Text analysis workflows  
-- Data transformation chains
-- Multi-format conversion sequences
+- Document processing pipelines with container-based conversions
+- Text analysis workflows with advanced NLP processing
+- Data transformation chains with format conversions
+- Multi-format document conversion sequences
 
 ## ⚙️ Getting Started
 
@@ -135,9 +199,10 @@ Access pre-built templates for common workflows:
 
 - Python 3.9+
 - Node.js and npm
-- Optional: Pandoc (for document conversion plugins)
+- Docker and Docker Compose (required for container-based plugins)
+- Optional: Pandoc (built from source in Docker)
 
-### Installation
+### Quick Start with Docker (Recommended)
 
 1. Clone the repository:
 
@@ -146,40 +211,106 @@ Access pre-built templates for common workflows:
    cd dynamic-web-plugins
    ```
 
-2. Install Python dependencies:
+2. **Start all services with Docker Compose:**
+
+   ```bash
+   # Start production services (includes container orchestration)
+   docker-compose up -d
+   
+   # Or use the automated build script
+   chmod +x docker-build.sh
+   ./docker-build.sh --run-prod
+   ```
+
+3. **Access the application:**
+   - Main interface: <http://localhost:8000>
+   - Chain Builder: <http://localhost:8000/chain-builder>
+   - Plugin Development Guide: <http://localhost:8000/how-to>
+
+4. **Verify container services:**
+   ```bash
+   # Check all services are running
+   docker-compose ps
+   
+   # Test container communication
+   curl http://localhost:8000/api/plugins
+   ```
+
+### Manual Installation (Development)
+
+1. Install Python dependencies:
 
    ```bash
    pip install -r requirements.txt
    ```
 
-3. Install Node.js dependencies:
+2. Install Node.js dependencies:
 
    ```bash
    npm install
    ```
 
-4. Build the CSS:
+3. Build CSS:
 
    ```bash
    npm run build-css
    ```
 
-5. Run the application:
+4. Start services:
 
    ```bash
+   # Start container services first
+   docker-compose up -d pdf2htmlex-service
+   
+   # Start the web application
    uvicorn app.main:app --reload
    ```
 
-6. Access the application:
-   - Main interface: <http://localhost:8000>
-   - Chain Builder: <http://localhost:8000/chain-builder>
-   - Plugin Development Guide: <http://localhost:8000/how-to>
+### 🚀 Docker Build Options
+
+The project includes **multiple Docker configurations** optimized for different use cases:
+
+#### Production Build (Pandoc from Source)
+```bash
+# Multi-stage build with Pandoc compiled from source
+./docker-build.sh --run-prod
+
+# Manual docker-compose
+docker-compose up -d web
+```
+
+- **Features**: Latest Pandoc with full data files, container orchestration
+- **Build Time**: 10-20 minutes (cached builds ~2 minutes)
+- **Port**: 8000
+
+#### Development Build (System Pandoc)
+```bash
+# Fast build with system Pandoc
+./docker-build.sh --run-dev
+
+# Manual docker-compose
+docker-compose --profile dev up -d web-dev
+```
+
+- **Features**: Quick development iteration, container orchestration
+- **Build Time**: 2-3 minutes
+- **Port**: 8002
+
+#### Simple Build (Basic Features)
+```bash
+# Lightweight build
+docker-compose --profile simple up -d web-simple
+```
+
+- **Features**: Basic functionality, faster startup
+- **Build Time**: 1-2 minutes
+- **Port**: 8001
 
 ## 🔌 Developing a New Plugin
 
-Creating a new plugin requires following the **mandatory response model rule**. Here's the complete process:
+Creating a new plugin requires following the **mandatory response model rule**. You can create either **direct plugins** or **container-based plugins**.
 
-### Required Steps
+### Standard Plugin Development
 
 1. **Create Plugin Directory**
 
@@ -250,33 +381,95 @@ Creating a new plugin requires following the **mandatory response model rule**. 
            }
    ```
 
-4. **Test Your Plugin**
+### 🆕 Container-Based Plugin Development
 
-   ```bash
-   # Check compliance
-   curl http://localhost:8000/api/plugin-compliance
-   
-   # Test execution
-   curl -X POST http://localhost:8000/api/plugin/your_plugin_name/execute \
-     -H "Content-Type: application/json" \
-     -d '{"input_field": "test data"}'
+For plugins requiring specialized environments (like pdf2htmlEX), you can use container orchestration:
+
+1. **Add Container Service to docker-compose.yml**
+
+   ```yaml
+   your-service:
+     image: your/specialized-tool:latest
+     volumes:
+       - conversion_shared:/shared
+     command: ["/bin/sh", "-c", "while true; do sleep 30; done"]
+     networks:
+       - plugin-network
    ```
 
-### Plugin Development Best Practices
+2. **Implement Container Communication**
 
-- **Response Validation**: Always validate your response data matches the model
-- **Error Handling**: Use appropriate exception types for different error scenarios
-- **Documentation**: Include clear descriptions in your response model fields
-- **Dependencies**: List all external dependencies in the manifest
-- **Testing**: Test both successful execution and error cases
+   ```python
+   import subprocess
+   import shutil
+   from pathlib import Path
+
+   class Plugin(BasePlugin):
+       def _check_your_service_dependency(self) -> Dict[str, Any]:
+           """Custom dependency checker for container service"""
+           try:
+               result = subprocess.run(
+                   ["docker", "ps", "--filter", "name=your-service", "--format", "{{.Names}}"],
+                   capture_output=True, text=True, timeout=10
+               )
+               return {
+                   "service_available": bool(result.stdout.strip()),
+                   "container_name": result.stdout.strip()
+               }
+           except Exception as e:
+               return {"service_available": False, "error": str(e)}
+       
+       def execute(self, data: Dict[str, Any]) -> Dict[str, Any]:
+           # Check service availability
+           service_info = self._check_your_service_dependency()
+           if not service_info["service_available"]:
+               raise RuntimeError("Container service not available")
+           
+           # Execute command in container
+           container_name = service_info["container_name"]
+           result = subprocess.run([
+               "docker", "exec", container_name,
+               "your-command", "--input", "/shared/input.file"
+           ], capture_output=True, text=True)
+           
+           # Process results...
+           return {"result": "processed", "container_info": service_info}
+   ```
+
+3. **Add Service Dependency to Manifest**
+
+   ```json
+   {
+     "dependencies": {
+       "external": [
+         {
+           "name": "your-service",
+           "help": "Container service must be running via docker-compose"
+         }
+       ]
+     }
+   }
+   ```
+
+### Container Plugin Examples
+
+See `app/plugins/pdf2html/` for a complete container-based plugin implementation with:
+- Docker service communication
+- Shared volume file processing
+- Service health monitoring
+- Comprehensive error handling
+- Architecture documentation
 
 ## 📁 Project Structure
 
 ```
 ├── requirements.txt                    # Python dependencies
 ├── package.json                       # Node.js dependencies and scripts
-├── docker-compose.yml                 # Docker configuration
-├── Dockerfile                         # Container definition
+├── docker-compose.yml                 # 🆕 Multi-container orchestration with services
+├── Dockerfile                         # 🆕 Multi-stage build with Pandoc from source
+├── Dockerfile.dev                     # Development container
+├── Dockerfile.simple                  # Simple container for basic features
+├── docker-build.sh                    # 🆕 Automated build script with multiple options
 ├── tailwind.config.js                 # Tailwind CSS configuration
 ├── postcss.config.js                  # PostCSS configuration
 └── app/
@@ -289,24 +482,31 @@ Creating a new plugin requires following the **mandatory response model rule**. 
     ├── core/
     │   ├── __init__.py
     │   ├── plugin_loader.py           # Plugin discovery and loading
-    │   ├── plugin_manager.py          # Plugin execution + compliance checking
+    │   ├── plugin_manager.py          # 🆕 Enhanced plugin execution + container orchestration
     │   ├── chain_manager.py           # Chain execution and management
     │   ├── chain_executor.py          # Chain execution engine
     │   └── chain_storage.py           # Chain persistence layer
     ├── plugins/
     │   ├── __init__.py
     │   ├── text_stat/                 # Text statistics plugin
-    │   ├── pandoc_converter/          # Document converter plugin
+    │   ├── pandoc_converter/          # 🆕 Enhanced document converter with advanced options
+    │   ├── pdf2html/                  # 🆕 Container-based PDF to HTML converter
+    │   │   ├── plugin.py              # Docker service communication
+    │   │   ├── manifest.json          # Service dependencies
+    │   │   └── README.md              # Architecture documentation
     │   ├── json_to_xml/               # JSON to XML converter
     │   ├── xml_to_json/               # XML to JSON converter
     │   ├── doc_viewer/                # Document viewer plugin
-    │   └── web_sentence_analyzer/     # Sentence analysis plugin
+    │   ├── web_sentence_analyzer/     # Sentence analysis plugin
+    │   ├── bag_of_words/              # Bag of words text processing
+    │   ├── context_aware_stopwords/   # Context-aware stopword removal
+    │   └── sentence_merger/           # Sentence merging with strategies
     ├── static/
     │   ├── css/
     │   │   ├── dist/                  # Compiled CSS
     │   │   └── src/                   # Source CSS files
     │   ├── js/
-    │   │   └── app.js                 # Client-side JavaScript
+    │   │   └── chain-builder.js       # Enhanced chain builder with container support
     │   └── favicon.ico
     ├── templates/
     │   ├── base.html                  # Base template
@@ -316,9 +516,11 @@ Creating a new plugin requires following the **mandatory response model rule**. 
     │   ├── chain_builder.html         # Chain builder interface
     │   ├── chains.html                # Chain management
     │   └── how-to.html                # Development guide
-    └── data/                          # Data storage directory
-        ├── chains/                    # Saved chains
-        └── templates/                 # Chain templates
+    ├── data/                          # Data storage directory
+    │   ├── chains/                    # Saved chains
+    │   ├── downloads/                 # Generated files
+    │   └── templates/                 # Chain templates
+    └── shared/                        # 🆕 Container shared volume for file processing
 ```
 
 ## 🌐 API Endpoints
@@ -337,7 +539,7 @@ Creating a new plugin requires following the **mandatory response model rule**. 
 - `GET /api/plugin/{plugin_id}/schema` - Get plugin input/output schema
 - `POST /api/plugin/{plugin_id}/execute` - Execute plugin (JSON API)
 - `POST /api/refresh-plugins` - Refresh plugin list
-- `GET /api/plugin-compliance` - Check plugin compliance status
+- `GET /api/plugin-compliance` - **Enhanced** - Check plugin compliance status with container service health
 
 ### Chain Management Endpoints
 
@@ -351,7 +553,7 @@ Creating a new plugin requires following the **mandatory response model rule**. 
 - `DELETE /api/chains/{chain_id}` - Delete chain
 - `POST /api/chains/{chain_id}/duplicate` - Duplicate chain
 - `POST /api/chains/validate` - Validate chain definition
-- `POST /api/chains/{chain_id}/execute` - Execute chain
+- `POST /api/chains/{chain_id}/execute` - Execute chain **with container support**
 - `GET /api/chains/{chain_id}/history` - Get execution history
 - `GET /api/chains/{chain_id}/analytics` - Get chain analytics
 - `GET /api/chains/{chain_id}/connections/{source_node_id}` - Get compatible connections
@@ -369,16 +571,22 @@ Creating a new plugin requires following the **mandatory response model rule**. 
 ### Example API Usage
 
 ```bash
-# List all plugins
+# List all plugins (includes container-based plugins)
 curl http://localhost:8000/api/plugins
 
-# Check plugin compliance
+# Check plugin compliance (includes container health)
 curl http://localhost:8000/api/plugin-compliance
 
 # Execute text statistics plugin
 curl -X POST http://localhost:8000/api/plugin/text_stat/execute \
   -H "Content-Type: application/json" \
   -d '{"text": "Hello world! This is a test."}'
+
+# 🆕 Execute container-based PDF to HTML conversion
+curl -X POST http://localhost:8000/api/plugin/pdf2html/execute \
+  -F "input_file=@document.pdf" \
+  -F "zoom=1.5" \
+  -F "embed_css=true"
 
 # List all chains
 curl http://localhost:8000/api/chains
@@ -388,7 +596,7 @@ curl -X POST http://localhost:8000/api/chains \
   -H "Content-Type: application/json" \
   -d '{"name": "My Workflow", "description": "Custom processing workflow"}'
 
-# Execute a chain
+# Execute a chain (supports container-based plugins)
 curl -X POST http://localhost:8000/api/chains/chain_id/execute \
   -H "Content-Type: application/json" \
   -d '{"input_data": "your data here"}'
@@ -404,6 +612,7 @@ curl -X POST http://localhost:8000/api/chains/chain_id/execute \
 - **Validation**: Validates inputs against plugin schemas using Pydantic
 - **Response Validation**: Ensures plugin outputs match declared response models
 - **Execution**: Runs plugin logic with error handling and result capture
+- **🆕 Container Orchestration**: Docker service-based plugin execution with inter-container communication
 
 ### Chain Builder Architecture
 
@@ -412,6 +621,7 @@ curl -X POST http://localhost:8000/api/chains/chain_id/execute \
 - **Storage Layer**: Persists chains and execution history
 - **Analytics Engine**: Tracks performance metrics and usage statistics
 - **Template System**: Manages reusable chain templates
+- **🆕 Container Integration**: Seamless integration of container-based plugins in chains
 
 ### Validation System
 
@@ -420,6 +630,7 @@ curl -X POST http://localhost:8000/api/chains/chain_id/execute \
 - **Plugin Compliance**: Ensures plugins inherit from BasePlugin and define response models
 - **Output Validation**: Validates plugin outputs against declared Pydantic response models
 - **Chain Validation**: Ensures data compatibility between connected plugins
+- **🆕 Container Health Validation**: Monitors Docker service availability and health
 
 ### UI Generation
 
@@ -427,12 +638,13 @@ curl -X POST http://localhost:8000/api/chains/chain_id/execute \
 - **Type-Aware Rendering**: Different input types render with appropriate controls
 - **Responsive Design**: Modern, mobile-friendly interface
 - **Real-time Updates**: Live feedback during plugin and chain execution
+- **🆕 Container Status Display**: Visual indicators for container service health
 
 ## 🔍 Plugin Compliance Checking
 
 ### API Compliance Check
 
-Get detailed compliance reports for all plugins:
+Get detailed compliance reports for all plugins including container services:
 
 ```bash
 curl http://localhost:8000/api/plugin-compliance
@@ -443,6 +655,8 @@ Response includes:
 - Total plugin count and compliance percentage
 - List of compliant plugins with response models
 - List of non-compliant plugins with specific issues
+- **🆕 Container service health status**
+- **🆕 Docker service dependency information**
 - Migration instructions and example code
 
 ### Compliance Requirements
@@ -454,6 +668,7 @@ All plugins must:
 3. **Implement get_response_model() class method**
 4. **Return data that validates against the response model**
 5. **Handle errors gracefully with appropriate response structure**
+6. **🆕 For container-based plugins**: Implement custom dependency checking for service health
 
 ### Migration Guide for Existing Plugins
 
@@ -484,6 +699,15 @@ If you have non-compliant plugins, follow these steps:
        return {"field1": "value1", "field2": "value2"}
    ```
 
+4. **🆕 Add Container Support (Optional)**
+
+   ```python
+   def _check_your_service_dependency(self) -> Dict[str, Any]:
+       """Custom dependency checker for container services"""
+       # Implement container health checking
+       pass
+   ```
+
 ## 📊 Analytics and Monitoring
 
 ### Chain Analytics
@@ -494,6 +718,8 @@ Track chain performance with detailed metrics:
 - Average execution time per chain
 - Error patterns and failure analysis
 - Resource usage statistics
+- **🆕 Container execution performance metrics**
+- **🆕 Service communication latency tracking**
 
 ### System Analytics
 
@@ -503,6 +729,8 @@ Monitor overall system health:
 - Popular chain templates
 - System performance metrics
 - User activity patterns
+- **🆕 Container service uptime and health**
+- **🆕 Docker resource utilization**
 
 ### Access Analytics
 
@@ -527,9 +755,10 @@ Monitor overall system health:
 
 ### Chain Builder Customization
 
-- Extend `static/js/app.js` for custom node types
+- Extend `static/js/chain-builder.js` for custom node types
 - Add custom connection validation logic
 - Implement specialized chain execution patterns
+- **🆕 Add container-specific UI components**
 
 ### Styling and Theming
 
@@ -542,7 +771,7 @@ Monitor overall system health:
 ### Test Plugin Compliance
 
 ```bash
-# Check if all plugins are compliant
+# Check if all plugins are compliant (includes container health)
 curl http://localhost:8000/api/plugin-compliance
 ```
 
@@ -556,10 +785,18 @@ curl -X POST http://localhost:8000/api/plugin/text_stat/execute \
     "text": "The quick brown fox jumps over the lazy dog. This sentence contains every letter of the alphabet!"
   }'
 
-# Test the Pandoc Converter (requires file upload)
+# Test the Enhanced Pandoc Converter with advanced options
 curl -X POST http://localhost:8000/api/plugin/pandoc_converter/execute \
   -F "input_file=@document.md" \
-  -F "output_format=html"
+  -F "output_format=html" \
+  -F "advanced_options=--standalone --toc"
+
+# 🆕 Test container-based PDF to HTML conversion
+curl -X POST http://localhost:8000/api/plugin/pdf2html/execute \
+  -F "input_file=@document.pdf" \
+  -F "zoom=1.3" \
+  -F "embed_css=true" \
+  -F "embed_javascript=true"
 ```
 
 ### Test Chain Execution
@@ -570,31 +807,98 @@ curl -X POST http://localhost:8000/api/chains/validate \
   -H "Content-Type: application/json" \
   -d '{"chain_definition": "your_chain_json_here"}'
 
-# Execute a chain
+# Execute a chain (supports container-based plugins)
 curl -X POST http://localhost:8000/api/chains/your_chain_id/execute \
   -H "Content-Type: application/json" \
   -d '{"input_data": "test input"}'
 ```
 
-## 🐳 Docker Deployment with Custom Pandoc Build
+### 🆕 Test Container Services
 
-The project includes advanced Docker configuration with **Pandoc built from source** for optimal performance and latest features. This setup includes several Docker-specific hacks and optimizations.
+```bash
+# Check container service health
+docker-compose ps
 
-### 🔧 Docker Architecture & Hacks
+# Test container communication
+docker exec web docker ps --filter "name=pdf2htmlex-service"
 
-The Docker setup uses a **multi-stage build** with several performance optimizations:
+# Monitor container logs
+docker-compose logs -f pdf2htmlex-service
+```
 
-1. **Stage 1**: Builds Pandoc from source using Haskell Stack
-2. **Stage 2**: Creates the final application image with the custom Pandoc binary
+## 🐳 Docker Deployment with Advanced Container Orchestration
 
-#### Key Docker Hacks & Optimizations:
+The project includes **advanced Docker configuration** with **multi-stage builds**, **container orchestration**, and **service communication**. This setup includes several Docker-specific optimizations and container-based plugin architecture.
 
-- **Multi-stage build**: Reduces final image size by ~800MB
+### 🔧 Docker Architecture & Container Orchestration
+
+The Docker setup uses **multi-container orchestration** with several key components:
+
+1. **Main Web Application**: FastAPI app with Docker socket access
+2. **pdf2htmlex-service**: Specialized PDF conversion container
+3. **Shared Volumes**: File exchange between containers
+4. **Service Network**: Container communication network
+
+#### Key Docker Features & Optimizations:
+
+- **Multi-stage build**: Builds Pandoc from source for optimal performance (~800MB savings)
+- **Container Orchestration**: Multiple specialized service containers
+- **Docker Socket Communication**: Inter-container command execution
+- **Service Discovery**: Automatic container detection and health monitoring
+- **Shared Volumes**: Efficient file processing between containers
 - **BuildKit caching**: Leverages Docker layer caching for faster rebuilds
-- **Stack optimization**: Custom GHC options for faster compilation in containers
-- **Shallow git clone**: Only fetches specific Pandoc version tag
-- **Runtime optimizations**: Pre-compiled binary with minimal dependencies
-- **Health checks**: Ensures both Pandoc and the web application are functional
+- **Health checks**: Ensures both application and container services are functional
+
+### 🐳 Container Communication & Docker Socket
+
+The application includes **Docker socket mounting** for advanced container orchestration:
+
+#### Docker Socket Features:
+
+- **Service Discovery**: Automatically detects and communicates with other Docker services
+- **Container Orchestration**: Execute commands in sibling containers via `docker exec`
+- **Dynamic Service Management**: Monitor and interact with companion services
+- **PDF Conversion Service**: Communicates with `pdf2htmlex-service` container for document processing
+
+#### Container Architecture:
+
+```yaml
+# docker-compose.yml - Container orchestration
+services:
+  web:
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock  # Docker API access
+      - conversion_shared:/app/shared               # Shared processing volume
+  
+  pdf2htmlex-service:
+    image: pdf2htmlex/pdf2htmlex:0.18.8.rc2-master-20200820-ubuntu-20.04-x86_64
+    volumes:
+      - conversion_shared:/shared                   # Shared processing volume
+```
+
+#### Container Communication Examples:
+
+- **PDF Processing**: Web app executes `docker exec pdf2htmlex-service pdf2htmlEX [options]`
+- **Service Health Checks**: Monitors container status via Docker API  
+- **Dynamic Container Discovery**: Finds containers by service name patterns
+- **File Processing**: Shared volume file exchange for processing workflows
+
+#### Security Configuration:
+
+⚠️ **Important**: Docker socket access provides elevated privileges. Production considerations:
+
+- **Controlled Access**: Commands executed only in designated service containers
+- **Input Validation**: All container commands are validated and sanitized
+- **Resource Limits**: Container-based resource management and timeouts
+- **Monitoring**: Container access logging and health monitoring
+- **Network Isolation**: Services communicate through dedicated Docker networks
+
+#### Supported Plugin Architectures:
+
+1. **Direct Plugins**: Traditional in-process plugin execution
+2. **Container-based Plugins**: Plugins that delegate work to specialized containers
+3. **Service Communication**: Inter-container communication for complex workflows
+4. **Hybrid Chains**: Chains mixing direct and container-based plugins
 
 ### 🚀 Quick Start
 
@@ -604,10 +908,10 @@ Use the provided build script for easy deployment:
 # Make script executable (if not already)
 chmod +x docker-build.sh
 
-# Build and run production version (Pandoc from source)
+# Build and run production version (Pandoc from source + container orchestration)
 ./docker-build.sh --run-prod
 
-# Build and run development version (system Pandoc - faster)
+# Build and run development version (system Pandoc + container orchestration)
 ./docker-build.sh --run-dev
 
 # View all options
@@ -618,21 +922,22 @@ chmod +x docker-build.sh
 
 #### Production Build (Recommended for deployment)
 ```bash
-# Build production image with custom Pandoc from source
+# Build production image with custom Pandoc from source + container services
 ./docker-build.sh --prod
 
 # Or manually with docker-compose
 docker-compose up --build web
 ```
 
-- **Pandoc Version**: 3.1.8 (latest stable, built from source)
-- **Build Time**: 10-20 minutes (first build)
-- **Image Size**: ~500MB (optimized)
+- **Pandoc Version**: 3.7.0.2 (latest stable, built from source with full data files)
+- **Container Services**: pdf2htmlex-service, shared volumes, service discovery
+- **Build Time**: 10-20 minutes (first build), ~2 minutes (cached)
+- **Image Size**: ~500MB (optimized multi-stage build)
 - **Port**: 8000
 
 #### Development Build (Fast for development)
 ```bash
-# Build development image with system Pandoc
+# Build development image with system Pandoc + container services
 ./docker-build.sh --dev
 
 # Or manually with docker-compose
@@ -640,84 +945,131 @@ docker-compose --profile dev up --build web-dev
 ```
 
 - **Pandoc Version**: System package (usually 2.x)
+- **Container Services**: Full container orchestration
 - **Build Time**: 2-3 minutes
 - **Image Size**: ~300MB
+- **Port**: 8002
+
+#### Simple Build (Basic features, no containers)
+```bash
+# Build simple image without container orchestration
+docker-compose --profile simple up --build web-simple
+```
+
+- **Features**: Basic plugins only (no container-based plugins)
+- **Build Time**: 1-2 minutes
+- **Image Size**: ~250MB
 - **Port**: 8001
 
 ### 🛠️ Advanced Docker Usage
 
 ```bash
-# Build both images
+# Build all variants
 ./docker-build.sh --both
+
+# Start specific services
+docker-compose up -d pdf2htmlex-service  # PDF service only
+docker-compose up -d web                 # Production web app
+
+# Monitor all services
+docker-compose ps
+docker-compose logs -f
+
+# Container service testing
+docker exec web docker ps --filter "name=pdf2htmlex-service"
+docker exec pdf2htmlex-service pdf2htmlEX --help
 
 # Clean up Docker resources
 ./docker-build.sh --clean
-
-# Manual docker-compose commands
-docker-compose up -d web                    # Production
-docker-compose --profile dev up -d web-dev  # Development
-docker-compose logs -f web                  # View logs
-docker-compose down                         # Stop containers
+docker-compose down
+docker system prune
 ```
 
-### 🔍 Docker Configuration Files
+### 🔍 Container Service Configuration
 
-- **`Dockerfile`**: Production build with Pandoc from source
-- **`Dockerfile.dev`**: Development build with system Pandoc
-- **`docker-compose.yml`**: Orchestration with both services
+- **`docker-compose.yml`**: Multi-container orchestration with service dependencies
+- **`Dockerfile`**: Production multi-stage build with Pandoc from source
+- **`Dockerfile.dev`**: Development build with system packages
+- **`Dockerfile.simple`**: Simplified build without container services
 - **`.dockerignore`**: Optimized build context
-- **`docker-build.sh`**: Build automation script
+- **`docker-build.sh`**: Automated build script with multiple options
 
-### 🎯 Why Build Pandoc from Source?
+### 🎯 Why Container Orchestration?
 
-Building Pandoc from source provides several advantages:
+Building with container orchestration provides several advantages:
 
-1. **Latest Features**: Access to newest Pandoc capabilities
-2. **Custom Optimizations**: Tailored compilation flags for containers
-3. **Dependency Control**: Exact version control and security
-4. **Performance**: Optimized for the specific runtime environment
-5. **Compliance**: Ensures compatibility with all plugin features
+1. **Specialized Environments**: Isolated environments for complex tools (pdf2htmlEX, etc.)
+2. **Scalability**: Individual service scaling and resource management
+3. **Maintainability**: Separate concerns and easier updates
+4. **Security**: Process isolation and controlled access
+5. **Performance**: Optimized containers for specific tasks
+6. **Flexibility**: Easy addition of new container-based services
 
 ### 📊 Performance Comparison
 
-| Build Type | Pandoc Version | Build Time | Image Size | Startup Time |
-|------------|---------------|------------|------------|-------------|
-| Production | 3.1.8 (source) | 15 min | 500MB | 30s |
-| Development | 2.x (system) | 3 min | 300MB | 10s |
+| Build Type | Features | Build Time | Image Size | Container Services | Plugin Count |
+|------------|----------|------------|------------|-------------------|-------------|
+| Production | Pandoc from source, full containers | 15 min | 500MB | 2 services | 10 plugins |
+| Development | System Pandoc, full containers | 3 min | 300MB | 2 services | 10 plugins |
+| Simple | Basic features, no containers | 2 min | 250MB | 1 service | 9 plugins |
 
-### 🔧 Troubleshooting Docker Issues
+### 🔧 Troubleshooting Container Issues
 
-**Long Build Times:**
-- Use development build for testing: `./docker-build.sh --dev`
-- Enable BuildKit: `export DOCKER_BUILDKIT=1`
-- Use layer caching: Build script handles this automatically
+**Container Service Not Starting:**
+```bash
+# Check service status
+docker-compose ps
+
+# Check service logs
+docker-compose logs pdf2htmlex-service
+
+# Restart services
+docker-compose restart pdf2htmlex-service
+```
+
+**Docker Socket Permission Issues:**
+```bash
+# Check Docker socket permissions
+ls -la /var/run/docker.sock
+
+# Fix permissions (Linux)
+sudo chmod 666 /var/run/docker.sock
+
+# Or add user to docker group
+sudo usermod -aG docker $USER
+```
+
+**Container Communication Failures:**
+```bash
+# Test container discovery
+docker exec web docker ps --filter "name=pdf2htmlex-service"
+
+# Test shared volumes
+ls -la /app/shared/
+docker exec pdf2htmlex-service ls -la /shared/
+
+# Check network connectivity
+docker network ls
+docker network inspect dynamic-web-plugins_plugin-network
+```
 
 **Memory Issues During Build:**
 ```bash
 # Increase Docker memory limit to 4GB+ in Docker Desktop
 # Or use development build which requires less memory
-```
-
-**Pandoc Build Failures:**
-```bash
-# Check Docker logs
-docker-compose logs web
-
-# Try development build as fallback
 ./docker-build.sh --run-dev
-
-# Clean and rebuild
-./docker-build.sh --clean
-./docker-build.sh --prod
 ```
 
 **Container Health Check Failures:**
 ```bash
-# Check if Pandoc is working
-docker run --rm neural-plugin-system:prod pandoc --version
-
 # Check application health
 curl http://localhost:8000/api/plugins
+
+# Check container service health
+curl http://localhost:8000/api/plugin-compliance
+
+# Manual container testing
+docker exec pdf2htmlex-service pdf2htmlEX --help
 ```
 
 ## 🤝 Contributing
@@ -726,22 +1078,25 @@ curl http://localhost:8000/api/plugins
 2. Create a feature branch (`git checkout -b feature/amazing-feature`)
 3. **Ensure any new plugins follow the response model rule**
 4. **Run compliance checker**: `curl http://localhost:8000/api/plugin-compliance`
-5. Test thoroughly (plugins, chains, and UI)
-6. Commit your changes (`git commit -m 'Add amazing feature'`)
-7. Push to the branch (`git push origin feature/amazing-feature`)
-8. Submit a pull request
+5. **Test container services**: `docker-compose ps` and verify all services are healthy
+6. Test thoroughly (plugins, chains, container communication, and UI)
+7. Commit your changes (`git commit -m 'Add amazing feature'`)
+8. Push to the branch (`git push origin feature/amazing-feature`)
+9. Submit a pull request
 
 ### Contribution Guidelines
 
 - All plugins must be compliant with response model requirements
-- Include comprehensive tests for new features
+- **Container-based plugins** must include comprehensive documentation
+- Include comprehensive tests for new features (including container integration tests)
 - Update documentation for any API changes
 - Follow existing code style and patterns
 - Add chain templates for common use cases
+- **Document container dependencies** and service requirements
 
 ## 📄 License
 
-This project is provided as a demonstration of FastAPI + Pydantic plugin architecture patterns with advanced chain building capabilities.
+This project is provided as a demonstration of FastAPI + Pydantic plugin architecture patterns with advanced chain building capabilities and container orchestration.
 
 ## 🔍 Troubleshooting
 
@@ -754,6 +1109,7 @@ This project is provided as a demonstration of FastAPI + Pydantic plugin archite
 - Verify plugin implements `get_response_model()` method
 - Ensure `plugin.py` has a `Plugin` class with `execute` method
 - Check plugin directory structure matches requirements
+- **🆕 For container plugins**: Verify container service dependencies in manifest
 
 **Plugin Compliance Issues:**
 
@@ -761,6 +1117,7 @@ This project is provided as a demonstration of FastAPI + Pydantic plugin archite
 - Ensure response model inherits from `BasePluginResponse`
 - Verify `execute()` returns data matching the response model schema
 - Check that all required fields are properly defined
+- **🆕 Container plugins**: Implement custom dependency checking methods
 
 **Validation Errors:**
 
@@ -777,6 +1134,7 @@ This project is provided as a demonstration of FastAPI + Pydantic plugin archite
 - Check data type compatibility between connected plugins
 - Verify all required inputs are provided
 - Check execution history for error details
+- **🆕 Container chains**: Ensure all container services are running
 
 **Connection Issues:**
 
@@ -790,6 +1148,30 @@ This project is provided as a demonstration of FastAPI + Pydantic plugin archite
 - Check system analytics for resource usage
 - Optimize plugin logic for large inputs
 - Consider caching for frequently used chains
+- **🆕 Container performance**: Monitor container resource usage and scaling
+
+### 🆕 Container Service Issues
+
+**Service Not Available:**
+
+- Check container status: `docker-compose ps`
+- Restart services: `docker-compose restart [service-name]`
+- Check service logs: `docker-compose logs -f [service-name]`
+- Verify Docker socket access: `docker exec web docker ps`
+
+**Container Communication Failures:**
+
+- Test service discovery: `docker exec web docker ps --filter "name=service-name"`
+- Check shared volumes: `ls -la /app/shared/`
+- Verify network connectivity: `docker network inspect plugin-network`
+- Monitor container logs during execution
+
+**Resource Issues:**
+
+- Check Docker resource limits: `docker stats`
+- Monitor disk space: `df -h`
+- Clean up unused containers: `docker system prune`
+- Scale services if needed: `docker-compose up --scale service-name=2`
 
 ### System Issues
 
@@ -802,16 +1184,18 @@ This project is provided as a demonstration of FastAPI + Pydantic plugin archite
 
 **Database/Storage Issues:**
 
-- Check file permissions in `app/data/` directories
+- Check file permissions in `app/data/` directories 
 - Verify chain storage integrity
 - Clear temporary files if disk space is low
 - Check execution history logs for patterns
+- **🆕 Shared volumes**: Ensure proper permissions on `/app/shared/`
 
 **Dependencies:**
 
-- Ensure all external tools (like Pandoc) are installed
+- Ensure all external tools are accessible
 - Check Python package versions match requirements.txt
 - Verify Node.js dependencies are properly installed
 - Test external tool availability in plugin manifests
+- **🆕 Container dependencies**: Verify all container services are running and healthy
 
-For additional support, check the execution logs and use the built-in analytics to identify patterns in errors or performance issues.
+For additional support, check the execution logs, container logs, and use the built-in analytics to identify patterns in errors or performance issues. The container orchestration adds complexity but provides powerful capabilities for specialized processing workflows.
