@@ -35,7 +35,9 @@ done
    ## PRJ Structure
    ```
 
-   Use the following schema for documentation:
+   Use git log -n 1 -- <file> or similar to retrieve metadata and purpose hints if needed.
+
+   Use the following schema for markdown table.
 
    ```
    path,file,purpose
