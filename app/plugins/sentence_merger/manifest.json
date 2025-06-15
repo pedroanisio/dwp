@@ -1,0 +1,148 @@
+{
+  "id": "sentence_merger",
+  "name": "Sentence Merger",
+  "version": "1.0.0",
+  "description": "Enhanced sentence merger that intelligently combines semantically similar sentences using advanced NLP. Features improved text preprocessing, better key phrase extraction, smarter merging logic, and optimized clustering parameters for higher quality results with better reduction rates.",
+  "author": "Plugin System",
+  "inputs": [
+    {
+      "name": "text",
+      "label": "Text to Analyze",
+      "field_type": "textarea",
+      "required": false,
+      "placeholder": "Enter your text here for sentence merging analysis...",
+      "validation": {
+        "max_length": 500000
+      },
+      "help_text": "Input text will be automatically split into sentences. Alternatively, use the sentences field for pre-split sentences."
+    },
+    {
+      "name": "sentences",
+      "label": "Pre-split Sentences (JSON Array)",
+      "field_type": "textarea",
+      "required": false,
+      "placeholder": "[\"First sentence.\", \"Second sentence.\", \"Third sentence.\"]",
+      "help_text": "Optional: Provide sentences as a JSON array. If provided, this takes precedence over the text field."
+    },
+    {
+      "name": "similarity_threshold",
+      "label": "Similarity Threshold",
+      "field_type": "number",
+      "required": false,
+      "default_value": "0.68",
+      "placeholder": "0.68",
+      "validation": {
+        "min": 0.1,
+        "max": 0.99,
+        "step": 0.01
+      },
+      "help_text": "Similarity threshold for clustering (0.1-0.99). Lower values (0.6-0.7) merge more aggressively, higher values (0.75-0.9) are more conservative. Default 0.68 balances quality and reduction."
+    }
+  ],
+  "output": {
+    "name": "sentenceMerger",
+    "description": "Sentence merger analysis with clustering details and merged results",
+    "schema": {
+      "type": "object",
+      "properties": {
+        "original_sentence_count": {
+          "type": "integer",
+          "description": "Number of original sentences"
+        },
+        "merged_sentence_count": {
+          "type": "integer",
+          "description": "Number of merged sentences"
+        },
+        "reduction_percentage": {
+          "type": "number",
+          "description": "Percentage reduction in sentence count"
+        },
+        "similarity_threshold": {
+          "type": "number",
+          "description": "Similarity threshold used for clustering"
+        },
+        "clusters": {
+          "type": "array",
+          "description": "Details of each sentence cluster",
+          "items": {
+            "type": "object",
+            "properties": {
+              "cluster_id": {
+                "type": "integer",
+                "description": "Unique identifier for the cluster"
+              },
+              "sentences": {
+                "type": "array",
+                "description": "Original sentences in this cluster",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "merged_sentence": {
+                "type": "string",
+                "description": "The merged sentence result"
+              },
+              "similarity_score": {
+                "type": "number",
+                "description": "Average similarity score within the cluster"
+              },
+              "key_phrases": {
+                "type": "array",
+                "description": "Key phrases extracted from the cluster",
+                "items": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "merged_sentences": {
+          "type": "array",
+          "description": "Final list of merged sentences",
+          "items": {
+            "type": "string"
+          }
+        },
+        "processing_stats": {
+          "type": "object",
+          "description": "Processing statistics and timing",
+          "properties": {
+            "processing_time_seconds": {
+              "type": "number",
+              "description": "Total processing time in seconds"
+            },
+            "embedding_time_seconds": {
+              "type": "number",
+              "description": "Time spent generating embeddings"
+            },
+            "clustering_time_seconds": {
+              "type": "number",
+              "description": "Time spent on clustering"
+            }
+          }
+        }
+      }
+    }
+  },
+  "tags": ["text", "nlp", "similarity", "clustering", "sentence-merger", "semantic-analysis"],
+  "dependencies": {
+    "python": [
+      {
+        "name": "sentence-transformers",
+        "help": "Required for generating sentence embeddings. Install with: pip install sentence-transformers"
+      },
+      {
+        "name": "scikit-learn",
+        "help": "Required for clustering algorithms. Install with: pip install scikit-learn"
+      },
+      {
+        "name": "spacy",
+        "help": "Required for advanced NLP features. Install with: pip install spacy && python -m spacy download en_core_web_sm"
+      },
+      {
+        "name": "numpy",
+        "help": "Required for numerical operations. Install with: pip install numpy"
+      }
+    ]
+  }
+} 

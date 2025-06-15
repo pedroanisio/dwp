@@ -52,17 +52,21 @@ class Plugin(BasePlugin):
         word_counter = Counter(word.lower() for word in words)
         unique_words = len(word_counter)
         
-        # Apply cutoff filter
-        filtered_frequencies = {
-            word: freq for word, freq in word_counter.items() 
-            if freq >= cutoff
-        }
+        # Apply cutoff filter and sort by frequency (descending)
+        sorted_frequencies = sorted(
+            [(word, freq) for word, freq in word_counter.items() if freq >= cutoff],
+            key=lambda x: x[1], 
+            reverse=True
+        )
+        
+        # Create sorted word frequencies dictionary (maintains order in Python 3.7+)
+        filtered_frequencies = {word: freq for word, freq in sorted_frequencies}
         filtered_words = len(filtered_frequencies)
         
         # Create sorted word list by frequency (descending)
         word_list = [
             {"word": word, "frequency": freq}
-            for word, freq in sorted(filtered_frequencies.items(), key=lambda x: x[1], reverse=True)
+            for word, freq in sorted_frequencies
         ]
         
         # Generate frequency histogram
