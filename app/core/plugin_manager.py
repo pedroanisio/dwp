@@ -94,10 +94,42 @@ class PluginManager:
 
         if plugin.dependencies.external:
             for dep in plugin.dependencies.external:
-                is_met = shutil.which(dep.name) is not None
+                # Try custom dependency checking first
+                is_met = self._check_custom_dependency(plugin.id, dep.name)
+                
+                # Fall back to standard PATH check if no custom check available
+                if is_met is None:
+                    is_met = shutil.which(dep.name) is not None
+                
                 if not is_met:
                     plugin.dependency_status["all_met"] = False
                 plugin.dependency_status["details"].append({"name": dep.name, "met": is_met})
+    
+    def _check_custom_dependency(self, plugin_id: str, dependency_name: str) -> Optional[bool]:
+        """Check if plugin has custom dependency checking logic"""
+        try:
+            plugin_class = self.loader.get_plugin_class(plugin_id)
+            if not plugin_class:
+                return None
+            
+            # Check if plugin has a custom dependency checker method
+            method_name = f"_check_{dependency_name.replace('-', '_')}_dependency"
+            if hasattr(plugin_class, method_name):
+                # Create a temporary instance to call the method
+                plugin_instance = plugin_class()
+                check_method = getattr(plugin_instance, method_name)
+                result = check_method()
+                
+                # Extract the availability status from the result
+                if isinstance(result, dict) and "service_available" in result:
+                    return result["service_available"]
+                elif isinstance(result, bool):
+                    return result
+                    
+        except Exception as e:
+            print(f"Error checking custom dependency {dependency_name} for plugin {plugin_id}: {e}")
+            
+        return None
     
     def get_all_plugins(self) -> List[PluginManifest]:
         """Get all available plugins"""
