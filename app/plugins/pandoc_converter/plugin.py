@@ -67,7 +67,7 @@ class Plugin(BasePlugin):
         # Check for potential issues
         if file_size == 0:
             raise ValueError("Input file is empty")
-        if file_size > 100 * 1024 * 1024:  # 100MB limit
+        if file_size > 500 * 1024 * 1024:  # 100MB limit
             raise ValueError(f"Input file too large: {diagnostics['size_mb']}MB (max 100MB)")
             
         return diagnostics
