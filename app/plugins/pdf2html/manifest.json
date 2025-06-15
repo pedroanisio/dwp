@@ -86,12 +86,8 @@
   "dependencies": {
     "external": [
       {
-        "name": "docker",
-        "help": "Docker is required to run pdf2htmlEX. Install Docker from docker.com and ensure the Docker daemon is running."
-      },
-      {
-        "name": "pdf2htmlEX Docker image",
-        "help": "The pdf2htmlex/pdf2htmlex Docker image will be automatically pulled if not available. Ensure Docker has internet access."
+        "name": "pdf2htmlex-service",
+        "help": "The pdf2htmlEX conversion service must be running via docker-compose. Start with: docker-compose up -d"
       }
     ]
   }

@@ -35,6 +35,12 @@ class Plugin(BasePlugin):
         downloads_dir.mkdir(parents=True, exist_ok=True)
         return downloads_dir
     
+    def _ensure_shared_directory(self) -> Path:
+        """Ensure shared directory exists and return its path"""
+        shared_dir = Path("/app/shared")
+        shared_dir.mkdir(parents=True, exist_ok=True)
+        return shared_dir
+    
     def _move_to_downloads(self, temp_file_path: Path, original_filename: str) -> Path:
         """Move file from temp directory to permanent downloads directory"""
         downloads_dir = self._ensure_downloads_directory()
@@ -75,175 +81,151 @@ class Plugin(BasePlugin):
             
         return diagnostics
     
-    def _check_docker_availability(self) -> Dict[str, Any]:
-        """Check if Docker is available and accessible"""
-        docker_info = {
-            "docker_available": False,
-            "docker_version": None,
+    def _check_pdf2htmlex_service(self) -> Dict[str, Any]:
+        """Check if pdf2htmlEX service container is available and get its actual name"""
+        service_info = {
+            "service_available": False,
+            "container_name": None,
             "error_message": None
         }
         
         try:
-            # Check if Docker is available
+            # Get the service host from environment or use default
+            service_host = os.environ.get("PDF2HTMLEX_SERVICE_HOST", "pdf2htmlex-service")
+            
+            # Find the actual container name using docker ps
             result = subprocess.run(
-                ["docker", "--version"],
+                ["docker", "ps", "--filter", f"name={service_host}", "--format", "{{.Names}}"],
                 capture_output=True,
                 text=True,
                 timeout=10
             )
             
-            if result.returncode == 0:
-                docker_info["docker_available"] = True
-                docker_info["docker_version"] = result.stdout.strip()
-                logger.info(f"Docker available: {docker_info['docker_version']}")
+            if result.returncode == 0 and result.stdout.strip():
+                actual_container_name = result.stdout.strip()
+                service_info["service_available"] = True
+                service_info["container_name"] = actual_container_name
+                logger.info(f"pdf2htmlEX service found: {actual_container_name}")
             else:
-                docker_info["error_message"] = f"Docker command failed: {result.stderr}"
+                service_info["error_message"] = f"pdf2htmlEX service container not found or not running"
                 
         except FileNotFoundError:
-            docker_info["error_message"] = "Docker command not found. Please install Docker."
+            service_info["error_message"] = "Docker command not available"
         except subprocess.TimeoutExpired:
-            docker_info["error_message"] = "Docker command timed out. Docker daemon may not be running."
+            service_info["error_message"] = "Docker command timed out"
         except Exception as e:
-            docker_info["error_message"] = f"Error checking Docker: {e}"
+            service_info["error_message"] = f"Error checking pdf2htmlEX service: {e}"
         
-        return docker_info
+        return service_info
     
-    def _check_pdf2htmlex_image(self) -> Dict[str, Any]:
-        """Check if pdf2htmlEX Docker image is available or can be pulled"""
-        image_info = {
-            "image_available": False,
-            "image_pulled": False,
-            "error_message": None
-        }
-        
-        image_name = "pdf2htmlex/pdf2htmlex"
-        
-        try:
-            # Check if image exists locally
-            result = subprocess.run(
-                ["docker", "image", "inspect", image_name],
-                capture_output=True,
-                text=True,
-                timeout=10
-            )
-            
-            if result.returncode == 0:
-                image_info["image_available"] = True
-                logger.info(f"Docker image {image_name} is available locally")
-                return image_info
-            
-            # Try to pull the image if not available locally
-            logger.info(f"Pulling Docker image {image_name}...")
-            pull_result = subprocess.run(
-                ["docker", "pull", image_name],
-                capture_output=True,
-                text=True,
-                timeout=300  # 5 minute timeout for pulling
-            )
-            
-            if pull_result.returncode == 0:
-                image_info["image_available"] = True
-                image_info["image_pulled"] = True
-                logger.info(f"Successfully pulled Docker image {image_name}")
-            else:
-                image_info["error_message"] = f"Failed to pull image: {pull_result.stderr}"
-                
-        except subprocess.TimeoutExpired:
-            image_info["error_message"] = "Timeout while pulling Docker image. Check internet connection."
-        except Exception as e:
-            image_info["error_message"] = f"Error checking/pulling Docker image: {e}"
-        
-        return image_info
+    def _check_pdf2htmlex_service_dependency(self) -> Dict[str, Any]:
+        """Custom dependency checker method for plugin manager"""
+        return self._check_pdf2htmlex_service()
     
-    def _build_pdf2htmlex_command(self, input_filename: str, output_filename: str, zoom: float, 
-                                 embed_css: bool, embed_javascript: bool, embed_images: bool) -> List[str]:
-        """Build the Docker command for pdf2htmlEX conversion"""
+    def _to_bool(self, value) -> bool:
+        """Convert various value types to boolean (handles web form inputs)"""
+        if isinstance(value, bool):
+            return value
+        if isinstance(value, str):
+            return value.lower() in ('true', '1', 'yes', 'on', 'checked')
+        if isinstance(value, (int, float)):
+            return bool(value)
+        return bool(value)  # fallback
+    
+    def _execute_pdf2htmlex_in_service(self, container_name: str, input_filename: str, 
+                                      zoom: float, embed_css: bool, embed_javascript: bool, 
+                                      embed_images: bool) -> Dict[str, Any]:
+        """Execute pdf2htmlEX in the service container via docker exec"""
         
-        # Base Docker command
-        command = [
-            "docker", "run",
-            "--rm",  # Remove container after execution
-            "-v", "/pdf:/pdf",  # Mount the volume (will be set up by caller)
-            "-w", "/pdf",  # Set working directory
-            "pdf2htmlex/pdf2htmlex"
-        ]
+        # Build pdf2htmlEX command
+        pdf2htmlex_cmd = ["pdf2htmlEX"]
         
-        # Add pdf2htmlEX options
-        pdf2htmlex_options = []
-        
-        # Zoom level
+        # Add options
         if zoom and zoom > 0:
-            pdf2htmlex_options.extend(["--zoom", str(zoom)])
+            pdf2htmlex_cmd.extend(["--zoom", str(zoom)])
         
-        # Embedding options
         if embed_css:
-            pdf2htmlex_options.append("--embed-css=1")
+            pdf2htmlex_cmd.append("--embed-css=1")
         else:
-            pdf2htmlex_options.append("--embed-css=0")
+            pdf2htmlex_cmd.append("--embed-css=0")
             
         if embed_javascript:
-            pdf2htmlex_options.append("--embed-javascript=1")
+            pdf2htmlex_cmd.append("--embed-javascript=1")
         else:
-            pdf2htmlex_options.append("--embed-javascript=0")
+            pdf2htmlex_cmd.append("--embed-javascript=0")
             
         if embed_images:
-            pdf2htmlex_options.append("--embed-image=1")
+            pdf2htmlex_cmd.append("--embed-image=1")
         else:
-            pdf2htmlex_options.append("--embed-image=0")
+            pdf2htmlex_cmd.append("--embed-image=0")
         
-        # Output filename
-        if output_filename:
-            pdf2htmlex_options.extend(["--dest-dir", ".", "--page-filename", output_filename])
+        # Set destination directory and add input file
+        pdf2htmlex_cmd.extend(["--dest-dir", "/shared"])
+        pdf2htmlex_cmd.append(input_filename)
         
-        # Input file
-        pdf2htmlex_options.append(input_filename)
+        # Build docker exec command
+        docker_cmd = ["docker", "exec", container_name] + pdf2htmlex_cmd
         
-        # Add pdf2htmlEX options to Docker command
-        command.extend(pdf2htmlex_options)
+        logger.info(f"Executing pdf2htmlEX: {' '.join(pdf2htmlex_cmd)}")
         
-        return command
+        # Execute the command
+        start_time = time.time()
+        result = subprocess.run(
+            docker_cmd,
+            capture_output=True,
+            text=True,
+            timeout=600,  # 10 minute timeout
+            check=False
+        )
+        execution_time = time.time() - start_time
+        
+        return {
+            "returncode": result.returncode,
+            "stdout": result.stdout,
+            "stderr": result.stderr,
+            "execution_time": execution_time,
+            "command": ' '.join(pdf2htmlex_cmd)
+        }
+    
+
     
     def execute(self, data: Dict[str, Any]) -> Dict[str, Any]:
         input_file_info = data.get("input_file")
-        zoom = data.get("zoom", 1.3)
-        embed_css = data.get("embed_css", True)
-        embed_javascript = data.get("embed_javascript", True)
-        embed_images = data.get("embed_images", True)
+        
+        # Convert zoom to float if it's a string (from web form)
+        zoom_raw = data.get("zoom", 1.3)
+        try:
+            zoom = float(zoom_raw) if zoom_raw is not None else 1.3
+        except (ValueError, TypeError):
+            zoom = 1.3  # fallback to default
+            
+        # Convert boolean parameters (web forms may send strings)
+        embed_css = self._to_bool(data.get("embed_css", True))
+        embed_javascript = self._to_bool(data.get("embed_javascript", True))
+        embed_images = self._to_bool(data.get("embed_images", True))
         output_filename = data.get("output_filename", "").strip()
 
         if not input_file_info:
             raise ValueError("Missing input PDF file")
 
-        temp_dir = None
+        shared_dir = None
         
         try:
-            # Check Docker availability first
-            docker_info = self._check_docker_availability()
-            if not docker_info["docker_available"]:
-                error_msg = "Docker is not available or not running."
-                if docker_info["error_message"]:
-                    error_msg += f"\n\nError: {docker_info['error_message']}"
+            # Check pdf2htmlEX service availability
+            service_info = self._check_pdf2htmlex_service()
+            if not service_info["service_available"]:
+                error_msg = "pdf2htmlEX conversion service is not available."
+                if service_info["error_message"]:
+                    error_msg += f"\n\nError: {service_info['error_message']}"
                 error_msg += "\n\n🔧 Solutions:"
-                error_msg += "\n  • Install Docker from docker.com"
-                error_msg += "\n  • Start the Docker daemon"
-                error_msg += "\n  • Ensure current user has Docker permissions"
+                error_msg += "\n  • Ensure docker-compose services are running"
+                error_msg += "\n  • Check: docker-compose ps"
+                error_msg += "\n  • Restart services: docker-compose up -d"
                 raise RuntimeError(error_msg)
             
-            # Check pdf2htmlEX Docker image
-            image_info = self._check_pdf2htmlex_image()
-            if not image_info["image_available"]:
-                error_msg = "pdf2htmlEX Docker image is not available."
-                if image_info["error_message"]:
-                    error_msg += f"\n\nError: {image_info['error_message']}"
-                error_msg += "\n\n🔧 Solutions:"
-                error_msg += "\n  • Ensure Docker has internet access"
-                error_msg += "\n  • Try manually: docker pull pdf2htmlex/pdf2htmlex"
-                error_msg += "\n  • Check Docker Hub availability"
-                raise RuntimeError(error_msg)
-            
-            # Create temporary directory
-            temp_dir = tempfile.mkdtemp()
-            logger.info(f"Created temporary directory: {temp_dir}")
+            # Get shared directory
+            shared_dir = self._ensure_shared_directory()
+            logger.info(f"Using shared directory: {shared_dir}")
             
             # Validate and analyze input file
             input_filename = input_file_info["filename"]
@@ -252,8 +234,8 @@ class Plugin(BasePlugin):
             file_diagnostics = self._validate_input_file(input_filename, input_file_content)
             logger.info(f"Input PDF file diagnostics: {file_diagnostics}")
 
-            # Write input file to temp directory
-            input_path = Path(temp_dir) / input_filename
+            # Write input file to shared directory
+            input_path = shared_dir / input_filename
             with open(input_path, "wb") as f:
                 f.write(input_file_content)
 
@@ -263,110 +245,53 @@ class Plugin(BasePlugin):
             elif not output_filename.endswith('.html'):
                 output_filename += '.html'
             
-            output_path = Path(temp_dir) / output_filename
-            
-            # Build Docker command with corrected volume mounting
-            # Mount the temp directory to /pdf in the container
-            command = [
-                "docker", "run",
-                "--rm",  # Remove container after execution
-                "-v", f"{temp_dir}:/pdf",  # Mount the temp directory
-                "-w", "/pdf",  # Set working directory
-                "pdf2htmlex/pdf2htmlex"
-            ]
-            
-            # Add pdf2htmlEX options
-            pdf2htmlex_options = []
-            
-            # Zoom level
-            if zoom and zoom > 0:
-                pdf2htmlex_options.extend(["--zoom", str(zoom)])
-            
-            # Embedding options
-            if embed_css:
-                pdf2htmlex_options.append("--embed-css=1")
-            else:
-                pdf2htmlex_options.append("--embed-css=0")
-                
-            if embed_javascript:
-                pdf2htmlex_options.append("--embed-javascript=1")  
-            else:
-                pdf2htmlex_options.append("--embed-javascript=0")
-                
-            if embed_images:
-                pdf2htmlex_options.append("--embed-image=1")
-            else:
-                pdf2htmlex_options.append("--embed-image=0")
-            
-            # Output settings
-            pdf2htmlex_options.extend(["--dest-dir", "."])
-            
-            # Input file (just the filename, since we're in the mounted directory)
-            pdf2htmlex_options.append(input_filename)
-            
-            # Add pdf2htmlEX options to Docker command
-            command.extend(pdf2htmlex_options)
-            
-            # Log command being executed (hide sensitive paths)
-            safe_command = command.copy()
-            for i, arg in enumerate(safe_command):
-                if temp_dir in arg:
-                    safe_command[i] = arg.replace(temp_dir, "/tmp/***")
-            logger.info(f"Executing Docker command: {' '.join(safe_command)}")
-            
-            # Execute Docker command
-            start_time = time.time()
-            result = subprocess.run(
-                command,
-                capture_output=True,
-                text=True,
-                timeout=600,  # 10 minute timeout
-                check=False  # Don't raise exception immediately
+            # Execute pdf2htmlEX in the service container
+            container_name = service_info["container_name"]
+            conversion_result = self._execute_pdf2htmlex_in_service(
+                container_name, input_filename, zoom, embed_css, embed_javascript, embed_images
             )
-            execution_time = time.time() - start_time
             
             # Check if conversion was successful
-            if result.returncode != 0:
+            if conversion_result["returncode"] != 0:
                 # Prepare detailed error information
                 error_details = {
-                    "command": ' '.join(safe_command),
-                    "exit_code": result.returncode,
-                    "stdout": result.stdout,
-                    "stderr": result.stderr,
-                    "execution_time": execution_time,
-                    "docker_info": docker_info,
-                    "image_info": image_info,
+                    "command": conversion_result["command"],
+                    "exit_code": conversion_result["returncode"],
+                    "stdout": conversion_result["stdout"],
+                    "stderr": conversion_result["stderr"],
+                    "execution_time": conversion_result["execution_time"],
+                    "service_info": service_info,
                     "input_file": file_diagnostics
                 }
                 
                 # Create user-friendly error message
-                error_msg = f"pdf2htmlEX conversion failed with exit code {result.returncode}"
+                error_msg = f"pdf2htmlEX conversion failed with exit code {conversion_result['returncode']}"
                 
-                if result.stderr:
-                    error_msg += f"\n\nError Details:\n{result.stderr}"
+                if conversion_result["stderr"]:
+                    error_msg += f"\n\nError Details:\n{conversion_result['stderr']}"
                 
-                if result.stdout:
-                    error_msg += f"\n\nOutput:\n{result.stdout}"
+                if conversion_result["stdout"]:
+                    error_msg += f"\n\nOutput:\n{conversion_result['stdout']}"
                 
                 # Add specific guidance based on common issues
-                if "Permission denied" in result.stderr:
+                if "Permission denied" in conversion_result["stderr"]:
                     error_msg += "\n\n💡 Permission issues detected:"
-                    error_msg += "\n  • Docker may not have access to the mounted directory"
-                    error_msg += "\n  • Try restarting the Docker daemon"
-                    error_msg += "\n  • Check file permissions"
+                    error_msg += "\n  • Check shared volume permissions"
+                    error_msg += "\n  • Restart docker-compose services"
                 
-                if "No such file or directory" in result.stderr:
+                if "No such file or directory" in conversion_result["stderr"]:
                     error_msg += "\n\n💡 File not found issues:"
                     error_msg += "\n  • PDF file may be corrupted"
                     error_msg += "\n  • Check if the PDF can be opened normally"
+                    error_msg += "\n  • Verify shared volume is properly mounted"
                 
                 # Log detailed error for debugging
                 logger.error(f"pdf2htmlEX conversion failed: {error_details}")
                 
                 raise RuntimeError(error_msg)
             
-            # Find the generated HTML file (pdf2htmlEX may create different filename)
-            html_files = list(Path(temp_dir).glob("*.html"))
+            # Find the generated HTML file in shared directory
+            html_files = list(shared_dir.glob("*.html"))
             if not html_files:
                 raise RuntimeError("pdf2htmlEX completed successfully but no HTML file was created")
             
@@ -394,18 +319,19 @@ class Plugin(BasePlugin):
                     "embed_javascript": embed_javascript,
                     "embed_images": embed_images
                 },
-                "execution_time_seconds": round(execution_time, 2),
+                "execution_time_seconds": round(conversion_result["execution_time"], 2),
                 "conversion_successful": True,
-                "temp_directory": temp_dir,
-                "permanent_location": str(permanent_file_path)
+                "shared_directory": str(shared_dir),
+                "permanent_location": str(permanent_file_path),
+                "pdf2htmlex_command": conversion_result["command"]
             }
             
-            # Add Docker and image info to response
+            # Add service info to response
             docker_response_info = {
-                "docker_version": docker_info.get("docker_version"),
-                "image_pulled": image_info.get("image_pulled", False),
-                "execution_time": execution_time,
-                "exit_code": result.returncode
+                "service_container": service_info.get("container_name"),
+                "execution_time": conversion_result["execution_time"],
+                "exit_code": conversion_result["returncode"],
+                "service_available": service_info["service_available"]
             }
             
             logger.info(f"PDF to HTML conversion successful: {conversion_details}")
@@ -427,10 +353,13 @@ class Plugin(BasePlugin):
             raise RuntimeError(f"An unexpected error occurred during conversion: {e}")
             
         finally:
-            # Clean up temporary directory
-            if temp_dir and os.path.exists(temp_dir):
+            # Clean up shared directory files (keep directory)
+            if shared_dir and shared_dir.exists():
                 try:
-                    shutil.rmtree(temp_dir)
-                    logger.info(f"Cleaned up temporary directory: {temp_dir}")
+                    # Remove PDF and any leftover HTML files from shared directory
+                    for file_path in shared_dir.glob("*"):
+                        if file_path.is_file():
+                            file_path.unlink()
+                            logger.info(f"Cleaned up shared file: {file_path.name}")
                 except Exception as cleanup_error:
-                    logger.warning(f"Failed to clean up temporary directory {temp_dir}: {cleanup_error}") 
+                    logger.warning(f"Failed to clean up shared directory files: {cleanup_error}") 
