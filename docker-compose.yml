@@ -1,4 +1,16 @@
 services:
+  # PDF to HTML conversion service
+  pdf2htmlex-service:
+    image: pdf2htmlex/pdf2htmlex:0.18.8.rc2-master-20200820-ubuntu-20.04-x86_64
+    volumes:
+      - conversion_shared:/shared
+    working_dir: /shared
+    entrypoint: ["/bin/sh"]
+    command: ["-c", "while true; do sleep 30; done"]  # Keep container running
+    restart: unless-stopped
+    networks:
+      - plugin-network
+
   # Production build with Pandoc from source (cabal method)
   web:
     build: 
@@ -15,11 +27,16 @@ services:
       - .:/app
       # Persist plugin data
       - pandoc_data:/app/data
+      # Shared volume for PDF conversions
+      - conversion_shared:/app/shared
+      # Mount Docker socket for container communication
+      - /var/run/docker.sock:/var/run/docker.sock
     environment:
       - PYTHONPATH=/app
       - PANDOC_VERSION=3.1.8-custom
       # Enable development mode
       - FASTAPI_ENV=development
+      - PDF2HTMLEX_SERVICE_HOST=pdf2htmlex-service
     # Health check
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:5000/api/plugins"]
@@ -29,6 +46,10 @@ services:
       start_period: 40s
     # Restart policy
     restart: unless-stopped
+    depends_on:
+      - pdf2htmlex-service
+    networks:
+      - plugin-network
 
   # Fast build with pre-built Pandoc binary (recommended for development)
   web-simple:
@@ -40,12 +61,19 @@ services:
     volumes:
       - .:/app
       - pandoc_data:/app/data
+      - conversion_shared:/app/shared
+      - /var/run/docker.sock:/var/run/docker.sock
     environment:
       - PYTHONPATH=/app
       - FASTAPI_ENV=development
-    profiles:
+      - PDF2HTMLEX_SERVICE_HOST=pdf2htmlex-service
+    profiles: 
       - simple
     restart: unless-stopped
+    depends_on:
+      - pdf2htmlex-service
+    networks:
+      - plugin-network
 
   # Development build with system Pandoc (fastest)
   web-dev:
@@ -57,13 +85,26 @@ services:
     volumes:
       - .:/app
       - pandoc_data:/app/data
+      - conversion_shared:/app/shared
+      - /var/run/docker.sock:/var/run/docker.sock
     environment:
       - PYTHONPATH=/app
       - FASTAPI_ENV=development
+      - PDF2HTMLEX_SERVICE_HOST=pdf2htmlex-service
     profiles:
       - dev
     restart: unless-stopped
+    depends_on:
+      - pdf2htmlex-service
+    networks:
+      - plugin-network
 
 volumes:
   pandoc_data:
-    driver: local 
+    driver: local
+  conversion_shared:
+    driver: local
+
+networks:
+  plugin-network:
+    driver: bridge 
