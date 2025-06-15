@@ -1,0 +1,102 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+READ REPO.md
+
+# Generate MD5 checksums for all files tracked by .gitignore-aware tree
+tree --gitignore -f -i | while read -r file; do
+  [ -f "$file" ] && md5sum "$file"
+done
+```
+
+### Task Instructions:
+
+1. **Compare Checksums**
+   Compare the current MD5 results with the last known state documented under the section:
+
+   ```
+   ## PRJ STATUS
+   ```
+
+2. **List Modified Files**
+   Identify all files with changed checksums. Clearly list them in a structured format.
+
+3. **Update `## PRJ STATUS`**
+   For each modified file:
+
+   * Replace the corresponding entries under `# PRJ STATUS` with updated checksum information.
+
+4. **Update Project Structure**
+   For each file (new or modified), ensure it is properly represented under the section:
+
+   ```
+   ## PRJ Structure
+   ```
+
+   Use the following schema for documentation:
+
+   ```
+   path,file,purpose
+   ```
+
+---
+
+<artifacts>
+REPO.md structure                             
+--------------------------------------------------------------------------------
+PREMISE: Code Review Levels of Complexity
+  A - Solo Developer
+  B - Open Source Project
+  C - Enterprise Level
+
+DELIVERABLES:
+1. Project Objective Analysis
+   - Files/md5 hash
+   - Project strucure
+   - Comprehensive overview based on code examination
+   - Identify core purpose and primary functionalities
+   - UML diagram, overall classes and flow
+   - Design Paterns in place
+   - Score for DRY and SOLID
+
+2. README vs Actual Implementation Comparison
+   - Detailed analysis of documentation alignment
+   - Highlight discrepancies between claimed and actual features
+
+3. Software Engineering Assessment (0-10 Scale)
+   Evaluation Dimensions:
+   - Code Quality
+   - Architecture
+   - Scalability
+   - Maintainability
+   - Performance
+   Scored across 3 Complexity Levels (A, B, C)
+
+4. Critical Items Requiring Attention
+   Grouped by Project Complexity Levels:
+   - Level A: Solo Developer Concerns
+   - Level B: Open Source Project Challenges
+   - Level C: Enterprise-Grade Considerations
+
+5. Proposed Solutions
+   - Concise 2-line resolution strategy
+   - Actionable and prioritized recommendations
+   - Mapped to specific identified issues
+
+6. Advancement Roadmap
+   - Identify gaps preventing project excellence
+   - Strategic recommendations for improvement
+   - Clear path to project optimization
+7. Response format:
+   - Markdown
+   - English;
+   - UUID;
+   - Fenced
+</artifacts>
+
+**Notes:**
+
+* Maintain consistent indentation and sorting for better readability.
+* Use `awk`/`cut`/`sed` or similar tools if needed to cleanly extract fields and automate diffs.
