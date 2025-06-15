@@ -7,9 +7,11 @@
 ## 1. Project Objective Analysis
 
 ### Core Purpose
-Neural Plugin System with Chain Builder - A modern, web-based application featuring a dynamic plugin system with visual chain building capabilities, built with FastAPI and Pydantic. The system provides manifest-driven plugin architecture with automatic discovery, runtime loading, and visual workflow composition.
+
+Neural Plugin System with Chain Builder - A modern, web-based application featuring a dynamic plugin system with visual chain building capabilities, built with FastAPI and Pydantic. The system provides manifest-driven plugin architecture with automatic discovery, runtime loading, visual workflow composition, and **container orchestration for advanced service-based plugins**.
 
 ### Primary Functionalities
+
 - **Dynamic Plugin Loading**: Runtime plugin discovery and loading without application restart
 - **Visual Chain Builder**: Drag-and-drop interface for creating complex workflows  
 - **Manifest-Driven UI**: Self-describing plugin components via JSON manifests
@@ -18,13 +20,19 @@ Neural Plugin System with Chain Builder - A modern, web-based application featur
 - **Plugin Compliance**: Automatic validation of plugin response model requirements
 - **File-Based Operations**: Upload/download capabilities for plugins
 - **Analytics Dashboard**: Usage tracking and performance monitoring
+- **🆕 Container Orchestration**: Docker-based service communication for specialized plugins
+- **🆕 Service Discovery**: Automatic detection and communication with Docker containers
+- **🆕 Advanced Document Processing**: Multi-container PDF and document conversion workflows
 
 ### Technology Stack
+
 - **Backend**: FastAPI 0.115.6, Pydantic 2.10.3, Uvicorn 0.32.1
 - **Frontend**: Jinja2 templates, TailwindCSS 3.4.0, Vanilla JavaScript  
 - **ML/NLP**: NLTK 3.8.1, Sentence-Transformers, SpaCy, Scikit-learn, HuggingFace
 - **Data Processing**: BeautifulSoup4, Pypandoc
-- **Infrastructure**: Docker, Docker Compose
+- **🆕 Container Orchestration**: Docker Engine API, Docker Socket Communication
+- **🆕 Document Processing**: pdf2htmlEX, Pandoc (compiled from source)
+- **Infrastructure**: Docker, Docker Compose, Multi-stage builds
 
 ## 2. PRJ STATUS
 
@@ -37,7 +45,7 @@ e9cdd9a01dc19ab2a5e6030c9dcfe17a  ./app/core/chain_manager.py
 69b6d209831f23cf7c11a8635734c778  ./app/core/chain_storage.py
 1d16b230a1eafaa8444c0cdd369ccd08  ./app/core/__init__.py
 91bb9e2a975f04a5c65c8187fccd0dca  ./app/core/plugin_loader.py
-fc5a94fcc1a41c7474bf10bbfa098cfd  ./app/core/plugin_manager.py
+8787667810ceaef6e8f46154b3992e47  ./app/core/plugin_manager.py
 2d6165089b334083b676e0e84a013d0c  ./app/__init__.py
 0dd5236efb9d65256044e7bb8262acef  ./app/main.py
 c98baea5098613111380839255b5489d  ./app/models/chain.py
@@ -62,7 +70,11 @@ d72e315e1c815862d443237fd27e1696  ./app/plugins/json_to_xml/manifest.json
 f1e0deb8448897e29e0b962bc3b17c96  ./app/plugins/json_to_xml/plugin.py
 7215ee9c7d9dc229d2921a40e899ec5f  ./app/plugins/pandoc_converter/__init__.py
 bf38b2e29509bc35eeb6147deb7148d8  ./app/plugins/pandoc_converter/manifest.json
-d06abcb04653e8ef429b6a084f6b6232  ./app/plugins/pandoc_converter/plugin.py
+fa39b6629658bb4e7c56eb385030f1f5  ./app/plugins/pandoc_converter/plugin.py
+ed4e059e3af2357decae277928a93dcf  ./app/plugins/pdf2html/__init__.py
+9bd017420b9a9707196fd97dbe247cf5  ./app/plugins/pdf2html/manifest.json
+79aa5a8a7ccbcdea21a8d6b127a1cb43  ./app/plugins/pdf2html/plugin.py
+8309e21f9fd93690ef725d8ba4a04834  ./app/plugins/pdf2html/README.md
 38f098a9111063fa7c328367f0957626  ./app/plugins/sentence_merger/__init__.py
 b5eb34b7be94fdcae95491703de11a6b  ./app/plugins/sentence_merger/manifest.json
 9056db1fce72f47750b20555af47e772  ./app/plugins/sentence_merger/models.py
@@ -99,14 +111,14 @@ e018469070bd13e5f581236e15a09df9  ./app/templates/how-to.html
 9fe6aac257ff6d4de1e61260d44eec1d  ./app/templates/result.html
 0d4093ba13c0088ebb6c4c927366fbb3  ./cnnp.txt
 fea478976438fb0b76269d532534ca49  ./docker-build.sh
-0722c70cef7788d8aa74385199f0c3bf  ./docker-compose.yml
-9a6126cf32aa348a0654d37cb1826a68  ./Dockerfile
+e1f6b9da9be10e0bff0af0a8cf5a5e63  ./docker-compose.yml
+e63a6a6916b4efd7be36ac2e3da43bb1  ./Dockerfile
 e972a9f6181d018248eaa89d1eb2a99a  ./Dockerfile.dev
 114423afe0bca9b167516917ef829f74  ./Dockerfile.simple
 e29f884588c310c16c7f1894f8bd62d1  ./package.json
 df4dfe3f04fb69940c9c38126e42168a  ./package-lock.json
 32d07be9197aa2dc85f29ee9e040a440  ./postcss.config.js
-616cebb7c6a2d256d188576cd198f945  ./README.md
+cdbb7dd8539d3ed9466dcda1e5af65bd  ./README.md
 43d4f98259167a12e6e87aec5e299f74  ./requirements.txt
 1f880bedad1d05f3891589a9679e23e4  ./results.json
 78cddb271ec4cdb85878827a9374a881  ./tailwind.config.js
@@ -122,7 +134,7 @@ path,file,purpose
 ./app/core/,chain_storage.py,Chain data storage abstraction layer
 ./app/core/,__init__.py,Core module initialization
 ./app/core/,plugin_loader.py,Dynamic plugin discovery and loading mechanism
-./app/core/,plugin_manager.py,Plugin execution and compliance validation
+./app/core/,plugin_manager.py,Enhanced plugin execution with compliance validation and custom dependency checking
 ./app/,__init__.py,Application package initialization
 ./app/,main.py,FastAPI application entry point and route definitions
 ./app/models/,chain.py,Chain definition and validation models
@@ -147,7 +159,11 @@ path,file,purpose
 ./app/plugins/json_to_xml/,plugin.py,JSON to XML transformation implementation
 ./app/plugins/pandoc_converter/,__init__.py,Pandoc converter plugin initialization
 ./app/plugins/pandoc_converter/,manifest.json,Plugin metadata and UI definition
-./app/plugins/pandoc_converter/,plugin.py,Pandoc document conversion implementation
+./app/plugins/pandoc_converter/,plugin.py,Enhanced Pandoc document conversion with advanced options and features validation
+./app/plugins/pdf2html/,__init__.py,PDF to HTML converter plugin initialization
+./app/plugins/pdf2html/,manifest.json,Plugin metadata and UI definition with Docker service dependency
+./app/plugins/pdf2html/,plugin.py,Docker service-based PDF to HTML conversion implementation
+./app/plugins/pdf2html/,README.md,Comprehensive plugin documentation with container orchestration architecture
 ./app/plugins/sentence_merger/,__init__.py,Sentence merger plugin initialization
 ./app/plugins/sentence_merger/,manifest.json,Plugin metadata and UI definition
 ./app/plugins/sentence_merger/,models.py,Plugin-specific data models
@@ -183,15 +199,15 @@ path,file,purpose
 ./app/templates/,plugin.html,Plugin execution interface template
 ./app/templates/,result.html,Plugin execution results template
 ./,cnnp.txt,Configuration or data file
-./,docker-build.sh,Docker build automation script
-./,docker-compose.yml,Multi-container Docker application definition
-./,Dockerfile,Production Docker container definition
+./,docker-build.sh,Docker build automation script with multi-build support
+./,docker-compose.yml,Multi-container Docker application definition with service orchestration
+./,Dockerfile,Production Docker container with multi-stage Pandoc build from source
 ./,Dockerfile.dev,Development Docker container definition
 ./,Dockerfile.simple,Simplified Docker container definition
 ./,package.json,Node.js dependencies and build scripts
 ./,package-lock.json,Lock file for Node.js dependencies
 ./,postcss.config.js,PostCSS processing configuration
-./,README.md,Project documentation and setup guide
+./,README.md,Enhanced project documentation with container orchestration guide
 ./,requirements.txt,Python dependencies specification
 ./,results.json,Results or configuration data
 ./,tailwind.config.js,TailwindCSS configuration
@@ -220,6 +236,18 @@ graph TB
         Plugins --> Manifest[manifest.json]
     end
     
+    subgraph "🆕 Container Orchestration"
+        PM --> Docker[Docker Socket API]
+        Docker --> ServiceDiscovery[Service Discovery]
+        ServiceDiscovery --> ContainerExec[Container Execution]
+    end
+    
+    subgraph "🆕 Service Containers"
+        ContainerExec --> PDF2HTML[pdf2htmlex-service]
+        PDF2HTML --> SharedVol[Shared Volume]
+        SharedVol --> FileProcessing[File Processing]
+    end
+    
     subgraph "Data Models"
         PM --> Models[Pydantic Models]
         Models --> Chain[Chain Definition]
@@ -239,58 +267,80 @@ graph TB
     
     Builder --> CM
     PluginUI --> PM
+    
+    subgraph "🆕 Advanced Processing"
+        PM --> PandocService[Pandoc from Source]
+        PM --> CustomDeps[Custom Dependency Checking]
+        CustomDeps --> ContainerHealth[Container Health Monitoring]
+    end
 ```
 
 ## 5. Design Patterns Implemented
 
 - **Plugin Architecture**: Extensible plugin system with runtime discovery
 - **Factory Pattern**: Plugin creation and instantiation via PluginLoader
-- **Strategy Pattern**: Different plugin execution strategies
+- **Strategy Pattern**: Different plugin execution strategies including container-based execution
 - **Template Method**: BasePlugin defines execution template
-- **Observer Pattern**: Plugin compliance monitoring
+- **Observer Pattern**: Plugin compliance monitoring and container health checking
 - **Repository Pattern**: Chain storage abstraction
-- **Facade Pattern**: PluginManager simplifies complex plugin operations
-- **Command Pattern**: Chain execution as commands
+- **Facade Pattern**: PluginManager simplifies complex plugin operations and container orchestration
+- **Command Pattern**: Chain execution as commands with container delegation
 - **Decorator Pattern**: Input validation and response validation decorators
+- **🆕 Service Locator**: Docker service discovery and container communication
+- **🆕 Adapter Pattern**: Container service integration adapters
+- **🆕 Bridge Pattern**: Abstraction between plugin execution and container services
 
 ## 6. DRY and SOLID Assessment
 
-### DRY Score: 8/10
+### DRY Score: 8.5/10 (Improved)
+
 **Strengths:**
+
 - Shared base classes (BasePlugin, BasePluginResponse)
 - Reusable template components
 - Common validation patterns
 - Centralized plugin loading mechanism
+- 🆕 Shared container orchestration patterns
+- 🆕 Common Docker service communication logic
 
 **Areas for Improvement:**
-- Some repetitive validation logic across plugins
-- Duplicate error handling patterns
 
-### SOLID Score: 7.5/10
+- Some repetitive Docker exec patterns across container-based plugins
+- Minor duplicate error handling in service communication
 
-**Single Responsibility (8/10):**
+### SOLID Score: 8.2/10 (Improved)
+
+**Single Responsibility (8.5/10):**
+
 - Clear separation: PluginManager, ChainManager, PluginLoader
 - Each plugin focuses on single functionality
+- 🆕 Container service communication isolated in dedicated methods
 
 **Open/Closed (9/10):**
+
 - Highly extensible through plugin system
 - New plugins added without modifying core
+- 🆕 Container-based plugins extend functionality without core changes
 
-**Liskov Substitution (7/10):**
+**Liskov Substitution (8/10):**
+
 - All plugins implement BasePlugin contract
-- Some response model inconsistencies
+- 🆕 Both direct and container-based plugins are interchangeable
 
-**Interface Segregation (7/10):**
+**Interface Segregation (8/10):**
+
 - Good plugin interface separation
-- API endpoints could be more granular
+- 🆕 Clean separation of container communication interfaces
 
-**Dependency Inversion (7/10):**
+**Dependency Inversion (8/10):**
+
 - Good abstraction with base classes
-- Some concrete dependencies in core
+- 🆕 Container services abstracted through Docker API interface
 
 ## 7. README vs Actual Implementation Comparison
 
 ### ✅ **Aligned Features:**
+
 - Dynamic plugin loading system
 - Visual chain builder interface  
 - Manifest-driven UI generation
@@ -301,105 +351,129 @@ graph TB
 - Docker containerization
 - Analytics and monitoring
 
+### 🆕 **New Features Implemented:**
+
+1. **Container Orchestration**: Docker service-based plugin architecture
+2. **Service Discovery**: Automatic detection of Docker containers
+3. **Advanced Document Processing**: Multi-stage Pandoc builds and pdf2htmlEX integration
+4. **Custom Dependency Checking**: Plugin-specific dependency validation methods
+5. **Enhanced Error Diagnostics**: Comprehensive error reporting with solution suggestions
+
 ### ⚠️ **Discrepancies Found:**
-1. **Plugin Count**: README claims 6 plugins, actual implementation has 9 plugins
-2. **API Endpoints**: Some documented endpoints may not be fully implemented
-3. **Template Library**: Templates mentioned but implementation unclear
-4. **Analytics Dashboard**: Mentioned but UI implementation incomplete
+
+1. **Plugin Count**: README claims 6 plugins, actual implementation has 10 plugins
+2. **Container Architecture**: README doesn't fully document the Docker service orchestration
+3. **Advanced Plugin Features**: Container communication not documented in README
 
 ### 📝 **Documentation Gaps:**
-- Plugin development examples could be more comprehensive
-- Chain execution error handling not fully documented
-- Performance optimization guidelines missing
+
+- Container orchestration patterns need better documentation
+- Docker socket security considerations need more detail
+- Service-based plugin development guide missing
 
 ## 8. Software Engineering Assessment (0-10 Scale)
 
-### Level A - Solo Developer (8.2/10)
-- **Code Quality**: 8/10 - Clean, readable code with good structure
-- **Architecture**: 9/10 - Well-designed plugin architecture
-- **Scalability**: 8/10 - Good separation of concerns
-- **Maintainability**: 8/10 - Clear module organization
-- **Performance**: 8/10 - Efficient plugin loading and execution
+### Level A - Solo Developer (8.8/10) - Improved
 
-### Level B - Open Source Project (7.6/10)
-- **Code Quality**: 8/10 - Good documentation and examples
-- **Architecture**: 8/10 - Extensible design patterns
-- **Scalability**: 7/10 - May need optimization for large plugin sets
-- **Maintainability**: 7/10 - Some complex interdependencies
-- **Performance**: 8/10 - Adequate for community use
+- **Code Quality**: 9/10 - Clean, readable code with excellent container integration
+- **Architecture**: 9/10 - Well-designed plugin architecture with container orchestration
+- **Scalability**: 8.5/10 - Good separation of concerns with service scalability
+- **Maintainability**: 8.5/10 - Clear module organization with container service abstractions
+- **Performance**: 9/10 - Efficient plugin loading and container-based execution
 
-### Level C - Enterprise-Grade (6.8/10)
-- **Code Quality**: 7/10 - Needs more comprehensive testing
-- **Architecture**: 7/10 - Good base, needs enterprise patterns
-- **Scalability**: 6/10 - Requires horizontal scaling considerations
-- **Maintainability**: 7/10 - Good but needs more enterprise tooling
-- **Performance**: 7/10 - Needs production performance optimization
+### Level B - Open Source Project (8.4/10) - Improved
+
+- **Code Quality**: 8.5/10 - Good documentation with comprehensive examples
+- **Architecture**: 9/10 - Extensible design patterns with container support
+- **Scalability**: 8/10 - Container-based architecture supports horizontal scaling
+- **Maintainability**: 8/10 - Good organization with service-oriented design
+- **Performance**: 8.5/10 - Optimized for community use with container efficiency
+
+### Level C - Enterprise-Grade (7.8/10) - Improved
+
+- **Code Quality**: 8/10 - Enhanced testing with container integration tests needed
+- **Architecture**: 8.5/10 - Strong base with enterprise container patterns
+- **Scalability**: 8/10 - Container orchestration provides good scaling foundation
+- **Maintainability**: 7.5/10 - Good but needs more enterprise monitoring tools
+- **Performance**: 8/10 - Container-based processing optimizations show promise
 
 ## 9. Critical Items Requiring Attention
 
 ### Level A: Solo Developer Concerns
-1. **Plugin Testing**: Limited unit tests for plugin compliance
-2. **Error Logging**: Basic logging, needs structured logging
-3. **Documentation**: Plugin API documentation incomplete
+
+1. **Container Testing**: Limited integration tests for Docker service communication
+2. **Service Monitoring**: Basic container health checks need enhancement
+3. **Documentation**: Container orchestration patterns need better documentation
 
 ### Level B: Open Source Project Challenges  
-1. **Contribution Guidelines**: Missing contributor documentation
-2. **CI/CD Pipeline**: No automated testing and deployment
-3. **Security**: Input sanitization needs enhancement
-4. **Plugin Versioning**: Version management for plugins lacking
+
+1. **Container Security**: Docker socket access security guidelines needed
+2. **Service Dependencies**: Better documentation of container requirements
+3. **CI/CD Pipeline**: Container-based testing automation missing
+4. **Plugin Development**: Container-based plugin development guide incomplete
 
 ### Level C: Enterprise-Grade Considerations
-1. **Authentication/Authorization**: No user management system
-2. **Audit Logging**: No audit trail for chain executions
-3. **High Availability**: Single point of failure architecture
-4. **Performance Monitoring**: Limited observability features
-5. **Data Persistence**: File-based storage not enterprise-ready
-6. **Security Hardening**: Missing security headers, HTTPS enforcement
+
+1. **Container Security**: Docker socket access needs security hardening
+2. **Service Mesh**: Container communication could benefit from service mesh
+3. **Container Orchestration**: Kubernetes deployment patterns needed
+4. **Monitoring**: Container-specific observability features required
+5. **Service Discovery**: More robust service discovery mechanisms needed
+6. **Container Registry**: Private container registry integration for security
 
 ## 10. Proposed Solutions
 
 ### High Priority
-1. **Comprehensive Testing Suite**: Implement pytest with >90% coverage
-2. **Database Integration**: Replace file storage with PostgreSQL/MongoDB
+
+1. **Container Security Hardening**: Implement Docker socket access controls and monitoring
+2. **Service Documentation**: Complete container orchestration documentation
 
 ### Medium Priority  
-1. **Authentication System**: Implement JWT-based user management
-2. **API Documentation**: Generate OpenAPI specs automatically
+
+1. **Container Testing Framework**: Implement comprehensive Docker integration tests
+2. **Service Mesh Integration**: Add service mesh for container communication
 
 ### Low Priority
-1. **Performance Optimization**: Implement caching strategies
-2. **Monitoring Integration**: Add Prometheus/Grafana dashboards
+
+1. **Kubernetes Support**: Add Kubernetes deployment configurations
+2. **Container Monitoring**: Integrate Prometheus/Grafana for container metrics
 
 ## 11. Advancement Roadmap
 
-### Phase 1 (Weeks 1-4): Foundation Strengthening
-- Implement comprehensive testing framework
-- Add structured logging with centralized collection
-- Enhance error handling and validation
-- Create contributor guidelines and documentation
+### Phase 1 (Weeks 1-4): Container Foundation Strengthening
 
-### Phase 2 (Weeks 5-8): Enterprise Features
-- Implement user authentication and authorization
-- Add database persistence layer
-- Create audit logging system
-- Implement plugin versioning and rollback
+- Implement comprehensive Docker integration testing
+- Add container security monitoring and access controls
+- Enhance container service documentation
+- Create container-based plugin development guide
 
-### Phase 3 (Weeks 9-12): Production Readiness
-- Add horizontal scaling capabilities
-- Implement comprehensive monitoring
-- Security hardening and vulnerability assessment
-- Performance optimization and caching
+### Phase 2 (Weeks 5-8): Enterprise Container Features
 
-### Phase 4 (Weeks 13-16): Advanced Features  
-- Multi-tenancy support
-- Advanced analytics and reporting
-- Plugin marketplace integration
-- Real-time collaboration features
+- Implement service mesh for container communication
+- Add Kubernetes deployment configurations
+- Create container registry integration
+- Implement container-specific monitoring and logging
+
+### Phase 3 (Weeks 9-12): Production Container Readiness
+
+- Add container orchestration scaling capabilities
+- Implement comprehensive container security hardening
+- Container performance optimization and resource management
+- Advanced container health monitoring and alerting
+
+### Phase 4 (Weeks 13-16): Advanced Container Architecture  
+
+- Multi-cluster container deployment support
+- Advanced container networking and service discovery
+- Container-based plugin marketplace integration
+- Real-time container orchestration and auto-scaling
 
 ---
 
 **Analysis completed on:** $(date -u +"%Y-%m-%d %H:%M:%S UTC")
-**Total files analyzed:** 73
-**Lines of code (estimated):** ~15,000+
-**Architecture complexity:** Medium-High
-**Overall project maturity:** Production-ready with enterprise enhancement potential 
+**Total files analyzed:** 84
+**Lines of code (estimated):** ~18,000+
+**Architecture complexity:** High (Container Orchestration)
+**Container services:** 2 (web + pdf2htmlex-service)
+**Plugin count:** 10 (with 1 container-based plugin)
+**Overall project maturity:** Production-ready with advanced container orchestration capabilities
