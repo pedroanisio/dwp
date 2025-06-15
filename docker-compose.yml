@@ -1,6 +1,7 @@
 services:
   # PDF to HTML conversion service
   pdf2htmlex-service:
+    container_name: pdf2htmlex-service
     image: pdf2htmlex/pdf2htmlex:0.18.8.rc2-master-20200820-ubuntu-20.04-x86_64
     volumes:
       - conversion_shared:/shared
