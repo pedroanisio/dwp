@@ -136,7 +136,8 @@ class Plugin(BasePlugin):
     def _format_response(self, result, permanent_file_path: Path,
                         pandoc_version: str, context: ProcessingContext) -> Dict[str, Any]:
         """Format the final response"""
-        output_size = result.output_path.stat().st_size if result.output_path else 0
+        # Get output size from permanent file location (since temp file was moved)
+        output_size = permanent_file_path.stat().st_size if permanent_file_path and permanent_file_path.exists() else 0
         
         conversion_details = {
             "pandoc_version": pandoc_version,
@@ -149,7 +150,7 @@ class Plugin(BasePlugin):
             "output_format": context.output_format,
             "complete_output_format": context.complete_output_format,
             "output_file": {
-                "filename": result.output_path.name if result.output_path else "",
+                "filename": permanent_file_path.name if permanent_file_path else "",
                 "size_bytes": output_size,
                 "size_mb": round(output_size / (1024 * 1024), 2)
             },
@@ -165,7 +166,7 @@ class Plugin(BasePlugin):
         
         return {
             "file_path": str(permanent_file_path),
-            "file_name": result.output_path.name if result.output_path else "",
+            "file_name": permanent_file_path.name if permanent_file_path else "",
             "conversion_details": conversion_details
         }
     
@@ -200,13 +201,25 @@ class Plugin(BasePlugin):
             if not result.success:
                 raise RuntimeError(result.error or "Processing failed")
             
-            # 8. Move output to permanent location
+            # 8. Verify output file exists before moving
+            if not result.output_path or not result.output_path.exists():
+                raise RuntimeError(f"Output file was not created or does not exist: {result.output_path}")
+            
+            logger.info(f"Successfully created output file: {result.output_path} ({result.output_path.stat().st_size} bytes)")
+            
+            # 9. Move output to permanent location
             permanent_file_path = self.file_handler.move_to_downloads(result.output_path, result.output_path.name)
             
-            # 9. Get pandoc version for diagnostics
+            # 10. Verify permanent file exists
+            if not permanent_file_path.exists():
+                raise RuntimeError(f"Failed to move file to permanent location: {permanent_file_path}")
+            
+            logger.info(f"File successfully moved to permanent location: {permanent_file_path}")
+            
+            # 11. Get pandoc version for diagnostics
             pandoc_version = self.pandoc_executor.get_version()
             
-            # 10. Format and return response
+            # 12. Format and return response
             return self._format_response(result, permanent_file_path, pandoc_version, context)
             
         except subprocess.TimeoutExpired:
@@ -216,6 +229,8 @@ class Plugin(BasePlugin):
             
         except Exception as e:
             logger.error(f"Unexpected error in conversion: {e}")
+            if temp_dir and temp_dir.exists():
+                logger.error(f"Temp directory contents: {list(temp_dir.iterdir()) if temp_dir.exists() else 'Directory does not exist'}")
             raise RuntimeError(f"An unexpected error occurred during conversion: {e}")
             
         finally:

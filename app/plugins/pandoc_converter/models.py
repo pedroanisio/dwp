@@ -6,6 +6,26 @@ from pydantic import BaseModel, Field
 from ...models.plugin import BasePluginResponse
 
 
+def get_output_extension(output_format: str) -> str:
+    """Map output format to file extension"""
+    format_to_extension = {
+        'plain': 'txt',
+        'markdown': 'md', 
+        'html': 'html',
+        'html5': 'html',
+        'latex': 'tex',
+        'pdf': 'pdf',
+        'docx': 'docx',
+        'odt': 'odt',
+        'rtf': 'rtf',
+        'epub': 'epub',
+        'json': 'json',
+        'txt': 'txt',
+        'md': 'md'
+    }
+    return format_to_extension.get(output_format.lower(), output_format)
+
+
 class ProcessingMethod(Enum):
     """Enumeration of processing methods"""
     SINGLE_FILE = "single_file"

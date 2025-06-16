@@ -1,6 +1,6 @@
 import logging
 from .base import ProcessingStrategy
-from ..models import ProcessingContext, ProcessingResult, ProcessingMethod
+from ..models import ProcessingContext, ProcessingResult, ProcessingMethod, get_output_extension
 from ..services import TextExtractor, MemoryMonitor
 
 # Set up logging
@@ -23,9 +23,12 @@ class TextExtractionStrategy(ProcessingStrategy):
             initial_memory = self.memory_monitor.check_usage()
             logger.info(f"Initial memory status: {initial_memory}")
             
+            # Get proper output extension
+            output_extension = get_output_extension(context.output_format)
+            
             # Extract text directly
             output_path = self.text_extractor.extract_from_html(
-                context.input_info.path, context.output_format, context.temp_dir
+                context.input_info.path, output_extension, context.temp_dir
             )
             
             # Final memory check

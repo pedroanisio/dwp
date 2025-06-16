@@ -1,6 +1,6 @@
 import logging
 from .base import ProcessingStrategy
-from ..models import ProcessingContext, ProcessingResult, ProcessingMethod
+from ..models import ProcessingContext, ProcessingResult, ProcessingMethod, get_output_extension
 from ..services import PandocExecutor, MemoryMonitor
 
 # Set up logging
@@ -23,8 +23,9 @@ class SingleFileStrategy(ProcessingStrategy):
             initial_memory = self.memory_monitor.check_usage()
             logger.info(f"Initial memory status: {initial_memory}")
             
-            # Build output path
-            output_filename = f"{context.input_info.path.stem}.{context.output_format}"
+            # Build output path with proper extension mapping
+            output_extension = get_output_extension(context.output_format)
+            output_filename = f"{context.input_info.path.stem}.{output_extension}"
             output_path = context.temp_dir / output_filename
             
             # Build pandoc command

@@ -1,6 +1,6 @@
 import logging
 from .base import ProcessingStrategy
-from ..models import ProcessingContext, ProcessingResult, ProcessingMethod, ChunkResult
+from ..models import ProcessingContext, ProcessingResult, ProcessingMethod, ChunkResult, get_output_extension
 from ..services import PandocExecutor, MemoryMonitor, ChunkingService, TextExtractor
 
 # Set up logging
@@ -35,12 +35,15 @@ class ChunkedStrategy(ProcessingStrategy):
             processed_chunks = []
             chunk_results = []
             
+            # Get proper output extension
+            output_extension = get_output_extension(context.output_format)
+            
             for i, chunk_path in enumerate(chunk_paths):
                 try:
                     logger.info(f"Processing chunk {i+1}/{len(chunk_paths)}: {chunk_path.name}")
                     
-                    # Process individual chunk
-                    chunk_output_filename = f"{chunk_path.stem}.{context.output_format}"
+                    # Process individual chunk with proper extension
+                    chunk_output_filename = f"{chunk_path.stem}.{output_extension}"
                     chunk_output_path = context.temp_dir / chunk_output_filename
                     
                     # Build pandoc command for chunk
@@ -110,7 +113,7 @@ class ChunkedStrategy(ProcessingStrategy):
                 # Merge successful chunks
                 logger.info(f"Merging {len(processed_chunks)} successfully processed chunks")
                 output_path = self.chunking_service.merge_chunks(
-                    processed_chunks, context.output_format, context.temp_dir, context.input_info.path.stem
+                    processed_chunks, output_extension, context.temp_dir, context.input_info.path.stem
                 )
                 
                 # Final memory check

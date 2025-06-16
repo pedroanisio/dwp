@@ -88,7 +88,10 @@ class BasePlugin(ABC):
         Execute the plugin with the given input data.
         
         Args:
-            data: Input data dictionary
+            data: Input data dictionary. For plugins that handle files, the 'input_file'
+                  key will contain a dictionary with either a 'temp_path' (for files
+                  on disk) or 'content' (for in-memory file data). Plugins MUST
+                  handle both cases gracefully.
             
         Returns:
             Dictionary that MUST validate against the model returned by get_response_model()
