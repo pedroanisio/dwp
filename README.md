@@ -149,7 +149,7 @@ The system now supports **advanced container orchestration** for specialized plu
 ⚠️ **Important**: The Docker socket mounting provides elevated privileges for container communication:
 
 ```yaml
-# docker-compose.yml - Required for container orchestration
+# docker compose.yml - Required for container orchestration
 volumes:
   - /var/run/docker.sock:/var/run/docker.sock  # Docker API access
 ```
@@ -215,11 +215,7 @@ Access pre-built templates for common workflows:
 
    ```bash
    # Start production services (includes container orchestration)
-   docker-compose up -d
-   
-   # Or use the automated build script
-   chmod +x docker-build.sh
-   ./docker-build.sh --run-prod
+   docker compose up -d
    ```
 
 3. **Access the application:**
@@ -230,7 +226,7 @@ Access pre-built templates for common workflows:
 4. **Verify container services:**
    ```bash
    # Check all services are running
-   docker-compose ps
+   docker compose ps
    
    # Test container communication
    curl http://localhost:8000/api/plugins
@@ -260,10 +256,10 @@ Access pre-built templates for common workflows:
 
    ```bash
    # Start container services first
-   docker-compose up -d pdf2htmlex-service
+   docker compose up -d pdf2htmlex-service
    
    # Start the web application
-   uvicorn app.main:app --reload
+   uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
    ```
 
 ### 🚀 Docker Build Options
@@ -273,10 +269,7 @@ The project includes **multiple Docker configurations** optimized for different 
 #### Production Build (Pandoc from Source)
 ```bash
 # Multi-stage build with Pandoc compiled from source
-./docker-build.sh --run-prod
-
-# Manual docker-compose
-docker-compose up -d web
+docker compose up -d
 ```
 
 - **Features**: Latest Pandoc with full data files, container orchestration
@@ -286,25 +279,22 @@ docker-compose up -d web
 #### Development Build (System Pandoc)
 ```bash
 # Fast build with system Pandoc
-./docker-build.sh --run-dev
-
-# Manual docker-compose
-docker-compose --profile dev up -d web-dev
+docker compose -f docker compose.yml --profile dev up -d
 ```
 
 - **Features**: Quick development iteration, container orchestration
 - **Build Time**: 2-3 minutes
-- **Port**: 8002
+- **Port**: 8002 (if available)
 
 #### Simple Build (Basic Features)
 ```bash
 # Lightweight build
-docker-compose --profile simple up -d web-simple
+docker compose --profile simple up -d
 ```
 
 - **Features**: Basic functionality, faster startup
 - **Build Time**: 1-2 minutes
-- **Port**: 8001
+- **Port**: 8001 (if available)
 
 ## 🔌 Developing a New Plugin
 
@@ -385,7 +375,7 @@ Creating a new plugin requires following the **mandatory response model rule**. 
 
 For plugins requiring specialized environments (like pdf2htmlEX), you can use container orchestration:
 
-1. **Add Container Service to docker-compose.yml**
+1. **Add Container Service to docker compose.yml**
 
    ```yaml
    your-service:
@@ -444,7 +434,7 @@ For plugins requiring specialized environments (like pdf2htmlEX), you can use co
        "external": [
          {
            "name": "your-service",
-           "help": "Container service must be running via docker-compose"
+           "help": "Container service must be running via docker compose"
          }
        ]
      }
@@ -465,11 +455,10 @@ See `app/plugins/pdf2html/` for a complete container-based plugin implementation
 ```
 ├── requirements.txt                    # Python dependencies
 ├── package.json                       # Node.js dependencies and scripts
-├── docker-compose.yml                 # 🆕 Multi-container orchestration with services
+├── docker compose.yml                 # 🆕 Multi-container orchestration with services
 ├── Dockerfile                         # 🆕 Multi-stage build with Pandoc from source
 ├── Dockerfile.dev                     # Development container
 ├── Dockerfile.simple                  # Simple container for basic features
-├── docker-build.sh                    # 🆕 Automated build script with multiple options
 ├── tailwind.config.js                 # Tailwind CSS configuration
 ├── postcss.config.js                  # PostCSS configuration
 └── app/
@@ -817,13 +806,13 @@ curl -X POST http://localhost:8000/api/chains/your_chain_id/execute \
 
 ```bash
 # Check container service health
-docker-compose ps
+docker compose ps
 
 # Test container communication
 docker exec web docker ps --filter "name=pdf2htmlex-service"
 
 # Monitor container logs
-docker-compose logs -f pdf2htmlex-service
+docker compose logs -f pdf2htmlex-service
 ```
 
 ## 🐳 Docker Deployment with Advanced Container Orchestration
@@ -863,7 +852,7 @@ The application includes **Docker socket mounting** for advanced container orche
 #### Container Architecture:
 
 ```yaml
-# docker-compose.yml - Container orchestration
+# docker compose.yml - Container orchestration
 services:
   web:
     volumes:
@@ -902,20 +891,14 @@ services:
 
 ### 🚀 Quick Start
 
-Use the provided build script for easy deployment:
+Start the application with Docker Compose:
 
 ```bash
-# Make script executable (if not already)
-chmod +x docker-build.sh
-
 # Build and run production version (Pandoc from source + container orchestration)
-./docker-build.sh --run-prod
+docker compose up -d --build
 
-# Build and run development version (system Pandoc + container orchestration)
-./docker-build.sh --run-dev
-
-# View all options
-./docker-build.sh --help
+# View logs for all services
+docker compose logs -f
 ```
 
 ### 📦 Build Options
@@ -923,10 +906,7 @@ chmod +x docker-build.sh
 #### Production Build (Recommended for deployment)
 ```bash
 # Build production image with custom Pandoc from source + container services
-./docker-build.sh --prod
-
-# Or manually with docker-compose
-docker-compose up --build web
+docker compose up -d --build
 ```
 
 - **Pandoc Version**: 3.7.0.2 (latest stable, built from source with full data files)
@@ -938,61 +918,53 @@ docker-compose up --build web
 #### Development Build (Fast for development)
 ```bash
 # Build development image with system Pandoc + container services
-./docker-build.sh --dev
-
-# Or manually with docker-compose
-docker-compose --profile dev up --build web-dev
+docker compose -f docker compose.yml --profile dev up -d --build
 ```
 
 - **Pandoc Version**: System package (usually 2.x)
 - **Container Services**: Full container orchestration
 - **Build Time**: 2-3 minutes
 - **Image Size**: ~300MB
-- **Port**: 8002
+- **Port**: 8002 (if available)
 
 #### Simple Build (Basic features, no containers)
 ```bash
 # Build simple image without container orchestration
-docker-compose --profile simple up --build web-simple
+docker compose --profile simple up -d --build
 ```
 
 - **Features**: Basic plugins only (no container-based plugins)
 - **Build Time**: 1-2 minutes
 - **Image Size**: ~250MB
-- **Port**: 8001
+- **Port**: 8001 (if available)
 
 ### 🛠️ Advanced Docker Usage
 
 ```bash
-# Build all variants
-./docker-build.sh --both
-
 # Start specific services
-docker-compose up -d pdf2htmlex-service  # PDF service only
-docker-compose up -d web                 # Production web app
+docker compose up -d pdf2htmlex-service  # PDF service only
+docker compose up -d web                 # Production web app
 
 # Monitor all services
-docker-compose ps
-docker-compose logs -f
+docker compose ps
+docker compose logs -f
 
 # Container service testing
 docker exec web docker ps --filter "name=pdf2htmlex-service"
 docker exec pdf2htmlex-service pdf2htmlEX --help
 
 # Clean up Docker resources
-./docker-build.sh --clean
-docker-compose down
+docker compose down
 docker system prune
 ```
 
 ### 🔍 Container Service Configuration
 
-- **`docker-compose.yml`**: Multi-container orchestration with service dependencies
+- **`docker compose.yml`**: Multi-container orchestration with service dependencies
 - **`Dockerfile`**: Production multi-stage build with Pandoc from source
 - **`Dockerfile.dev`**: Development build with system packages
 - **`Dockerfile.simple`**: Simplified build without container services
 - **`.dockerignore`**: Optimized build context
-- **`docker-build.sh`**: Automated build script with multiple options
 
 ### 🎯 Why Container Orchestration?
 
@@ -1018,13 +990,13 @@ Building with container orchestration provides several advantages:
 **Container Service Not Starting:**
 ```bash
 # Check service status
-docker-compose ps
+docker compose ps
 
 # Check service logs
-docker-compose logs pdf2htmlex-service
+docker compose logs pdf2htmlex-service
 
 # Restart services
-docker-compose restart pdf2htmlex-service
+docker compose restart pdf2htmlex-service
 ```
 
 **Docker Socket Permission Issues:**
@@ -1057,7 +1029,7 @@ docker network inspect dynamic-web-plugins_plugin-network
 ```bash
 # Increase Docker memory limit to 4GB+ in Docker Desktop
 # Or use development build which requires less memory
-./docker-build.sh --run-dev
+   docker compose -f docker compose.yml --profile dev up -d --build
 ```
 
 **Container Health Check Failures:**
@@ -1078,7 +1050,7 @@ docker exec pdf2htmlex-service pdf2htmlEX --help
 2. Create a feature branch (`git checkout -b feature/amazing-feature`)
 3. **Ensure any new plugins follow the response model rule**
 4. **Run compliance checker**: `curl http://localhost:8000/api/plugin-compliance`
-5. **Test container services**: `docker-compose ps` and verify all services are healthy
+5. **Test container services**: `docker compose ps` and verify all services are healthy
 6. Test thoroughly (plugins, chains, container communication, and UI)
 7. Commit your changes (`git commit -m 'Add amazing feature'`)
 8. Push to the branch (`git push origin feature/amazing-feature`)
@@ -1154,9 +1126,9 @@ This project is provided as a demonstration of FastAPI + Pydantic plugin archite
 
 **Service Not Available:**
 
-- Check container status: `docker-compose ps`
-- Restart services: `docker-compose restart [service-name]`
-- Check service logs: `docker-compose logs -f [service-name]`
+- Check container status: `docker compose ps`
+- Restart services: `docker compose restart [service-name]`
+- Check service logs: `docker compose logs -f [service-name]`
 - Verify Docker socket access: `docker exec web docker ps`
 
 **Container Communication Failures:**
@@ -1171,7 +1143,7 @@ This project is provided as a demonstration of FastAPI + Pydantic plugin archite
 - Check Docker resource limits: `docker stats`
 - Monitor disk space: `df -h`
 - Clean up unused containers: `docker system prune`
-- Scale services if needed: `docker-compose up --scale service-name=2`
+- Scale services if needed: `docker compose up --scale service-name=2`
 
 ### System Issues
 
