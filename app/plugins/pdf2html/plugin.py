@@ -134,7 +134,8 @@ class Plugin(BasePlugin):
     
     def _execute_pdf2htmlex_in_service(self, container_name: str, input_filename: str, 
                                       zoom: float, embed_css: bool, embed_javascript: bool, 
-                                      embed_images: bool) -> Dict[str, Any]:
+                                      embed_images: bool, optimize_text: bool, font_format: str,
+                                      printing: int, font_size_multiplier: float) -> Dict[str, Any]:
         """Execute pdf2htmlEX in the service container via docker exec"""
         
         # Build pdf2htmlEX command
@@ -144,21 +145,14 @@ class Plugin(BasePlugin):
         if zoom and zoom > 0:
             pdf2htmlex_cmd.extend(["--zoom", str(zoom)])
         
-        if embed_css:
-            pdf2htmlex_cmd.append("--embed-css=1")
-        else:
-            pdf2htmlex_cmd.append("--embed-css=0")
-            
-        if embed_javascript:
-            pdf2htmlex_cmd.append("--embed-javascript=1")
-        else:
-            pdf2htmlex_cmd.append("--embed-javascript=0")
-            
-        if embed_images:
-            pdf2htmlex_cmd.append("--embed-image=1")
-        else:
-            pdf2htmlex_cmd.append("--embed-image=0")
-        
+        pdf2htmlex_cmd.append(f"--embed-css={int(embed_css)}")
+        pdf2htmlex_cmd.append(f"--embed-javascript={int(embed_javascript)}")
+        pdf2htmlex_cmd.append(f"--embed-image={int(embed_images)}")
+        pdf2htmlex_cmd.append(f"--optimize-text={int(optimize_text)}")
+        pdf2htmlex_cmd.append(f"--font-format={font_format}")
+        pdf2htmlex_cmd.append(f"--printing={printing}")
+        pdf2htmlex_cmd.append(f"--font-size-multiplier={font_size_multiplier}")
+
         # Set destination directory and add input file
         pdf2htmlex_cmd.extend(["--dest-dir", "/shared"])
         pdf2htmlex_cmd.append(input_filename)
@@ -203,7 +197,13 @@ class Plugin(BasePlugin):
         embed_css = self._to_bool(data.get("embed_css", True))
         embed_javascript = self._to_bool(data.get("embed_javascript", True))
         embed_images = self._to_bool(data.get("embed_images", True))
+        optimize_text = self._to_bool(data.get("optimize_text", True))
         output_filename = data.get("output_filename", "").strip()
+
+        # Get other optimization parameters with defaults
+        font_format = data.get("font_format", "woff")
+        printing = data.get("printing", 0)
+        font_size_multiplier = data.get("font_size_multiplier", 4.0)
 
         if not input_file_info:
             raise ValueError("Missing input PDF file")
@@ -227,28 +227,48 @@ class Plugin(BasePlugin):
             shared_dir = self._ensure_shared_directory()
             logger.info(f"Using shared directory: {shared_dir}")
             
-            # Validate and analyze input file
+            # Handle both streaming (temp_path) and legacy (content) input formats
             input_filename = input_file_info["filename"]
-            input_file_content = input_file_info["content"]
+            
+            if "temp_path" in input_file_info:
+                # New streaming format - file already on disk
+                temp_input_path = Path(input_file_info["temp_path"])
+                
+                # Move to our shared directory for processing by service
+                input_path = shared_dir / input_filename
+                shutil.move(str(temp_input_path), str(input_path))
+                logger.info(f"Moved streamed file to shared directory: {input_path}")
+
+                # For validation, we need to read the content temporarily
+                with open(input_path, "rb") as f:
+                    input_file_content = f.read()
+
+            elif "content" in input_file_info:
+                # Legacy format - content in memory
+                input_file_content = input_file_info["content"]
+                
+                # Write input file to shared directory
+                input_path = shared_dir / input_filename
+                with open(input_path, "wb") as f:
+                    f.write(input_file_content)
+                logger.info(f"Wrote legacy content to shared directory: {input_path}")
+            else:
+                raise ValueError("Input file data is missing. 'input_file' must contain either 'temp_path' or 'content'.")
             
             file_diagnostics = self._validate_input_file(input_filename, input_file_content)
             logger.info(f"Input PDF file diagnostics: {file_diagnostics}")
-
-            # Write input file to shared directory
-            input_path = shared_dir / input_filename
-            with open(input_path, "wb") as f:
-                f.write(input_file_content)
-
+            
             # Determine output filename
             if not output_filename:
-                output_filename = f"{input_path.stem}.html"
+                output_filename = f"{Path(input_filename).stem}.html"
             elif not output_filename.endswith('.html'):
                 output_filename += '.html'
             
             # Execute pdf2htmlEX in the service container
             container_name = service_info["container_name"]
             conversion_result = self._execute_pdf2htmlex_in_service(
-                container_name, input_filename, zoom, embed_css, embed_javascript, embed_images
+                container_name, input_filename, zoom, embed_css, embed_javascript, embed_images,
+                optimize_text, font_format, printing, font_size_multiplier
             )
             
             # Check if conversion was successful
@@ -317,7 +337,11 @@ class Plugin(BasePlugin):
                     "zoom": zoom,
                     "embed_css": embed_css,
                     "embed_javascript": embed_javascript,
-                    "embed_images": embed_images
+                    "embed_images": embed_images,
+                    "optimize_text": optimize_text,
+                    "font_format": font_format,
+                    "printing": printing,
+                    "font_size_multiplier": font_size_multiplier
                 },
                 "execution_time_seconds": round(conversion_result["execution_time"], 2),
                 "conversion_successful": True,

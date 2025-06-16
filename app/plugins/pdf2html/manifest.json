@@ -38,7 +38,15 @@
       "field_type": "checkbox",
       "required": false,
       "default_value": true,
-      "help": "Embed JavaScript in the HTML file for interactive features"
+      "help": "Embed JavaScript into the HTML file. Disabling this can reduce file size but may break functionality."
+    },
+    {
+      "name": "optimize_text",
+      "label": "Optimize Text",
+      "field_type": "checkbox",
+      "required": false,
+      "default_value": true,
+      "help": "Reduces the number of HTML elements used for text, which can significantly shrink file size."
     },
     {
       "name": "embed_images",
