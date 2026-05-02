@@ -3,3 +3,5 @@
 node_modules/*
 CLAUDE.md
 app/data/
+.coverage
+coverage.xml

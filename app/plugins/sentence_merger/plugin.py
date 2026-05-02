@@ -4,14 +4,22 @@ import time
 from typing import Dict, Any, Type, List, Optional, Union
 from collections import defaultdict, Counter
 import numpy as np
-from sentence_transformers import SentenceTransformer
 from sklearn.cluster import AgglomerativeClustering
 from sklearn.metrics.pairwise import cosine_similarity
-import spacy
 from pydantic import BaseModel, Field
 
 from ...models.plugin import BasePlugin, BasePluginResponse
 from .models import SentenceMergerResponse, SentenceCluster
+
+try:
+    from sentence_transformers import SentenceTransformer
+except Exception:
+    SentenceTransformer = None
+
+try:
+    import spacy
+except Exception:
+    spacy = None
 
 
 class SentenceMergerInput(BaseModel):
@@ -50,14 +58,23 @@ class SentenceMergerInput(BaseModel):
 
 class SentenceMerger:
     def __init__(self, similarity_threshold=0.68):  # Lowered from 0.8
+        if SentenceTransformer is None:
+            raise RuntimeError(
+                "sentence-transformers is required for sentence_merger. "
+                "Install project requirements to enable this plugin."
+            )
+
         # Load pre-trained sentence transformer model
         self.model = SentenceTransformer('all-MiniLM-L6-v2')
         # Load spacy model with error handling
-        try:
-            self.nlp = spacy.load('en_core_web_sm')
-        except OSError:
-            # Fallback if model not available
+        if spacy is None:
             self.nlp = None
+        else:
+            try:
+                self.nlp = spacy.load('en_core_web_sm')
+            except OSError:
+                # Fallback if model not available
+                self.nlp = None
         self.similarity_threshold = similarity_threshold
     
     def preprocess_text(self, text: str) -> str:
